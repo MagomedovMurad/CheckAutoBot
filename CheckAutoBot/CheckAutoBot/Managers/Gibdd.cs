@@ -27,50 +27,36 @@ namespace CheckAutoBot.Managers
             string stringData = $"vin={vin}&captchaWord={captcha}&checkType=history";
             byte[] data = Encoding.ASCII.GetBytes(stringData);
 
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(historyUrl);
-            request.Method = "POST";
-            var webHeaderCollection = new WebHeaderCollection();
-            webHeaderCollection.Add(HttpRequestHeader.Host, "xn--b1afk4ade.xn--90adear.xn--p1ai");
-            webHeaderCollection.Add(HttpRequestHeader.Connection, "keep-alive");
-            webHeaderCollection.Add(HttpRequestHeader.ContentLength, data.Length.ToString());
-            webHeaderCollection.Add(HttpRequestHeader.Accept, "application/json, text/javascript, */*; q=0.01");
-            webHeaderCollection.Add("Origin", "https://xn--90adear.xn--p1ai");
-            webHeaderCollection.Add(HttpRequestHeader.UserAgent, 
-                                    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 YaBrowser/18.6.1.770 Yowser/2.5 Safari/537.36");
-            webHeaderCollection.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded; charset=UTF-8");
-            webHeaderCollection.Add(HttpRequestHeader.Referer, "https://xn--90adear.xn--p1ai/check/auto/");
-            webHeaderCollection.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br");
-            webHeaderCollection.Add(HttpRequestHeader.AcceptLanguage, "ru,en;q=0.9");
-            webHeaderCollection.Add(HttpRequestHeader.Cookie, $"JSESSIONID={jsessionId}");
+
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, historyUrl);
+            request.Headers.Add("Host", "xn--b1afk4ade.xn--90adear.xn--p1ai");
+            request.Headers.Add("Connection", "keep-alive");
+            request.Headers.Add("Accept", "application/json, text/javascript, */*; q=0.01");
+            request.Headers.Add("Origin", "https://xn--90adear.xn--p1ai");
+            request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 YaBrowser/18.6.1.770 Yowser/2.5 Safari/537.36");
+            request.Headers.Add("Referer", "https://xn--90adear.xn--p1ai/check/auto/");
+            request.Headers.Add("Accept-Encoding", "gzip, deflate, br");
+            request.Headers.Add("Accept-Language", "ru,en;q=0.9");
+            request.Headers.Add("Cookie", $"JSESSIONID={jsessionId}");
+
+            HttpContent requestContent = new ByteArrayContent(data, 0, data.Length);
+            requestContent.Headers.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            request.Content = requestContent;
 
             var cookieContainer = new CookieContainer();
-
-            request.Headers = webHeaderCollection;
-
             var cookie = new Cookie();
             cookie.Name = "JSESSIONID";
             cookie.Value = jsessionId;
-
             cookieContainer.Add(new Uri(historyUrl), cookie);
 
-            request.CookieContainer = cookieContainer;
+            _handler = new HttpClientHandler();
+            _handler.CookieContainer = cookieContainer;
 
+            HttpResponseMessage response = _httpClient.SendAsync(request).Result;
 
-            using (var stream = request.GetRequestStream())
-            {
-                stream.Write(data, 0, data.Length);
-            }
+            var httpContent = response.Content;
 
-            var response = request.GetResponse();
-            string source;
-            using (Stream stream = response.GetResponseStream())
-            {
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    source = reader.ReadToEnd();
-                }
-            }
-            response.Close();
+            var responseContent = httpContent.ReadAsStringAsync();
         }
 
         public void GetDtp()
@@ -96,37 +82,29 @@ namespace CheckAutoBot.Managers
             var date = DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
             string captchaUrl = "http://сервис.гибдд.рф/proxy/captcha.jpg?" + Math.Round(date, 0);
 
-            var webHeaderCollection = new WebHeaderCollection();
-            webHeaderCollection.Add(HttpRequestHeader.Host, "xn--b1afk4ade.xn--90adear.xn--p1ai");
-            webHeaderCollection.Add(HttpRequestHeader.Connection, "keep-alive");
-            webHeaderCollection.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36");
-            webHeaderCollection.Add(HttpRequestHeader.Accept, "image/webp,image/apng,image/*,*/*;q=0.8");
-            webHeaderCollection.Add(HttpRequestHeader.Referer, "https://xn--90adear.xn--p1ai/check/auto");
-            webHeaderCollection.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br");
-            webHeaderCollection.Add(HttpRequestHeader.AcceptLanguage, "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7");
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, captchaUrl);
+            request.Headers.Add("Host", "xn--b1afk4ade.xn--90adear.xn--p1ai");
+            request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36");
+            request.Headers.Add("Accept", "image/webp,image/apng,image/*,*/*;q=0.8");
+            request.Headers.Add("Referer", "https://xn--90adear.xn--p1ai/check/auto");
+            request.Headers.Add("Accept-Encoding", "gzip, deflate, br");
+            request.Headers.Add("Accept-Language", "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7");
 
+            HttpResponseMessage response = _httpClient.SendAsync(request).Result;
 
-            CookieContainer cookies = new CookieContainer();
+            IEnumerable<string> headerValues = new List<string>(); 
 
-            //_handler.CookieContainer = cookies;
+            bool jsessionIdIsExist = response.Headers.TryGetValues("Set-Cookie", out headerValues);
 
-            HttpResponseMessage httpClientResponse = _httpClient.GetAsync(new Uri(captchaUrl)).Result;
-            var headerValues = httpClientResponse.Headers.GetValues("Set-Cookie");
             var headerValue = headerValues.ElementAt(0);
-            var header = headerValue.Split(';')[0];
-            var jsessionId = header.Substring(11, header.Length - 11);
+            var jsessionId = headerValue.Split(';')[0];
+            var jsessionIdValue = jsessionId.Substring(11, jsessionId.Length - 11);
 
-            Uri uri = new Uri(captchaUrl);
-
-            var httpContent = httpClientResponse.Content;
+            var httpContent = response.Content;
             byte[] content = httpContent.ReadAsByteArrayAsync().Result;
             var base64 = Convert.ToBase64String(content);
 
-
-            //File.WriteAllBytes(@"C:\Users\m.magomedov\Chaptcha.png", content);
-
-            return new CaptchaResult() { ImageBase64 = base64, SessionId = jsessionId };
-
+            return new CaptchaResult() { ImageBase64 = base64, JsessionId = jsessionIdValue };
         }
     }
 
@@ -134,7 +112,7 @@ namespace CheckAutoBot.Managers
     {
         public string ImageBase64 { get; set; }
 
-        public string SessionId { get; set; }
+        public string JsessionId { get; set; }
              
     }
         

@@ -18,7 +18,7 @@ namespace CheckAutoBot
 
             var captchaWord = recaptcha.GetCapthaResult(id.Substring(3,id.Length -3 ));
 
-            gibdd.GetHistory("X9FMXXEEBMCB65023", captchaWord.Substring(3, captchaWord.Length - 3), captchaResult.SessionId);
+            gibdd.GetHistory("X9FMXXEEBMCB65023", captchaWord.Substring(3, captchaWord.Length - 3), captchaResult.JsessionId);
 
 
             Console.ReadKey();

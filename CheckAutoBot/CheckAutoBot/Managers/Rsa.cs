@@ -1,4 +1,4 @@
-﻿using HtmlAgilityPack;
+﻿//using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -54,19 +54,19 @@ namespace CheckAutoBot.Managers
             response.Close();
         }
 
-        public string GetDataSiteKey()
-        {
-            string url = "https://dkbm-web.autoins.ru/dkbm-web-1.0/policy.htm";
-            string stringHtml = ExecuteRequest(url, "GET");
+        //public string GetDataSiteKey()
+        //{
+        //    string url = "https://dkbm-web.autoins.ru/dkbm-web-1.0/policy.htm";
+        //    string stringHtml = ExecuteRequest(url, "GET");
 
-            var html = new HtmlDocument();
-            html.LoadHtml(stringHtml);
+        //    var html = new HtmlDocument();
+        //    html.LoadHtml(stringHtml);
 
-            HtmlNode bodyNode = html.DocumentNode.SelectSingleNode("//div[@class='g-recaptcha']");
-            var dataSiteKey = bodyNode.Attributes["data-sitekey"].Value;
+        //    HtmlNode bodyNode = html.DocumentNode.SelectSingleNode("//div[@class='g-recaptcha']");
+        //    var dataSiteKey = bodyNode.Attributes["data-sitekey"].Value;
 
-            return dataSiteKey;
-        }
+        //    return dataSiteKey;
+        //}
 
         private string ExecuteRequest(string url, string requestMethod)
         {

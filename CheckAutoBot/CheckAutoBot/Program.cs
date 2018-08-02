@@ -14,7 +14,6 @@ namespace CheckAutoBot
 
             var captchaResult = gibdd.GetCaptha();
             var id = recaptcha.SendImageCaptcha(captchaResult.ImageBase64).Result;
-            var t = captchaResult.Cookies;
 
 
             var captchaWord = recaptcha.GetCapthaResult(id.Substring(3,id.Length -3 ));

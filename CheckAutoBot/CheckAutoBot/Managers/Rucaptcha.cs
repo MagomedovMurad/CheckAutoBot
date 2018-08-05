@@ -44,32 +44,6 @@ namespace CheckAutoBot
 
             return data;
 
-
-            //var url = $"http://rucaptcha.com/in.php?key={apiKey}&method=base64";
-
-            //HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-
-            //request.Method = "POST";
-
-            //using (var writer = new StreamWriter(request.GetRequestStream()))
-            //{
-            //    writer.Write(data);
-            //}
-
-
-            //var response = request.GetResponse();
-            //string responseData;
-
-            //using (Stream stream = response.GetResponseStream())
-            //{
-            //    using (StreamReader reader = new StreamReader(stream))
-            //    {
-            //        responseData = reader.ReadToEnd();
-            //    }
-            //}
-            //response.Close();
-
-            //return responseData;
         }
 
         public string GetCapthaResult(string capthchaId)

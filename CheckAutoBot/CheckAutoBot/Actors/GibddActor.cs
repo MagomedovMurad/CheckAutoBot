@@ -1,20 +1,19 @@
-﻿using System;
+﻿using Akka.Actor;
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 
-namespace CheckAutoBot.Managers
+namespace CheckAutoBot.Actors
 {
-    public class Gibdd
+    public class GibddActor: ReceiveActor
     {
         HttpClient _httpClient;
         HttpClientHandler _handler;
 
-
-        public Gibdd()
+        public GibddActor()
         {
             _handler = new HttpClientHandler();
             _httpClient = new HttpClient(_handler);
@@ -61,23 +60,6 @@ namespace CheckAutoBot.Managers
             return responseContent;
         }
 
-        public void GetDtp()
-        {
-            string dtpUrl = "";
-
-            string stringData = "";
-
-        }
-
-        public void GetWanted()
-        {
-
-        }
-
-        public void GetRestriction()
-        {
-
-        }
 
         public CaptchaResult GetCaptha()
         {
@@ -94,7 +76,7 @@ namespace CheckAutoBot.Managers
 
             HttpResponseMessage response = _httpClient.SendAsync(request).Result;
 
-            IEnumerable<string> headerValues = new List<string>(); 
+            IEnumerable<string> headerValues = new List<string>();
 
             bool jsessionIdIsExist = response.Headers.TryGetValues("Set-Cookie", out headerValues);
 
@@ -115,7 +97,6 @@ namespace CheckAutoBot.Managers
         public string ImageBase64 { get; set; }
 
         public string JsessionId { get; set; }
-             
+
     }
-        
 }

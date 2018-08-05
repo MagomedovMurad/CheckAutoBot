@@ -1,7 +1,9 @@
-﻿using CheckAutoBot.Managers;
+﻿using Akka.Actor;
+using CheckAutoBot.Actors;
+using CheckAutoBot.Managers;
+using CheckAutoBot.Messages;
 using System;
-using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace CheckAutoBot
 {
@@ -9,19 +11,25 @@ namespace CheckAutoBot
     {
         static void Main(string[] args)
         {
-            var gibdd = new Gibdd();
-            var recaptcha = new Rucaptcha();
+            ActorSystem actorSystem = ActorSystem.Create("ActorsSystem");
+            IActorRef serverActor = actorSystem.ActorOf(Props.Create<ServerActor>(), "server");
+            serverActor.Tell(new StartServerMessage());
 
-            var captchaResult = gibdd.GetCaptha();
-            var id = recaptcha.SendImageCaptcha(captchaResult.ImageBase64).Result;
+            Console.ReadLine();
+
+            //var gibdd = new Gibdd();
+            //var recaptcha = new Rucaptcha();
+
+            //var captchaResult = gibdd.GetCaptha();
+            //var id = recaptcha.SendImageCaptcha(captchaResult.ImageBase64).Result;
 
 
-            var captchaWord = recaptcha.GetCapthaResult(id.Substring(3,id.Length -3 ));
+            //var captchaWord = recaptcha.GetCapthaResult(id.Substring(3,id.Length - 3 ));
 
-            gibdd.GetHistory("X9FMXXEEBMCB65023", captchaWord.Substring(3, captchaWord.Length - 3), captchaResult.JsessionId);
+            //var data = gibdd.GetHistory("X9FMXXEEBMCB65023", captchaWord.Substring(3, captchaWord.Length - 3), captchaResult.JsessionId);
 
-
-            Console.ReadKey();
+            //Console.WriteLine(data);
+            //Console.ReadKey();
         }
     }
 }

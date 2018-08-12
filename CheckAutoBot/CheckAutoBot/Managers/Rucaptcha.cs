@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Akka.Serialization;
+using CheckAutoBot.Captcha;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -12,10 +15,13 @@ namespace CheckAutoBot
     {
         private const string apiKey = "a57666df25735811384576da1a50bf36";
 
-        public void SendReCaptcha2(string dataSiteKey, string pageUrl)
+        public CaptchaRequest SendReCaptcha2(string dataSiteKey, string pageUrl)
         {
             var url = $"http://rucaptcha.com/in.php?key={apiKey}&method=userrecaptcha&googlekey={dataSiteKey}&pageurl={pageUrl}&json=1";
             var json = ExecuteRequest(url, "POST");
+            var data = JsonConvert.DeserializeObject<CaptchaRequest>(json);
+
+            return data;
         }
 
         public async Task<string> SendImageCaptcha(string data1)
@@ -46,7 +52,7 @@ namespace CheckAutoBot
 
         }
 
-        public string GetCapthaResult(string capthchaId)
+        public string GetCapthaResult(long capthchaId)
         {
             var url = $"http://rucaptcha.com/res.php?key={apiKey}&action=get&id={capthchaId}";
             var json = ExecuteRequest(url, "GET");

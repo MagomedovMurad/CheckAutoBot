@@ -19,17 +19,11 @@ namespace CheckAutoBot
             //Console.ReadLine();
 
             var gibdd = new Gibdd();
-            var rsa = new Rsa();
             var rucaptcha = new Rucaptcha();
 
             //var captchaRequest = rucaptcha.SendReCaptcha2(Rsa.dataSiteKey, Rsa.osagoVehicleUrl);
             //string captcha = Test(captchaRequest.Id, rucaptcha);
 
-            var data = rsa.GetPolicy("", DateTime.Now, lp: "Р928УТ26");
-
-            var policy = data.Policies[0];
-
-            var data1 = rsa.GetPolicyInfo(policy.Serial, policy.Number, DateTime.Now, "");
 
             //var captchaResult = gibdd.GetCaptcha();
             //var id = recaptcha.SendImageCaptcha(captchaResult.ImageBase64).Result;

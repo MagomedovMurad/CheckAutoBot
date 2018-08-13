@@ -1,4 +1,6 @@
 ﻿//using HtmlAgilityPack;
+using CheckAutoBot.RsaModels;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,20 +20,29 @@ namespace CheckAutoBot.Managers
         public const string osagoVehicleUrl = "https://dkbm-web.autoins.ru/dkbm-web-1.0/osagovehicle.htm";
         public const string dataSiteKey = "6Lf2uycUAAAAALo3u8D10FqNuSpUvUXlfP7BzHOk";
 
-        public string GetPolicy(string captcha, DateTime date, string lp = "", string vin = "", string bodyNumber = "", string chassisNumber = "")
+        public PolicyResponse GetPolicy(string captcha, DateTime date, string lp = "", string vin = "", string bodyNumber = "", string chassisNumber = "")
         {
-            //string encodeLp = HttpUtility.UrlEncode(lp);
             string encodeLp = WebUtility.UrlEncode(lp);
             var stringData = $"vin={vin}&lp={encodeLp}&date={date.Date.ToString("dd.MM.yyyy")}&bodyNumber={bodyNumber}&chassisNumber={chassisNumber}&captcha={captcha}";
+            //string json = ExecuteRequest(stringData, policyUrl);
 
-            return ExecuteRequest(stringData, policyUrl);
+            string json = "{\"bodyNumber\":\"\",\"chassisNumber\":\"\",\"licensePlate\":\"Р928УТ26\",\"vin\":\"\",\"policyUnqId\":null,	\"policyResponseUIItems\":[{\"insCompanyName\":\"ИНГОССТРАХ\",\"policyBsoNumber\":\"0031852791\",\"policyBsoSerial\":\"ХХХ\",\"policyIsRestrict\":\"1\",\"policyUnqId\":\"324402046\"}],\"validCaptcha\":true,\"errorMessage\":null,\"errorId\":0,\"warningMessage\":null}";
+            var data = JsonConvert.DeserializeObject<PolicyResponse>(json);
+            return data;
         }
 
-        public string GetPolicyInfo(string serial, string number, DateTime date, string captcha)
+        public VechicleResponse GetPolicyInfo(string serial, string number, DateTime date, string captcha)
         {
-            var stringData = $"serialOsago={serial}&numberOsago={number}&dateRequest={date.Date.ToString("dd.mm.yyyy")}&captcha={captcha}";
+            string encodeSerial = WebUtility.UrlEncode(serial);
+            var stringData = $"serialOsago={encodeSerial}&numberOsago={number}&dateRequest={date.Date.ToString("dd.MM.yyyy")}&captcha={captcha}";
 
-            return ExecuteRequest(stringData, osagoVehicleUrl);
+            //string json = ExecuteRequest(stringData, osagoVehicleUrl);
+
+            string json = "{\"bodyNumber\":null,\"chassisNumber\":null,\"licensePlate\":\"P928YT26RUS\",\"insurerName\":\"ИНГОССТРАХ\",\"policyStatus\":\"Действует\",\"vin\":\"XTA21150064291647\",\"validCaptcha\":true,\"errorMessage\":null,\"errorId\":0,\"warningMessage\":null}";
+
+            var data = JsonConvert.DeserializeObject<VechicleResponse>(json);
+
+            return data;
         }
 
         private string ExecuteRequest(string stringData, string url)

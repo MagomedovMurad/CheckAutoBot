@@ -3,6 +3,7 @@ using CheckAutoBot.Actors;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Messages;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace CheckAutoBot
@@ -19,13 +20,16 @@ namespace CheckAutoBot
 
             var gibdd = new Gibdd();
             var rsa = new Rsa();
-            var recaptcha = new Rucaptcha();
+            var rucaptcha = new Rucaptcha();
 
-            var captchaRequest = recaptcha.SendReCaptcha2(Rsa.dataSiteKey, Rsa.policyUrl);
-            string captcha = recaptcha.GetCapthaResult(captchaRequest.Id);
+            //var captchaRequest = rucaptcha.SendReCaptcha2(Rsa.dataSiteKey, Rsa.osagoVehicleUrl);
+            //string captcha = Test(captchaRequest.Id, rucaptcha);
 
-            var data = rsa.GetPolicy(captcha.Substring(3, captcha.Length - 3), DateTime.Now, lp: "Р928УТ26");
+            var data = rsa.GetPolicy("", DateTime.Now, lp: "Р928УТ26");
 
+            var policy = data.Policies[0];
+
+            var data1 = rsa.GetPolicyInfo(policy.Serial, policy.Number, DateTime.Now, "");
 
             //var captchaResult = gibdd.GetCaptcha();
             //var id = recaptcha.SendImageCaptcha(captchaResult.ImageBase64).Result;
@@ -40,6 +44,15 @@ namespace CheckAutoBot
 
             Console.WriteLine(data);
             Console.ReadKey();
+        }
+
+        private static string Test(long id, Rucaptcha rucaptcha)
+        {
+            string captcha = rucaptcha.GetCapthaResult(id);
+            if (captcha == "CAPCHA_NOT_READY")
+                return Test(id, rucaptcha);
+            else
+                return captcha;
         }
     }
 }

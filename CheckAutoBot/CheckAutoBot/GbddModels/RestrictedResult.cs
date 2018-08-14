@@ -8,7 +8,7 @@ namespace CheckAutoBot.GbddModels
     public class RestrictedResult
     {
         [JsonProperty("records")]
-        public List<Restricted> Records { get; set; }
+        public List<Restricted> Restricteds { get; set; }
 
         [JsonProperty("count")]
         public string Count { get; set; }

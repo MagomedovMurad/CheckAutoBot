@@ -34,6 +34,9 @@ namespace CheckAutoBot
             //RUMKEK938GV067592 mazda
             //XTA21150064291647 2115
             //XWB3K32EDCA235394 nexia
+            //JMBLYV97W7J004216 залог
+
+
             //var data = gibdd.GetRestriction("XWB3K32EDCA235394", captchaWord.Substring(3, captchaWord.Length - 3), captchaResult.JsessionId);
 
             Console.WriteLine(data);

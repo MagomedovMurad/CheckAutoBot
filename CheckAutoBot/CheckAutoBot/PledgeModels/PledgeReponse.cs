@@ -5,10 +5,10 @@ using System.Text;
 
 namespace CheckAutoBot.PledgeModels
 {
-    public class PledgeResponse
+    public class PledgeReponse
     {
         [JsonProperty("list")]
-        public List<Pledge> Pledges { get; set; }
+        public List<PledgeListItem> Pledges { get; set; }
 
         [JsonProperty("totalPages")]
         public string TotalPages { get; set; }

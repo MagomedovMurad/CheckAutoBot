@@ -12,6 +12,9 @@ namespace CheckAutoBot
     {
         static void Main(string[] args)
         {
+            Random random = new Random();
+            var t = random.NextDouble() * 10000;
+
             //ActorSystem actorSystem = ActorSystem.Create("ActorsSystem");
             //IActorRef serverActor = actorSystem.ActorOf(Props.Create<ServerActor>(), "server");
             //serverActor.Tell(new StartServerMessage());
@@ -39,7 +42,7 @@ namespace CheckAutoBot
 
             //var data = gibdd.GetRestriction("XWB3K32EDCA235394", captchaWord.Substring(3, captchaWord.Length - 3), captchaResult.JsessionId);
 
-            Console.WriteLine(data);
+           // Console.WriteLine(data);
             Console.ReadKey();
         }
 

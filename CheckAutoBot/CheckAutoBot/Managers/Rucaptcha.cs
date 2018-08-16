@@ -1,5 +1,6 @@
 ﻿using Akka.Serialization;
 using CheckAutoBot.Captcha;
+using CheckAutoBot.Managers;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -24,39 +25,41 @@ namespace CheckAutoBot
             return data;
         }
 
-        public async Task<string> SendImageCaptcha(string data1)
+        public CaptchaRequest SendImageCaptcha(string base64)
         {
-            string data;
-            var baseAddress = new Uri("http://rucaptcha.com"); //Базовый адрес 
-            var url = "/in.php"; //Нужная нам страница, на которую пойдет запрос
+            string url = "http://rucaptcha.com/in.php";
 
-            using (var client = new HttpClient { BaseAddress = baseAddress })
-            {
+            var encodedBase64 = WebUtility.UrlEncode(base64);
 
-                var content = new FormUrlEncodedContent(new[] //для удобства можно использовать Dictionary<string, string>. Тогда тело будет ещё короче ["key"] = "YOUR_APIKEY", ["body"] = "BASE64_FILE"
-                {
-                    new KeyValuePair<string, string>("key", $"{apiKey}"),
-                    new KeyValuePair<string, string>("body", $"{data1}"),
-                    new KeyValuePair<string, string>("method", "base64")
-                 }); //Наше тело, которое при помощи FormUrlEncodedContent закодируется в нужное нам "тело".
+            string stringData = $"key={apiKey}&body={encodedBase64}&method=base64&json=1";
+            byte[] data = Encoding.ASCII.GetBytes(stringData);
 
-                var result = await client.PostAsync(url, content); //Отправляем на нужную страницу POST запрос с нашем телом, также тут используется CancellationToken для грамотной отмены async методов.
-                var bytes = await result.Content.ReadAsByteArrayAsync();
-                Encoding encoding = Encoding.GetEncoding("utf-8");
-                data = encoding.GetString(bytes, 0, bytes.Length); //Все эти три строки добавлены тут для того, что бы получать данные в нужной нам кодировке (некоторые сервера к примеру выдают в неверной кодировке и может выдать ошибку). Вообще можно все 3 строки заменить на одну:
-                                                                   //data = await result.Content.ReadAsStringAsync(); Тогда кодировка будет той, что выдает сервер.
-                result.EnsureSuccessStatusCode();
-            }
+            WebHeaderCollection headers = new WebHeaderCollection();
+            headers.Add(HttpRequestHeader.Host, "rucaptcha.com");
+            headers.Add(HttpRequestHeader.Connection, "Keep-Alive");
+            headers.Add(HttpRequestHeader.ContentLength, data.Length.ToString());
+            headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
 
-            return data;
+            HttpWebRequest request = WebRequest.CreateHttp(url);
+            request.Method = "POST";
+            request.Headers = headers;
 
+            AddRequestContent(request, data);
+
+            WebResponse response = request.GetResponse();
+            var json = ResponseToString(response);
+            response.Close();
+
+            return JsonConvert.DeserializeObject<CaptchaRequest>(json);
         }
 
-        public string GetCapthaResult(long capthchaId)
+        public CaptchaAnswer GetCapthaResult(long capthchaId)
         {
-            var url = $"http://rucaptcha.com/res.php?key={apiKey}&action=get&id={capthchaId}";
+            var url = $"http://rucaptcha.com/res.php?key={apiKey}&action=get&id={capthchaId}&json=1";
             var json = ExecuteRequest(url, "GET");
-            return json;
+
+            var result = JsonConvert.DeserializeObject<CaptchaAnswer>(json);
+            return result;
         }
 
         private string ExecuteRequest(string url, string requestMethod)
@@ -75,6 +78,23 @@ namespace CheckAutoBot
             }
             response.Close();
             return responseData;
+        }
+
+        private void AddRequestContent(HttpWebRequest request, byte[] data)
+        {
+            using (Stream requestStream = request.GetRequestStream())
+            {
+                requestStream.Write(data, 0, data.Length);
+            }
+        }
+
+        private string ResponseToString(WebResponse response)
+        {
+            using (Stream stream = response.GetResponseStream())
+            using (StreamReader sr = new StreamReader(stream))
+            {
+                return sr.ReadToEnd();
+            }
         }
     }
 }

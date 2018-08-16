@@ -19,7 +19,7 @@ namespace CheckAutoBot
         static void Main(string[] args)
         {
             var rucaptcha = new Rucaptcha();
-            var fnp = new Fnp1();
+            var fnp = new ReestrZalogov();
 
 
             var captchaResult = fnp.GetCaptcha();

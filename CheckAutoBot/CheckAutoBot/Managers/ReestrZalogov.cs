@@ -6,7 +6,7 @@ using System.Text;
 
 namespace CheckAutoBot.Managers
 {
-    public class Fnp1
+    public class ReestrZalogov
     {
         public string GetPledges(string vin, string captcha, string jsessionId)
         {

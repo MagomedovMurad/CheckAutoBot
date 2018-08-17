@@ -6,6 +6,9 @@ namespace CheckAutoBot.Managers
 {
     public class ProverkaTO
     {
-
+        public void GetDiagnosticCard()
+        {
+            
+        }
     }
 }

@@ -19,14 +19,17 @@ namespace CheckAutoBot
         static void Main(string[] args)
         {
             var rucaptcha = new Rucaptcha();
-            var fnp = new ReestrZalogov();
+            var guvm = new Guvm();
+            var t = guvm.GetCaptcha();
 
 
-            var captchaResult = fnp.GetCaptcha();
-            var captchaRequest = rucaptcha.SendImageCaptcha(captchaResult.ImageBase64);
+            //var fnp = new ReestrZalogov();
 
-            var captchaAnswer = Test(captchaRequest.Id, rucaptcha);
-            fnp.GetPledges("JMBLYV97W7J004216", captchaAnswer.Answer, captchaResult.JsessionId);
+            //var captchaResult = fnp.GetCaptcha();
+            //var captchaRequest = rucaptcha.SendImageCaptcha(captchaResult.ImageBase64);
+
+            //var captchaAnswer = Test(captchaRequest.Id, rucaptcha);
+            //fnp.GetPledges("JMBLYV97W7J004216", captchaAnswer.Answer, captchaResult.JsessionId);
 
             Console.ReadKey();
         }

@@ -12,7 +12,7 @@ namespace CheckAutoBot.Messages
         public VkEventType EventType { get; set; }
 
         [JsonProperty("object")]
-        public object Object { get; set; } 
+        public string JsonObject { get; set; } 
 
         [JsonProperty("group_id")]
         public int GroupId { get; set; }

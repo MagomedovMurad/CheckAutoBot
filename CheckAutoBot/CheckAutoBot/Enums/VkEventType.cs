@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace CheckAutoBot.Enums
@@ -10,229 +11,229 @@ namespace CheckAutoBot.Enums
         /// <summary>
         /// Входящее сообщение
         /// </summary>
-        [JsonProperty("message_new")]
+        [EnumMember(Value = "message_new")]
         NewMessage,
 
         /// <summary>
         /// Новое исходящее сообщение
         /// </summary>
-        [JsonProperty("message_reply")]
+        [EnumMember(Value = "message_reply")]
         ReplyMessage,
 
         /// <summary>
         /// Редактирование сообщения
         /// </summary>
-        [JsonProperty("message_edit")]
+        [EnumMember(Value = "message_edit")]
         EditMessage,
 
         /// <summary>
         /// Подписка на сообщения от сообщества
         /// </summary>
-        [JsonProperty("message_allow")]
+        [EnumMember(Value = "message_allow")]
         AllowMessage,
 
         /// <summary>
         /// Новый запрет сообщений от сообщества
         /// </summary>
-        [JsonProperty("message_deny")]
+        [EnumMember(Value = "message_deny")]
         DenyMessage,
 
         /// <summary>
         /// Добавление фотографии
         /// </summary>
-        [JsonProperty("photo_new")]
+        [EnumMember(Value = "photo_new")]
         NewFoto,
 
         /// <summary>
         /// Добавление комментария к фотографии
         /// </summary>
-        [JsonProperty("photo_comment_new")]
+        [EnumMember(Value = "photo_comment_new")]
         NewPhotoComment,
 
         /// <summary>
         /// Редактирование комментария к фотографии
         /// </summary>
-        [JsonProperty("photo_comment_edit")]
+        [EnumMember(Value = "photo_comment_edit")]
         EditPhotoComment,
 
         /// <summary>
         /// Восстановление комментария к фотографии
         /// </summary>
-        [JsonProperty("photo_comment_restore")]
+        [EnumMember(Value = "photo_comment_restore")]
         RestorePhotoComment,
 
         /// <summary>
         /// Удаление комментария к фотографии
         /// </summary>
-        [JsonProperty("photo_comment_delete")]
+        [EnumMember(Value = "photo_comment_delete")]
         DeletePhotoComment,
 
         /// <summary>
         /// Добавление аудио
         /// </summary>
-        [JsonProperty("audio_new")]
+        [EnumMember(Value = "audio_new")]
         NewAudio,
 
         /// <summary>
         /// Добавление видео
         /// </summary>
-        [JsonProperty("video_new")]
+        [EnumMember(Value = "video_new")]
         NewVideo,
 
         /// <summary>
         /// Комментарий к видео
         /// </summary>
-        [JsonProperty("video_comment_new")]
+        [EnumMember(Value = "video_comment_new")]
         NewVideoComment,
 
         /// <summary>
         /// Редактирование комментария к видео
         /// </summary>
-        [JsonProperty("video_comment_edit")]
+        [EnumMember(Value = "video_comment_edit")]
         EditVideoComment,
 
         /// <summary>
         /// Восстановление комментария к видео
         /// </summary>
-        [JsonProperty("video_comment_restore")]
+        [EnumMember(Value = "video_comment_restore")]
         RestoreVideoComment,
 
         /// <summary>
         /// Удаление комментария к видео
         /// </summary>
-        [JsonProperty("video_comment_delete")]
+        [EnumMember(Value = "video_comment_delete")]
         DeleteVideoComment,
 
         /// <summary>
         /// Запись на стене
         /// </summary>
-        [JsonProperty("wall_post_new")]
+        [EnumMember(Value = "wall_post_new")]
         NewWallPost,
 
         /// <summary>
         /// Репост записи из сообщества
         /// </summary>
-        [JsonProperty("wall_repost")]
+        [EnumMember(Value = "wall_repost")]
         WallRepost,
 
         /// <summary>
         /// Добавление комментария на стене
         /// </summary>
-        [JsonProperty("wall_reply_new")]
+        [EnumMember(Value = "wall_reply_new")]
         NewWallReply,
 
         /// <summary>
         /// Редактирование комментария на стене 
         /// </summary>
-        [JsonProperty("wall_reply_edit")]
+        [EnumMember(Value = "wall_reply_edit")]
         EditWallReply,
 
         /// <summary>
         /// Восстановление комментария на стене
         /// </summary>
-        [JsonProperty("wall_reply_restore")]
+        [EnumMember(Value = "wall_reply_restore")]
         RestoreWallReply,
 
         /// <summary>
         /// Удаление комментария на стене
         /// </summary>
-        [JsonProperty("wall_reply_delete")]
+        [EnumMember(Value = "wall_reply_delete")]
         DeleteWallReply,
 
         /// <summary>
         /// Создание комментария в обсуждении
         /// </summary>
-        [JsonProperty("board_post_new")]
+        [EnumMember(Value = "board_post_new")]
         NewBoardPost,
 
         /// <summary>
         /// Редактирование комментария
         /// </summary>
-        [JsonProperty("board_post_edit")]
+        [EnumMember(Value = "board_post_edit")]
         EditBoardPost,
 
         /// <summary>
         /// Восстановление комментария
         /// </summary>
-        [JsonProperty("board_post_restore")]
+        [EnumMember(Value = "board_post_restore")]
         RestoreBoardPost,
 
         /// <summary>
         /// Удаление комментария в обсуждении
         /// </summary>
-        [JsonProperty("board_post_delete")]
+        [EnumMember(Value = "board_post_delete")]
         DeleteBoardPost,
 
         /// <summary>
         /// Новый комментарий к товару
         /// </summary>
-        [JsonProperty("market_comment_new ")]
+        [EnumMember(Value = "market_comment_new ")]
         NewMarketComment,
 
         /// <summary>
         /// Редактирование комментария к товару
         /// </summary>
-        [JsonProperty("market_comment_edit")]
+        [EnumMember(Value = "market_comment_edit")]
         EditMarketComment,
 
         /// <summary>
         /// Восстановление комментария к товару
         /// </summary>
-        [JsonProperty("market_comment_restore")]
+        [EnumMember(Value = "market_comment_restore")]
         RestoreMarketComment,
 
         /// <summary>
         /// Удаление комментария к товару
         /// </summary>
-        [JsonProperty("market_comment_delete")]
+        [EnumMember(Value = "market_comment_delete")]
         DeleteMarketComment,
 
         /// <summary>
         /// Удаление участника из сообщества
         /// </summary>
-        [JsonProperty("group_leave")]
+        [EnumMember(Value = "group_leave")]
         GroupLeave,
 
         /// <summary>
         /// Добавление участника или заявки на вступление в сообщество
         /// </summary>
-        [JsonProperty("group_join")]
+        [EnumMember(Value = "group_join")]
         GroupJoin,
 
         /// <summary>
         /// Добавление пользователя в чёрный список
         /// </summary>
-        [JsonProperty("user_block")]
+        [EnumMember(Value = "user_block")]
         BlockUser,
 
         /// <summary>
         /// Удаление пользователя из чёрного списка
         /// </summary>
-        [JsonProperty("user_unblock")]
+        [EnumMember(Value = "user_unblock")]
         UnblockUser,
 
         /// <summary>
         /// Добавление голоса в публичном опросе
         /// </summary>
-        [JsonProperty("poll_vote_new")]
+        [EnumMember(Value = "poll_vote_new")]
         NewPollVote,
 
         /// <summary>
         /// Редактирование списка руководителей
         /// </summary>
-        [JsonProperty("group_officers_edit")]
+        [EnumMember(Value = "group_officers_edit")]
         EditGroupOfficers,
 
         /// <summary>
         /// Изменение настроек сообщества
         /// </summary>
-        [JsonProperty("group_change_settings")]
+        [EnumMember(Value = "group_change_settings")]
         ChangeGroupSettings,
 
         /// <summary>
         /// Изменение главного фото
         /// </summary>
-        [JsonProperty("group_change_photo")]
+        [EnumMember(Value = "group_change_photo")]
         ChangeGroupPhoto
 
     }

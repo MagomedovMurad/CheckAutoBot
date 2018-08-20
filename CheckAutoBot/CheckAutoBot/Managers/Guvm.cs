@@ -9,8 +9,6 @@ namespace CheckAutoBot.Managers
     public class Guvm
     {
 
-       
-
         public CaptchaResult GetCaptcha()
         {
             var captchaUrl = "http://xn--b1afk4ade4e.xn--b1ab2a0a.xn--b1aew.xn--p1ai/services/captcha.jpg";

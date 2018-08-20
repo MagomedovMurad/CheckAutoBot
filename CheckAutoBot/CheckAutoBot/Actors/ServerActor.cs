@@ -23,16 +23,15 @@ namespace CheckAutoBot.Actors
         private async void Start()
         {
             _httpListener = new HttpListener();
-            _httpListener.Prefixes.Add("http://127.0.0.1:80/bot/captha/");
-            _httpListener.Prefixes.Add("http://127.0.0.1:80/bot/vk/");
-            _httpListener.Prefixes.Add("http://127.0.0.1:80/test/");
+            _httpListener.Prefixes.Add("http://192.168.0.102:8080/bot/captha/");
+            _httpListener.Prefixes.Add("http://192.168.0.102:8082/bot/vk/");
+            _httpListener.Prefixes.Add("http://192.168.0.102:8082/test/");
             _httpListener.Start();
 
             while (true)
             {
                 HttpListenerContext context = await _httpListener.GetContextAsync();
                 HttpListenerRequest request = context.Request;
-
 
                 if (request.HttpMethod == "POST" && request.RawUrl == "/bot/captha/")
                 {
@@ -42,14 +41,13 @@ namespace CheckAutoBot.Actors
                     context.Response.StatusCode = 200;
                     context.Response.Close();
                 }
-                else if (request.HttpMethod == "POST" && request.RawUrl == "/bot/vk/")
+                else if (request.HttpMethod == "POST" && request.RawUrl == "/bot/vk")
                 {
                     var response = GetStreamData(request.InputStream, request.ContentEncoding);
-                    var message = JsonConvert.DeserializeObject<GroupEventMessage>(response);
-
                     context.Response.StatusCode = 200;
                     context.Response.Close();
 
+                    var message = JsonConvert.DeserializeObject<GroupEventMessage>(response);
                 }
                 else if (request.HttpMethod == "GET" && request.RawUrl == "/test")
                 {

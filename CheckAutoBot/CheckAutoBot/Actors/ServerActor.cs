@@ -47,11 +47,11 @@ namespace CheckAutoBot.Actors
                     context.Response.StatusCode = 200;
                     context.Response.Close();
 
-                    var message = JsonConvert.DeserializeObject<GroupEventMessage>(response);
+                   // var message = JsonConvert.DeserializeObject<GroupEventMessage>(response);
                 }
                 else if (request.HttpMethod == "GET" && request.RawUrl == "/test")
                 {
-                    byte[] buffer = Encoding.UTF8.GetBytes("Server working");
+                    byte[] buffer = Encoding.UTF8.GetBytes("Hello, Marat");
                     context.Response.Close(buffer, false);
                 }
                 else

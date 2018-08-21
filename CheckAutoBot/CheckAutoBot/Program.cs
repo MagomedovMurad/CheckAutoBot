@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using VkApi;
 using VkApi.MessagesModels;
 
 namespace CheckAutoBot
@@ -21,38 +22,41 @@ namespace CheckAutoBot
         //JMBLYV97W7J004216 залог
         static void Main(string[] args)
         {
-            ActorSystem actorSystem = ActorSystem.Create("TestSystem");
-            var server = actorSystem.ActorOf(Props.Create(typeof(ServerActor)), "ServerActor");
-            server.Tell(new StartServerMessage());
+            var accessToken = "455d8d726b53a60bcee02cc228f464a67e5df040a65ea61f1561e6e87d6fc4410fae5a38c062f3d734444";
+            Photos.GetMessagesUploadServer("192287910", accessToken);
 
-            var action = new ButtonAction()
-            {
-                Lable = "Test key1",
-                Type = ButtonActionType.Text,
-                Payload = "{\"button\": \"2\"}"
-            };
+            //ActorSystem actorSystem = ActorSystem.Create("TestSystem");
+            //var server = actorSystem.ActorOf(Props.Create(typeof(ServerActor)), "ServerActor");
+            //server.Tell(new StartServerMessage());
 
-            var button = new Button()
-            {
-                Action = action,
-                Color = ButtonColor.Positive
-            };
+            //var action = new ButtonAction()
+            //{
+            //    Lable = "Test key1",  
+            //    Type = ButtonActionType.Text,
+            //    Payload = "{\"button\": \"2\"}"
+            //};
 
-            var keyboard = new Keyboard()
-            {
-                OneTime = true,
-                Buttons = new[] { new[] { button } }
-            };
+            //var button = new Button()
+            //{
+            //    Action = action,
+            //    Color = ButtonColor.Positive
+            //};
 
-            var test = new SendMessageParams()
-            {
-                PeerId = 102769356,
-                Message = "Test message",
-                Keyboard = keyboard,
-                AccessToken = "a53a17f1361887ba76efdaa4b8a156f2d604e0f96a92dc0c821ebe3b763e80d31a41e01ee27bbd77c7302"
-            };
+            //var keyboard = new Keyboard()
+            //{
+            //    OneTime = true,
+            //    Buttons = new[] { new[] { button } }
+            //};
 
-            VkApi.Messages.Send(test);
+            //var test = new SendMessageParams()
+            //{
+            //    PeerId = 102769356,
+            //    Message = "Test message",
+            //    Keyboard = keyboard,
+            //    AccessToken = "a53a17f1361887ba76efdaa4b8a156f2d604e0f96a92dc0c821ebe3b763e80d31a41e01ee27bbd77c7302"
+            //};
+
+            //VkApi.Messages.Send(test);
 
             //var rucaptcha = new Rucaptcha();
             //var guvm = new Guvm();

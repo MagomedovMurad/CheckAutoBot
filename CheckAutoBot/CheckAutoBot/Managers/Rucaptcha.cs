@@ -1,5 +1,6 @@
 ﻿using Akka.Serialization;
 using CheckAutoBot.Captcha;
+using CheckAutoBot.Infrastructure;
 using CheckAutoBot.Managers;
 using Newtonsoft.Json;
 using System;
@@ -47,7 +48,7 @@ namespace CheckAutoBot
             AddRequestContent(request, data);
 
             WebResponse response = request.GetResponse();
-            var json = ResponseToString(response);
+            var json = response.ReadDataAsString();
             response.Close();
 
             return JsonConvert.DeserializeObject<CaptchaRequest>(json);
@@ -88,13 +89,5 @@ namespace CheckAutoBot
             }
         }
 
-        private string ResponseToString(WebResponse response)
-        {
-            using (Stream stream = response.GetResponseStream())
-            using (StreamReader sr = new StreamReader(stream))
-            {
-                return sr.ReadToEnd();
-            }
-        }
     }
 }

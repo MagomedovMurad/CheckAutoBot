@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CheckAutoBot.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -70,7 +71,7 @@ namespace CheckAutoBot.Managers
             AddRequestContent(request, data);
 
             WebResponse response = request.GetResponse();
-            var json = ResponseToString(response);
+            var json = response.ReadDataAsString();
             response.Close();
 
             return json;
@@ -113,15 +114,6 @@ namespace CheckAutoBot.Managers
             {
                 stream.CopyTo(ms);
                 return ms.ToArray();
-            }
-        }
-
-        private string ResponseToString(WebResponse response)
-        {
-            using (Stream stream = response.GetResponseStream())
-            using (StreamReader sr = new StreamReader(stream))
-            {
-                return sr.ReadToEnd();
             }
         }
 

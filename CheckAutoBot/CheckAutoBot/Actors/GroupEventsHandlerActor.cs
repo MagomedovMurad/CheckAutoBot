@@ -1,6 +1,6 @@
 ﻿using Akka.Actor;
-using CheckAutoBot.CallbackObjects;
 using CheckAutoBot.Messages;
+using CheckAutoBot.Vk.Api.MessagesModels;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

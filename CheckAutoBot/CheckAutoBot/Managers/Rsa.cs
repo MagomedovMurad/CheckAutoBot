@@ -1,4 +1,5 @@
 ﻿//using HtmlAgilityPack;
+using CheckAutoBot.Infrastructure;
 using CheckAutoBot.RsaModels;
 using Newtonsoft.Json;
 using System;
@@ -71,19 +72,10 @@ namespace CheckAutoBot.Managers
             AddRequestContent(request, data);
 
             var response = request.GetResponse();
-            var json = ResponseToString(response);
+            var json = response.ReadDataAsString();
             response.Close();
 
             return json;
-        }
-
-        private string ResponseToString(WebResponse response)
-        {
-            using (Stream stream = response.GetResponseStream())
-            using (StreamReader sr = new StreamReader(stream))
-            {
-                return sr.ReadToEnd();
-            }
         }
 
         private void AddRequestContent(HttpWebRequest request, byte[] data)

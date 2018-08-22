@@ -1,18 +1,20 @@
 ﻿using Akka.Actor;
 using CheckAutoBot.Actors;
 using CheckAutoBot.Captcha;
+using CheckAutoBot.Infrastructure;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Messages;
+using CheckAutoBot.Vk.Api;
+using CheckAutoBot.Vk.Api.MessagesModels;
+using CheckAutoBot.Vk.Api.PhotosModels;
 using Newtonsoft.Json;
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using VkApi;
-using VkApi.MessagesModels;
-using VkApi.PhotosModels;
-using VkApi.Utils;
 
 namespace CheckAutoBot
 {
@@ -25,30 +27,32 @@ namespace CheckAutoBot
         static void Main(string[] args)
         {
             var accessToken = "455d8d726b53a60bcee02cc228f464a67e5df040a65ea61f1561e6e87d6fc4410fae5a38c062f3d734444";
-            var json = Photos.GetMessagesUploadServer("192287910", accessToken);
 
-            var getUploadServerResponse = JsonConvert.DeserializeObject<ResponseEnvelope<GetUploadServerResponse>>(json);
-
-           
             HttpWebRequest request = WebRequest.CreateHttp("http://check.gibdd.ru/proxy/check/auto/images/cache/0108.png");
             request.Method = "GET";
             WebResponse response = request.GetResponse();
-            var responseData = RequestHelper.ResponseToByteArray(response);
-            var base64 = Convert.ToBase64String(responseData);
+            var photoBinaryData = response.ReadDataAsByteArray();
             response.Close();
 
-            var photo = $"photo={base64}";
-            byte[] data = Encoding.ASCII.GetBytes(photo);
+            var serverData = Photos.GetMessagesUploadServer("192287910", accessToken);
 
+            var photoData = Photos.UploadPhotoToServer(serverData.UploadUrl, photoBinaryData);
 
-            HttpWebRequest request1 = WebRequest.CreateHttp(getUploadServerResponse.Envelope.UploadUrl);
-            request1.Method = "POST";
-            RequestHelper.AddRequestContent(request1, data);
+            var photo = Photos.SaveMessagesPhoto(photoData, accessToken);
 
-            WebResponse response1 = request1.GetResponse();
-            var responseData1 = RequestHelper.ResponseToString(response1);
+            var messageParams = new SendMessageParams()
+            {
+                PeerId = 102769356,
+                Message = "Test message",
+                Attachments = $"photo{photo.OwnerId}_{photo.Id}",
+                AccessToken = accessToken
+            };
+
+            CheckAutoBot.Vk.Api.Messages.Send(messageParams);
 
             Console.ReadKey();
+
+
 
 
             //RequestHelper.AddRequestContent(request, data);

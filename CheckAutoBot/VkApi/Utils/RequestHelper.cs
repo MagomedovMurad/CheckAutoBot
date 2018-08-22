@@ -24,5 +24,15 @@ namespace VkApi.Utils
                 return sr.ReadToEnd();
             }
         }
+
+        public static byte[] ResponseToByteArray(WebResponse response)
+        {
+            using (Stream stream = response.GetResponseStream())
+            using (MemoryStream ms = new MemoryStream())
+            {
+                stream.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
     }
 }

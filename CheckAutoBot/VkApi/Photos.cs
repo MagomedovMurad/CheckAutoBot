@@ -9,7 +9,7 @@ namespace VkApi
 {
     public class Photos
     {
-        public static void GetMessagesUploadServer(string peerId, string accessToken)
+        public static string GetMessagesUploadServer(string peerId, string accessToken)
         {
             string url = $"https://api.vk.com/method/photos.getMessagesUploadServer";
             string stringData = $"peer_id={peerId}&access_token={accessToken}&v=5.80";
@@ -21,9 +21,10 @@ namespace VkApi
             RequestHelper.AddRequestContent(request, data);
 
             WebResponse response = request.GetResponse();
-            var json = RequestHelper.ResponseToString(response);
+            var responseData = RequestHelper.ResponseToString(response);
             response.Close();
 
+            return responseData;
         }
     }
 }

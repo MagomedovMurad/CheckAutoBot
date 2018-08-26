@@ -1,6 +1,8 @@
 ﻿using Akka.Actor;
 using CheckAutoBot.Messages;
+using CheckAutoBot.Vk.Api.MessagesModels;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +12,7 @@ using System.Text;
 namespace CheckAutoBot.Actors
 {
     public class ServerActor: ReceiveActor
-    {
+    { 
         HttpListener _httpListener;
 
         public ServerActor()
@@ -22,9 +24,9 @@ namespace CheckAutoBot.Actors
         private async void Start()
         {
             _httpListener = new HttpListener();
-            _httpListener.Prefixes.Add("http://192.168.0.102:8080/bot/captha/");
-            _httpListener.Prefixes.Add("http://192.168.0.102:8082/bot/vk/");
-            _httpListener.Prefixes.Add("http://192.168.0.102:8082/test/");
+            _httpListener.Prefixes.Add("http://192.168.0.103:8080/bot/captha/");
+            _httpListener.Prefixes.Add("http://192.168.0.103:8082/bot/vk/");
+            _httpListener.Prefixes.Add("http://192.168.0.103:8082/test/");
             _httpListener.Start();
 
             while (true)
@@ -46,7 +48,7 @@ namespace CheckAutoBot.Actors
                     context.Response.StatusCode = 200;
                     context.Response.Close();
 
-                   // var message = JsonConvert.DeserializeObject<GroupEventMessage>(response);
+                    VKMessagesHandler(response);
                 }
                 else if (request.HttpMethod == "GET" && request.RawUrl == "/test")
                 {
@@ -64,6 +66,10 @@ namespace CheckAutoBot.Actors
         private void Stop()
         {
 
+        }
+
+        private void VKMessagesHandler(string json)
+        {
         }
 
         private string GetStreamData(Stream stream, Encoding encoding)

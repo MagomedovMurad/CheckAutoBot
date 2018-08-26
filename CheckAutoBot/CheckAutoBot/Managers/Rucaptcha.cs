@@ -45,7 +45,7 @@ namespace CheckAutoBot
             request.Method = "POST";
             request.Headers = headers;
 
-            AddRequestContent(request, data);
+            request.AddContent(data);
 
             WebResponse response = request.GetResponse();
             var json = response.ReadDataAsString();
@@ -79,14 +79,6 @@ namespace CheckAutoBot
             }
             response.Close();
             return responseData;
-        }
-
-        private void AddRequestContent(HttpWebRequest request, byte[] data)
-        {
-            using (Stream requestStream = request.GetRequestStream())
-            {
-                requestStream.Write(data, 0, data.Length);
-            }
         }
 
     }

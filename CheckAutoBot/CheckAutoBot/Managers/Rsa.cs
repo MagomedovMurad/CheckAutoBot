@@ -69,7 +69,7 @@ namespace CheckAutoBot.Managers
             request.Method = "POST";
             request.Headers = webRequestCollection;
 
-            AddRequestContent(request, data);
+            request.AddContent(data);
 
             var response = request.GetResponse();
             var json = response.ReadDataAsString();
@@ -77,15 +77,6 @@ namespace CheckAutoBot.Managers
 
             return json;
         }
-
-        private void AddRequestContent(HttpWebRequest request, byte[] data)
-        {
-            using (Stream requestStream = request.GetRequestStream())
-            {
-                requestStream.Write(data, 0, data.Length);
-            }
-        }
-
 
         //public string GetDataSiteKey(string url)
         //{

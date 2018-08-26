@@ -17,6 +17,9 @@ namespace CheckAutoBot.Models
         /// </summary>
         public int UserId { get; set; }
 
+        /// <summary>
+        /// Идентификатор сообщения
+        /// </summary>
         public int MessageId { get; set; }
 
         /// <summary>

@@ -35,6 +35,19 @@ namespace CheckAutoBot.Managers
             return ExecuteRequest(vin, captcha, jsessionId, "restrict", "restricted");
         }
 
+        public byte[] GetIncidentImage(string[] damagePoints)
+        {
+            var strDamagePoints = string.Join("", damagePoints);
+
+            HttpWebRequest request = WebRequest.CreateHttp("http://check.gibdd.ru/proxy/check/auto/images/cache/{strDamagePoints}.png");
+            request.Method = "GET";
+            WebResponse response = request.GetResponse();
+            var photoBinaryData = response.ReadDataAsByteArray();
+            response.Close();
+
+            return photoBinaryData;
+        }
+
         private string ExecuteRequest(string vin, string captcha, string jsessionId, string path, string checkType)
         {
             string url = $"https://xn--b1afk4ade.xn--90adear.xn--p1ai/proxy/check/auto/{path}";
@@ -68,7 +81,7 @@ namespace CheckAutoBot.Managers
             request.Headers = headers;
             request.CookieContainer = cookieContainer;
 
-            AddRequestContent(request, data);
+            request.AddContent(data);
 
             WebResponse response = request.GetResponse();
             var json = response.ReadDataAsString();
@@ -101,29 +114,12 @@ namespace CheckAutoBot.Managers
             string value = elements[0];
             string jsessionId = value.Substring(11, value.Length - 11);
 
-            byte[] bytes = ResponseToByteArray(response);
+            byte[] bytes = response.ReadDataAsByteArray();
             var base64 = Convert.ToBase64String(bytes);
 
             return new CaptchaResult() { JsessionId = jsessionId, ImageBase64 = base64 };
         }
 
-        private byte[] ResponseToByteArray(WebResponse response)
-        {
-            using (Stream stream = response.GetResponseStream())
-            using (MemoryStream ms = new MemoryStream())
-            {
-                stream.CopyTo(ms);
-                return ms.ToArray();
-            }
-        }
-
-        private void AddRequestContent(HttpWebRequest request, byte[] data)
-        {
-            using (Stream requestStream = request.GetRequestStream())
-            {
-                requestStream.Write(data, 0, data.Length);
-            }
-        }
     }
 
     public class CaptchaResult

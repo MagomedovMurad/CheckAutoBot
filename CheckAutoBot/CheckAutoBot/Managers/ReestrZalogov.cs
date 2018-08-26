@@ -13,7 +13,7 @@ namespace CheckAutoBot.Managers
         {
             string url = $"https://www.reestr-zalogov.ru/search/endpoint";
 
-            string stringData = $"VIN={vin}&formName=vehicle-form&token={captcha}&uuid={Guid.NewGuid()}"; //5ecd9f9a-3331-454d-9f0a-e57c120f3c42";
+            string stringData = $"VIN={vin}&formName=vehicle-form&token={captcha}&uuid={Guid.NewGuid()}"; 
             byte[] data = Encoding.ASCII.GetBytes(stringData);
 
             #region Headers
@@ -44,7 +44,7 @@ namespace CheckAutoBot.Managers
             request.Headers = headers;
             request.CookieContainer = cookieContainer;
 
-            AddRequestContent(request, data);
+            request.AddContent(data);
 
             WebResponse response = request.GetResponse();
             var json = response.ReadDataAsString();
@@ -80,28 +80,10 @@ namespace CheckAutoBot.Managers
             string value = elements[0];
             string jsessionId = value.Substring(11, value.Length - 11);
 
-            byte[] bytes = ResponseToByteArray(response);
+            byte[] bytes = response.ReadDataAsByteArray();
             var base64 = Convert.ToBase64String(bytes);
 
             return new CaptchaResult() { JsessionId = jsessionId, ImageBase64 = base64 };
-        }
-
-        private byte[] ResponseToByteArray(WebResponse response)
-        {
-            using (Stream stream = response.GetResponseStream())
-            using (MemoryStream ms = new MemoryStream())
-            {
-                stream.CopyTo(ms);
-                return ms.ToArray();
-            }
-        }
-
-        private void AddRequestContent(HttpWebRequest request, byte[] data)
-        {
-            using (Stream requestStream = request.GetRequestStream())
-            {
-                requestStream.Write(data, 0, data.Length);
-            }
         }
 
     }

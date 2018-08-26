@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CheckAutoBot.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -8,7 +9,6 @@ namespace CheckAutoBot.Managers
 {
     public class Guvm
     {
-
         public CaptchaResult GetCaptcha()
         {
             var captchaUrl = "http://xn--b1afk4ade4e.xn--b1ab2a0a.xn--b1aew.xn--p1ai/services/captcha.jpg";
@@ -33,21 +33,12 @@ namespace CheckAutoBot.Managers
             string value = elements[0];
             string jsessionId = value.Substring(11, value.Length - 11);
 
-            byte[] bytes = ResponseToByteArray(response);
+            byte[] bytes = response.ReadDataAsByteArray();
             var base64 = Convert.ToBase64String(bytes);
 
             return new CaptchaResult() { JsessionId = jsessionId, ImageBase64 = base64 };
 
         }
 
-        private byte[] ResponseToByteArray(WebResponse response)
-        {
-            using (Stream stream = response.GetResponseStream())
-            using (MemoryStream ms = new MemoryStream())
-            {
-                stream.CopyTo(ms);
-                return ms.ToArray();
-            }
-        }
     }
 }

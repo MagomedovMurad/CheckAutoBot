@@ -26,34 +26,25 @@ namespace CheckAutoBot
         //JMBLYV97W7J004216 залог
         static void Main(string[] args)
         {
-            var accessToken = "455d8d726b53a60bcee02cc228f464a67e5df040a65ea61f1561e6e87d6fc4410fae5a38c062f3d734444";
+            //  var accessToken = "455d8d726b53a60bcee02cc228f464a67e5df040a65ea61f1561e6e87d6fc4410fae5a38c062f3d734444";
 
-            HttpWebRequest request = WebRequest.CreateHttp("http://check.gibdd.ru/proxy/check/auto/images/cache/0108.png");
-            request.Method = "GET";
-            WebResponse response = request.GetResponse();
-            var photoBinaryData = response.ReadDataAsByteArray();
-            response.Close();
+            ////  var photoBinaryData = response.ReadDataAsByteArray();
 
-            var serverData = Photos.GetMessagesUploadServer("192287910", accessToken);
+            //  var serverData = Photos.GetMessagesUploadServer("192287910", accessToken);
 
-            var photoData = Photos.UploadPhotoToServer(serverData.UploadUrl, photoBinaryData);
+            //  var photoData = Photos.UploadPhotoToServer(serverData.UploadUrl, photoBinaryData);
 
-            var photo = Photos.SaveMessagesPhoto(photoData, accessToken);
+            //  var photo = Photos.SaveMessagesPhoto(photoData, accessToken);
 
-            var messageParams = new SendMessageParams()
-            {
-                PeerId = 102769356,
-                Message = "Test message",
-                Attachments = $"photo{photo.OwnerId}_{photo.Id}",
-                AccessToken = accessToken
-            };
+            //  var messageParams = new SendMessageParams()
+            //  {
+            //      PeerId = 102769356,
+            //      Message = "Test message",
+            //      Attachments = $"photo{photo.OwnerId}_{photo.Id}",
+            //      AccessToken = accessToken
+            //  };
 
-            CheckAutoBot.Vk.Api.Messages.Send(messageParams);
-
-            Console.ReadKey();
-
-
-
+            //  Vk.Api.Messages.Send(messageParams);
 
             //RequestHelper.AddRequestContent(request, data);
 
@@ -62,9 +53,9 @@ namespace CheckAutoBot
             //response.Close();
 
 
-            //ActorSystem actorSystem = ActorSystem.Create("TestSystem");
-            //var server = actorSystem.ActorOf(Props.Create(typeof(ServerActor)), "ServerActor");
-            //server.Tell(new StartServerMessage());
+            ActorSystem actorSystem = ActorSystem.Create("TestSystem");
+            var server = actorSystem.ActorOf(Props.Create(typeof(ServerActor)), "ServerActor");
+            server.Tell(new StartServerMessage());
 
             //var action = new ButtonAction()
             //{

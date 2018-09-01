@@ -43,9 +43,9 @@ namespace CheckAutoBot.Vk.Api.MessagesModels
         public int RandomId { get; set; }
 
         /// <summary>
-        /// Медиавложения сообщения (фотографии, ссылки и т.п.)
+        /// Сервисное поле для сообщений ботам (полезная нагрузка)
         /// </summary>
-        //public string[] Attachments { get; set; }
+        public string Payload { get; set; }
 
         /// <summary>
         /// True, если сообщение помечено как важное
@@ -54,14 +54,17 @@ namespace CheckAutoBot.Vk.Api.MessagesModels
         public bool Important { get; set; }
 
         /// <summary>
+        /// Медиавложения сообщения (фотографии, ссылки и т.п.)
+        /// </summary>
+        public string[] Attachments { get; set; }
+
+
+        /// <summary>
         /// Информация о местоположении
         /// </summary>
         //public object Geo { get; set; }
 
-        /// <summary>
-        /// Сервисное поле для сообщений ботам (полезная нагрузка)
-        /// </summary>
-        //public string Payload { get; set; }
+
 
         /// <summary>
         /// Массив пересланных сообщений (если есть)

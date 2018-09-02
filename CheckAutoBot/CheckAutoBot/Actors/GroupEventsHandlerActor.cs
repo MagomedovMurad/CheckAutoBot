@@ -13,7 +13,7 @@ namespace CheckAutoBot.Actors
     {
         public GroupEventsHandlerActor()
         {
-            Receive<GroupEventMessage>(x => GroupEventMessageHandler(x));
+            Receive<string>(x => GroupEventMessageHandler(x));
         }
 
         private void GroupEventMessageHandler(string json)

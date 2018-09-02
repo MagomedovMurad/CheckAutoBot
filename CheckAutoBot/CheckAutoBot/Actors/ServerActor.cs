@@ -13,10 +13,13 @@ namespace CheckAutoBot.Actors
 {
     public class ServerActor: ReceiveActor
     { 
-        HttpListener _httpListener;
+        private HttpListener _httpListener;
+        private ICanSelectActor _actorSelector;
 
         public ServerActor()
         {
+            _actorSelector = new ActorSelector();
+
             Receive<StartServerMessage>(message => Start());
             Receive<StopServerMessage>(message => Stop());
         }
@@ -24,7 +27,7 @@ namespace CheckAutoBot.Actors
         private async void Start()
         {
             _httpListener = new HttpListener();
-            _httpListener.Prefixes.Add("http://192.168.0.103:8080/bot/captha/");
+            _httpListener.Prefixes.Add("http://192.168.0.103:8082/bot/captha/");
             _httpListener.Prefixes.Add("http://192.168.0.103:8082/bot/vk/");
             _httpListener.Prefixes.Add("http://192.168.0.103:8082/test/");
             _httpListener.Start();
@@ -65,11 +68,13 @@ namespace CheckAutoBot.Actors
 
         private void Stop()
         {
-
+            _httpListener.Stop();
         }
 
         private void VKMessagesHandler(string json)
         {
+            var message = JsonConvert.DeserializeObject<PrivateMessage>(json);
+            _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageHandlerActor.Path).Tell(message, Self);
         }
 
         private string GetStreamData(Stream stream, Encoding encoding)

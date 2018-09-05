@@ -33,23 +33,6 @@ namespace CheckAutoBot.Actors
 
         private void PrivateMessageHandler(PrivateMessage message)
         {
-            var regNumberRussianSymbols = @"[АВЕКМНОРСТУХавекмнорстух][\d]{3}[АВЕКМНОРСТУХавекмнорстух]{2}[\d]{2,3}";
-            var regNumberLatinSymbols = @"[ABEKMHOPCTYXabekmhopctyx][\d]{3}[ABEKMHOPCTYXabekmhopctyx]{2}[\d]{2,3}";
-
-            var vinCode = "[0123456789ABCDEFGHJKLMNPRSTUVWXYZabcdefghjklmnprstuvwxyz]{17}";
-            var fio =  @"([\s]?[А-ЯЁа-яё\-]+[\s][А-ЯЁа-яё\-]+[\s][А-ЯЁа-яё\-]+[\s]?[А-ЯЁа-яё]+)";
-
-
-
-            if (message.)
-            {
-
-            }
-
-
-
-
-
             new UserRequest()
             {
                 Id = Guid.NewGuid(),

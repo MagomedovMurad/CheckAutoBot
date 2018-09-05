@@ -15,8 +15,8 @@ namespace CheckAutoBot.Vk.Api.MessagesModels
 
         /// <summary>
         /// Время отправки в Unixtime
-        /// </summary>
-        //public int Date { get; set; }
+        ///</summary>
+        public int Date { get; set; }
 
         /// <summary>
         /// Идентификатор назначения

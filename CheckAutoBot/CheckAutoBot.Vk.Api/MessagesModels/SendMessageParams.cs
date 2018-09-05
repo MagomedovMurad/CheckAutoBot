@@ -18,7 +18,7 @@ namespace CheckAutoBot.Vk.Api.MessagesModels
         public string Message { get; set; }
 
         /// <summary>
-        /// Медиавложения к личному сообщению, перечисленные через запятую
+        /// Медиавложения к личному сообщению, перечисленные через запятую. Обязательный параметр, если не задан параметр Message
         /// 
         public string Attachments { get; set; }
 

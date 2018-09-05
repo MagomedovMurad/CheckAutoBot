@@ -39,7 +39,7 @@ namespace CheckAutoBot.Managers
         {
             var strDamagePoints = string.Join("", damagePoints);
 
-            HttpWebRequest request = WebRequest.CreateHttp("http://check.gibdd.ru/proxy/check/auto/images/cache/{strDamagePoints}.png");
+            HttpWebRequest request = WebRequest.CreateHttp("http://check.gibdd.ru/proxy/check/auto/images/cache/{strDamagePoints}.png"); //xn--b1afk4ade.xn--90adear.xn--p1ai/proxy/check/auto/dtp/damages.png?map=
             request.Method = "GET";
             WebResponse response = request.GetResponse();
             var photoBinaryData = response.ReadDataAsByteArray();

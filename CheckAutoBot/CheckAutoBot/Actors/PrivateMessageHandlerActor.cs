@@ -35,9 +35,11 @@ namespace CheckAutoBot.Actors
 
         public void MessageHandler(PrivateMessage message)
         {
+            //Если сообщение НЕ содержит Payload. (Значит это данные об объекте(vin, гос.номер, ФИО))
             if (message.Payload == null)
             {
                 var requestObjectTypeWithValue = DefineRequestObjectType(message.Text);
+                //Если сообщение распознано (содержит vin, гос.номер, ФИО)
                 if (requestObjectTypeWithValue.HasValue)
                 {
                     var reqestObject = new RequestObject()
@@ -52,15 +54,16 @@ namespace CheckAutoBot.Actors
 
                     //Return new PrivateMessage with buttons
 
+
                 }
                 else
                 {
-                   
+                    //Return ERROR in new PrivateMessage
                 }
             }
             else
             {
-                
+
             }
         }
 
@@ -74,7 +77,8 @@ namespace CheckAutoBot.Actors
 
         private KeyValuePair<RequestObjectType, string>? DefineRequestObjectType(string inputStr)
         {
-            Match match = _regNumberRussianSymbolsRegex.Match(inputStr);
+            Match match;
+            match = _regNumberRussianSymbolsRegex.Match(inputStr);
             if (match.Success)
                 return new KeyValuePair<RequestObjectType, string>(RequestObjectType.LicensePlate, match.Value);
 
@@ -91,6 +95,11 @@ namespace CheckAutoBot.Actors
                 return new KeyValuePair<RequestObjectType, string>(RequestObjectType.FullName, match.Value);
 
             return null;
+        }
+
+        private void DefineRequestType()
+        {
+
         }
     }
 }

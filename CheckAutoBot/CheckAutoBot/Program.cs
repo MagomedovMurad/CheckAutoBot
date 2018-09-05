@@ -26,7 +26,7 @@ namespace CheckAutoBot
         //JMBLYV97W7J004216 залог
         static void Main(string[] args)
         {
-            //  var accessToken = "455d8d726b53a60bcee02cc228f464a67e5df040a65ea61f1561e6e87d6fc4410fae5a38c062f3d734444";
+            var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
 
             ////  var photoBinaryData = response.ReadDataAsByteArray();
 
@@ -53,53 +53,41 @@ namespace CheckAutoBot
             //response.Close();
 
 
-            ActorSystem actorSystem = ActorSystem.Create("TestSystem");
-            var server = actorSystem.ActorOf(Props.Create(typeof(ServerActor)), "ServerActor");
-            server.Tell(new StartServerMessage());
+            //ActorSystem actorSystem = ActorSystem.Create("TestSystem");
+            //var server = actorSystem.ActorOf(Props.Create(typeof(ServerActor)), "ServerActor");
+            //server.Tell(new StartServerMessage());
 
-            //var action = new ButtonAction()
-            //{
-            //    Lable = "Test key1",  
-            //    Type = ButtonActionType.Text,
-            //    Payload = "{\"button\": \"2\"}"
-            //};
+            var t = WebUtility.UrlEncode("Пойдем спать &#127911;");
 
-            //var button = new Button()
-            //{
-            //    Action = action,
-            //    Color = ButtonColor.Positive
-            //};
+            var action = new ButtonAction()
+            {
+                Lable = t,
+                Type = ButtonActionType.Text,
+                Payload = "{\"button\": \"2\"}"
+            };
 
-            //var keyboard = new Keyboard()
-            //{
-            //    OneTime = true,
-            //    Buttons = new[] { new[] { button } }
-            //};
+            var button = new Button()
+            {
+                Action = action,
+                Color = ButtonColor.Positive
+            };
 
-            //var test = new SendMessageParams()
-            //{
-            //    PeerId = 102769356,
-            //    Message = "Test message",
-            //    Keyboard = keyboard,
-            //    AccessToken = "a53a17f1361887ba76efdaa4b8a156f2d604e0f96a92dc0c821ebe3b763e80d31a41e01ee27bbd77c7302"
-            //};
+            var keyboard = new Keyboard()
+            {
+                OneTime = true,
+                Buttons = new[] { new[] { button } }
+            };
 
-            //VkApi.Messages.Send(test);
+            var test = new SendMessageParams()
+            {
+                PeerId = 192287910,
+                Message = "Test message &#127911;",
+                Keyboard = keyboard,
+                AccessToken = accessToken
+            };
 
-            //var rucaptcha = new Rucaptcha();
-            //var guvm = new Guvm();
-            //var t = guvm.GetCaptcha();
+            Vk.Api.Messages.Send(test);
 
-
-            //var fnp = new ReestrZalogov();
-
-            //var captchaResult = fnp.GetCaptcha();
-            //var captchaRequest = rucaptcha.SendImageCaptcha(captchaResult.ImageBase64);
-
-            //var captchaAnswer = Test(captchaRequest.Id, rucaptcha);
-            //fnp.GetPledges("JMBLYV97W7J004216", captchaAnswer.Answer, captchaResult.JsessionId);
-
-            Console.ReadKey();
         }
 
         private static CaptchaAnswer Test(long id, Rucaptcha rucaptcha)

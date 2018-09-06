@@ -81,7 +81,7 @@ namespace CheckAutoBot
             var test = new SendMessageParams()
             {
                 PeerId = 192287910,
-                Message = "Test message &#127911;",
+                Message = "Пойдем спать &#127911;",
                 Keyboard = keyboard,
                 AccessToken = accessToken
             };

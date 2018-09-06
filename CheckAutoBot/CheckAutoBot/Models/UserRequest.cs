@@ -1,4 +1,5 @@
 ﻿using CheckAutoBot.Enums;
+using CheckAutoBot.Storage;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -25,7 +26,7 @@ namespace CheckAutoBot.Models
         /// <summary>
         /// Тип запроса
         /// </summary>
-        public UserRequestType Type { get; set; }
+        public RequestType Type { get; set; }
 
         /// <summary>
         /// Входные данные для запроса (гос. номер, вин код, ФИО)

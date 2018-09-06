@@ -1,6 +1,8 @@
 ﻿using Akka.Actor;
 using CheckAutoBot.Storage;
+using CheckAutoBot.Utils;
 using CheckAutoBot.Vk.Api.MessagesModels;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -53,8 +55,6 @@ namespace CheckAutoBot.Actors
                     //SaveToDb
 
                     //Return new PrivateMessage with buttons
-
-
                 }
                 else
                 {
@@ -63,7 +63,8 @@ namespace CheckAutoBot.Actors
             }
             else
             {
-
+                var payload = JsonConvert.DeserializeObject<RequestPayload>(message.Payload);
+                payload.RequestType
             }
         }
 

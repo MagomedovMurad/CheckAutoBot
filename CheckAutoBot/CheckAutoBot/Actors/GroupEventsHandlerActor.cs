@@ -1,6 +1,7 @@
 ﻿using Akka.Actor;
 using CheckAutoBot.Messages;
 using CheckAutoBot.Models;
+using CheckAutoBot.Storage;
 using CheckAutoBot.Vk.Api.MessagesModels;
 using Newtonsoft.Json;
 using System;
@@ -39,7 +40,7 @@ namespace CheckAutoBot.Actors
                 Date = DateTimeOffset.UtcNow,
                 MessageId = message.Id,
                 InputData = message.Text,
-                Type = Enums.UserRequestType.Dtp,
+                Type = RequestType.Dtp,
                 UserId = message.FromId
             };
         }

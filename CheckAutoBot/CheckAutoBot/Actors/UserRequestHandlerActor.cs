@@ -1,7 +1,7 @@
 ﻿using Akka.Actor;
 using CheckAutoBot.Enums;
 using CheckAutoBot.Managers;
-using CheckAutoBot.Models;
+using CheckAutoBot.Messages;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,34 +12,15 @@ namespace CheckAutoBot.Actors
     {
         public UserRequestHandlerActor()
         {
-            Receive<UserRequest>(x => UserRequestHandler(x));
+            Receive<UserRequestMessage>(x => UserRequestHandler(x));
         }
 
-        private void UserRequestHandler(UserRequest request)
+        private void UserRequestHandler(UserRequestMessage request)
         {
-            switch (request.Type)
-            {
-                case UserRequestType.Vin:
-                    break;
-                case UserRequestType.History:
-                    break;
-                case UserRequestType.Dtp:
-                    break;
-                case UserRequestType.Wanted:
-                    break;
-                case UserRequestType.Restricted:
-                    break;
-                case UserRequestType.Pledge:
-                    break;
-                case UserRequestType.CheckUserArrears:
-                    break;
-                case UserRequestType.CheckUserPassport:
-                    break;
-            }
         }
 
         private void PreGetVin()
-        {
+        { 
              
         }
 

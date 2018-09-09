@@ -7,8 +7,11 @@ namespace CheckAutoBot
 {
     public static class ActorsPaths
     {
-        public static readonly AkkaActorMetaData ServerActor = new AkkaActorMetaData("server");
-        public static readonly AkkaActorMetaData PrivateMessageHandlerActor = new AkkaActorMetaData("privateMessageHandler");
+        public static readonly AkkaActorMetaData ServerActor = new AkkaActorMetaData("Server");
+        public static readonly AkkaActorMetaData GroupEventsHandlerActor = new AkkaActorMetaData("GroupEventsHandler");
+        public static readonly AkkaActorMetaData PrivateMessageHandlerActor = new AkkaActorMetaData("PrivateMessageHandler");
+        public static readonly AkkaActorMetaData UserRequestHandlerActor = new AkkaActorMetaData("UserRequestHandler");
+        public static readonly AkkaActorMetaData UserRequestObjectHandlerActor = new AkkaActorMetaData("UserRequestObjectHandler");
     }
 
     public interface ICanSelectActor

@@ -5,16 +5,16 @@ using System.Text;
 
 namespace CheckAutoBot.Messages
 {
-    public class CaptchaResponseMssage
+    public class CaptchaResponseMessage
     {
         #region Ctor
 
-        public CaptchaResponseMssage()
+        public CaptchaResponseMessage()
         {
 
         }
 
-        public CaptchaResponseMssage(string captchaId, string value)
+        public CaptchaResponseMessage(string captchaId, string value)
         {
             CaptchaId = captchaId;
             Value = value;

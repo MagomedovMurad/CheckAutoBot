@@ -53,18 +53,21 @@ namespace CheckAutoBot.Actors
                     };
 
                     //SaveToDb
-
                     //Return new PrivateMessage with buttons
                 }
                 else
                 {
-                    //Return ERROR in new PrivateMessage
+                    //Return ERROR and HelpMessage in new PrivateMessage
                 }
             }
+            //Если сообщение содержит Payload. (Значит это запрос данных по объекту)
             else
             {
-                var payload = JsonConvert.DeserializeObject<RequestPayload>(message.Payload);
-                payload.RequestType
+
+                //Define request type
+                //Execute request
+
+                var type = DefineRequestType(message.Payload);
             }
         }
 
@@ -98,9 +101,10 @@ namespace CheckAutoBot.Actors
             return null;
         }
 
-        private void DefineRequestType()
+        private RequestType DefineRequestType(string stringPayload)
         {
-
+            var payload = JsonConvert.DeserializeObject<RequestPayload>(stringPayload);
+            return payload.RequestType;
         }
     }
 }

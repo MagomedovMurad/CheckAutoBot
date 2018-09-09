@@ -47,9 +47,9 @@ namespace CheckAutoBot.Utils
         /// <summary>
         /// Создает клавиатуру
         /// </summary>
-        /// <param name="requestTypes">Типы запросов для которых НЕ нужно создавать кнопки</param>
+        /// <param name="existRequestTypes">Типы запросов для которых НЕ нужно создавать кнопки</param>
         /// <param name="objectType">Тип объекта</param>
-        public Keyboard CreateKeyboard(IEnumerable<RequestType> requestTypes, RequestObjectType objectType)
+        public Keyboard CreateKeyboard(IEnumerable<RequestType> existRequestTypes, RequestObjectType objectType)
         {
             Button[] buttons;
 
@@ -57,10 +57,10 @@ namespace CheckAutoBot.Utils
             {
                 case RequestObjectType.Vin:
                 case RequestObjectType.LicensePlate:
-                    buttons = _carRequestTypeWithButton.Where(x => requestTypes.Contains(x.Key)).Select(x => x.Value).ToArray();
+                    buttons = _carRequestTypeWithButton.Where(x => existRequestTypes.Contains(x.Key)).Select(x => x.Value).ToArray();
                     break;
                 case RequestObjectType.FullName:
-                    buttons = _personRequestTypeWithButton.Where(x => requestTypes.Contains(x.Key)).Select(x => x.Value).ToArray();
+                    buttons = _personRequestTypeWithButton.Where(x => existRequestTypes.Contains(x.Key)).Select(x => x.Value).ToArray();
                     break;
                 default:
                     throw new Exception($"Тип {objectType} не распознан (Class: KeyboardBuilder, Method: CreateKeyboard())");

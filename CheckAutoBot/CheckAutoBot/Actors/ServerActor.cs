@@ -40,7 +40,7 @@ namespace CheckAutoBot.Actors
                 if (request.HttpMethod == "POST" && request.RawUrl == "/bot/captha/")
                 {
                     var response = GetStreamData(request.InputStream, request.ContentEncoding);
-                    var responseMessage = JsonConvert.DeserializeObject<CaptchaResponseMssage>(response);
+                    var responseMessage = JsonConvert.DeserializeObject<CaptchaResponseMessage>(response);
 
                     context.Response.StatusCode = 200;
                     context.Response.Close();

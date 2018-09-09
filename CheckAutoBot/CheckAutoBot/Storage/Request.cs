@@ -11,5 +11,8 @@ namespace CheckAutoBot.Storage
         public int RequestObjectId { get; set; }
 
         public RequestType Type { get; set; }
-     }
+
+        public virtual RequestObject RequestObject { get; set; }
+
+    }
 }

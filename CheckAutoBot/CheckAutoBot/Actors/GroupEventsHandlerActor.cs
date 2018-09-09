@@ -1,6 +1,5 @@
 ﻿using Akka.Actor;
 using CheckAutoBot.Messages;
-using CheckAutoBot.Models;
 using CheckAutoBot.Storage;
 using CheckAutoBot.Vk.Api.MessagesModels;
 using Newtonsoft.Json;
@@ -34,15 +33,6 @@ namespace CheckAutoBot.Actors
 
         private void PrivateMessageHandler(PrivateMessage message)
         {
-            new UserRequest()
-            {
-                Id = Guid.NewGuid(),
-                Date = DateTimeOffset.UtcNow,
-                MessageId = message.Id,
-                InputData = message.Text,
-                Type = RequestType.Dtp,
-                UserId = message.FromId
-            };
         }
     }
 }

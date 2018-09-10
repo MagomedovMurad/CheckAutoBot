@@ -12,9 +12,16 @@ namespace CheckAutoBot.Actors
         public PrivateMessageSenderActor()
         {
             Receive<HelpMessage>(x => SendHelpMessage(x));
+            Receive<UserRequestMessage>(x => UserRequestMessageHandler(x));
+            Receive<UserRequestObjectMessage>(x => UserRequestObjectMessageHandler(x));
         }
 
-        private void SendMsg(PrivateMessage msg)
+        private void UserRequestMessageHandler(UserRequestMessage message)
+        {
+            message.
+        }
+
+        private void UserRequestObjectMessageHandler(UserRequestObjectMessage message)
         {
 
         }

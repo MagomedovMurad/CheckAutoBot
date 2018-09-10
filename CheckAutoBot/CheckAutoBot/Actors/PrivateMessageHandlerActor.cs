@@ -63,7 +63,10 @@ namespace CheckAutoBot.Actors
                 }
                 else
                 {
-                    //Return ERROR and HelpMessage in new PrivateMessage
+                    var helpMsg = new HelpMessage() { UserId = message.FromId };
+                    _actorSelection
+                        .ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path)
+                        .Tell(helpMsg, Self);
                 }
             }
             //Если сообщение содержит Payload. (Значит это запрос данных по объекту)

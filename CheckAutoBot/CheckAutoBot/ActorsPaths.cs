@@ -19,7 +19,7 @@ namespace CheckAutoBot
         ICanTell ActorSelection(IUntypedActorContext context, string path);
     }
 
-    internal class ActorSelector : ICanSelectActor
+    public class ActorSelector : ICanSelectActor
     {
         public ICanTell ActorSelection(IUntypedActorContext context, string path)
         {

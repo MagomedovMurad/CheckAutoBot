@@ -5,6 +5,7 @@ using CheckAutoBot.Messages;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace CheckAutoBot.Actors
 {
@@ -12,41 +13,19 @@ namespace CheckAutoBot.Actors
     {
         public UserRequestHandlerActor()
         {
-            Receive<UserRequestMessage>(x => UserRequestHandler(x));
+            ReceiveAsync<UserRequestMessage>(x => UserRequestHandler(x));
+            ReceiveAsync<UserRequestObjectMessage>(x => UserRequestObjectHandler(x));
         }
 
-        private void UserRequestHandler(UserRequestMessage request)
+        private async Task<bool> UserRequestHandler(UserRequestMessage request)
         {
+            throw new Exception();
         }
 
-        private void PreGetVin()
-        { 
-             
-        }
-
-        private void GetVin()
+        private async Task<bool> UserRequestObjectHandler(UserRequestObjectMessage requestObject)
         {
-
+            throw new Exception();
         }
 
-        private void PreGetHistory()
-        {
-
-        }
-
-        private void GetHistory()
-        {
-
-        }
-
-        private void PreGetDtp()
-        {
-
-        }
-
-        private void GetDtp()
-        {
-
-        }
     }
 }

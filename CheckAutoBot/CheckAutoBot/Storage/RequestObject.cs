@@ -6,16 +6,19 @@ namespace CheckAutoBot.Storage
 {
     public class RequestObject
     {
+        /// <summary>
+        /// Идентификатор
+        /// </summary>
         public int Id { get; set; }
 
+        /// <summary>
+        /// Идентификатор пользователя
+        /// </summary>
         public int UserId { get; set; }
 
-        public string Data { get; set; }
-
-        public string Vin { get; set; }
-
-        public RequestObjectType Type {get; set;}
-
+        /// <summary>
+        /// Дата добавления
+        /// </summary>
         public DateTime Date { get; set; }
     }
 }

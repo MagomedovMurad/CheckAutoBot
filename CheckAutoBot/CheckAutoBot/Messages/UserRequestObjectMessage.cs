@@ -14,5 +14,7 @@ namespace CheckAutoBot.Messages
         public string Data { get; set; }
 
         public RequestObjectType Type { get; set; }
+
+        public DateTime Date { get; set; }
     }
 }

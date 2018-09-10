@@ -1,4 +1,5 @@
 ﻿using Akka.Actor;
+using CheckAutoBot.Messages;
 using CheckAutoBot.Storage;
 using CheckAutoBot.Utils;
 using CheckAutoBot.Vk.Api.MessagesModels;
@@ -12,6 +13,8 @@ namespace CheckAutoBot.Actors
 {
     public class PrivateMessageHandlerActor: ReceiveActor
     {
+        ActorSelector _actorSelection;
+
         Regex _regNumberRussianSymbolsRegex;
         Regex _regNumberLatinSymbolsRegex;
         Regex _vinCodeRegex;
@@ -19,6 +22,8 @@ namespace CheckAutoBot.Actors
 
         public PrivateMessageHandlerActor()
         {
+            _actorSelection = new ActorSelector();
+
             Receive<PrivateMessage>(x => MessageHandler(x));
         }
 
@@ -44,7 +49,7 @@ namespace CheckAutoBot.Actors
                 //Если сообщение распознано (содержит vin, гос.номер, ФИО)
                 if (requestObjectTypeWithValue.HasValue)
                 {
-                    var reqestObject = new RequestObject()
+                    var reqestObjectMessage = new UserRequestObjectMessage()
                     {
                         Data = requestObjectTypeWithValue.Value.Value,
                         Type = requestObjectTypeWithValue.Value.Key,
@@ -52,8 +57,9 @@ namespace CheckAutoBot.Actors
                         Date = DateTime.Now
                     };
 
-                    //SaveToDb
-                    //Return new PrivateMessage with buttons
+                    _actorSelection
+                        .ActorSelection(Context, ActorsPaths.UserRequestHandlerActor.Path)
+                        .Tell(reqestObjectMessage, Self);
                 }
                 else
                 {
@@ -62,21 +68,20 @@ namespace CheckAutoBot.Actors
             }
             //Если сообщение содержит Payload. (Значит это запрос данных по объекту)
             else
-            {
-
-                //Define request type
-                //Execute request
-
+            { 
                 var type = DefineRequestType(message.Payload);
+
+                var requestMessage = new UserRequestMessage()
+                {
+                    UserId = message.FromId,
+                    MessageId = message.Id,
+                    RequestType = type
+                };
+
+                _actorSelection
+                        .ActorSelection(Context, ActorsPaths.UserRequestHandlerActor.Path)
+                        .Tell(requestMessage, Self);
             }
-        }
-
-        private void AddRequestObject()
-        {
-            var requestObject = new RequestObject()
-            {
-
-            };
         }
 
         private KeyValuePair<RequestObjectType, string>? DefineRequestObjectType(string inputStr)

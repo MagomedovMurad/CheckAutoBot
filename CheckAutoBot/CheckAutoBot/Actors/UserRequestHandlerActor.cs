@@ -31,18 +31,39 @@ namespace CheckAutoBot.Actors
             if (requestObject == null)
                 return false;
 
-
+            requestObject.
         }
 
-        private async Task<bool> UserRequestObjectHandler(UserRequestObjectMessage requestObject)
+        private async Task<bool> UserRequestObjectHandler(UserRequestObjectMessage message)
         {
-            throw new Exception();
+            switch (message.Type)
+            {
+                case RequestObjectType.:
+                    break;
+                case:
+                    break;
+
+                case:
+                    break;
+
+                case:
+                    break;
+            }
+
+            var requestObject = new RequestObject
+            {
+                UserId = message.UserId
+            };
+
+            AddRequestObject();
         }
 
         private void PreGetHistory()
         {
             
         }
+
+        #region DBQueries
 
         private async Task<RequestObject> GetLastUserRequestObject(int userId)
         {
@@ -52,5 +73,22 @@ namespace CheckAutoBot.Actors
             }
         }
 
+        private async Task<bool> AddRequestObject(RequestObject requestObject)
+        {
+            try
+            {
+                using (var rep = _repositoryFactory.CreateBotRepository())
+                {
+                    await rep.AddRequestObject(requestObject).ConfigureAwait(false);
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        #endregion DBQueries
     }
 }

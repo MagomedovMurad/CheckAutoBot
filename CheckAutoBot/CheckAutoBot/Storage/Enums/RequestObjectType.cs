@@ -4,10 +4,13 @@ using System.Text;
 
 namespace CheckAutoBot.Storage
 {
-    public enum RequestObjectType
+    public enum InputDataType
     {
         LicensePlate,
         Vin,
-        FullName
+        FullName,
+        PassportSN,
+        DrivingPermitSN,
+        VehiclePassportSN
     }
 }

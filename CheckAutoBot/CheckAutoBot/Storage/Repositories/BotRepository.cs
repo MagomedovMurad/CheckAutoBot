@@ -29,5 +29,11 @@ namespace CheckAutoBot.Storage
                                    .FirstOrDefaultAsync();
         }
 
+        public async Task AddRequestObject(RequestObject requestObject)
+        {
+            await _dbContext.AddAsync(requestObject);
+            await _dbContext.SaveChangesAsync();
+        }
+
     }
 }

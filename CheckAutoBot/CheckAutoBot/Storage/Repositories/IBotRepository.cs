@@ -8,5 +8,8 @@ namespace CheckAutoBot.Storage
     public interface IBotRepository: IDisposable
     {
         Task<RequestObject> GetLastUserRequestObject(int userId);
+
+        Task AddRequestObject(RequestObject requestObject);
+
     }
 }

@@ -87,24 +87,24 @@ namespace CheckAutoBot.Actors
             }
         }
 
-        private KeyValuePair<RequestObjectType, string>? DefineRequestObjectType(string inputStr)
+        private KeyValuePair<InputDataType, string>? DefineRequestObjectType(string inputStr)
         {
             Match match;
             match = _regNumberRussianSymbolsRegex.Match(inputStr);
             if (match.Success)
-                return new KeyValuePair<RequestObjectType, string>(RequestObjectType.LicensePlate, match.Value);
+                return new KeyValuePair<InputDataType, string>(InputDataType.LicensePlate, match.Value);
 
             match = _regNumberLatinSymbolsRegex.Match(inputStr);
             if (match.Success)
-                return new KeyValuePair<RequestObjectType, string>(RequestObjectType.LicensePlate, match.Value);
+                return new KeyValuePair<InputDataType, string>(InputDataType.LicensePlate, match.Value);
 
             match = _vinCodeRegex.Match(inputStr);
             if (match.Success)
-                return new KeyValuePair<RequestObjectType, string>(RequestObjectType.Vin, match.Value);
+                return new KeyValuePair<InputDataType, string>(InputDataType.Vin, match.Value);
 
             match = _fioRegex.Match(inputStr);
             if (match.Success)
-                return new KeyValuePair<RequestObjectType, string>(RequestObjectType.FullName, match.Value);
+                return new KeyValuePair<InputDataType, string>(InputDataType.FullName, match.Value);
 
             return null;
         }

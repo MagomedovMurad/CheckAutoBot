@@ -45,14 +45,14 @@ namespace CheckAutoBot.Actors
             //Если сообщение НЕ содержит Payload. (Значит это данные об объекте(vin, гос.номер, ФИО))
             if (message.Payload == null)
             {
-                var requestObjectTypeWithValue = DefineRequestObjectType(message.Text);
+                var userInpuDataTypeWithValue = DefineInputDataType(message.Text);
                 //Если сообщение распознано (содержит vin, гос.номер, ФИО)
-                if (requestObjectTypeWithValue.HasValue)
+                if (userInpuDataTypeWithValue.HasValue)
                 {
-                    var reqestObjectMessage = new UserRequestObjectMessage()
+                    var reqestObjectMessage = new UserInputDataMessage()
                     {
-                        Data = requestObjectTypeWithValue.Value.Value,
-                        Type = requestObjectTypeWithValue.Value.Key,
+                        Data = userInpuDataTypeWithValue.Value.Value,
+                        Type = userInpuDataTypeWithValue.Value.Key,
                         UserId = message.FromId,
                         Date = DateTime.Now
                     };
@@ -69,25 +69,18 @@ namespace CheckAutoBot.Actors
                         .Tell(helpMsg, Self);
                 }
             }
-            //Если сообщение содержит Payload. (Значит это запрос данных по объекту)
+            //Если сообщение содержит Payload
             else
-            { 
-                var type = DefineRequestType(message.Payload);
-
-                var requestMessage = new UserRequestMessage()
-                {
-                    UserId = message.FromId,
-                    MessageId = message.Id,
-                    RequestType = type
-                };
+            {
+                var payloadEnvelop = JsonConvert.DeserializeObject<PayloadEnvelop>(message.Payload);
 
                 _actorSelection
                         .ActorSelection(Context, ActorsPaths.UserRequestHandlerActor.Path)
-                        .Tell(requestMessage, Self);
+                        .Tell(payloadEnvelop, Self);
             }
         }
 
-        private KeyValuePair<InputDataType, string>? DefineRequestObjectType(string inputStr)
+        private KeyValuePair<InputDataType, string>? DefineInputDataType(string inputStr)
         {
             Match match;
             match = _regNumberRussianSymbolsRegex.Match(inputStr);

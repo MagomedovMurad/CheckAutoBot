@@ -13,7 +13,7 @@ namespace CheckAutoBot.Actors
     public class UserRequestHandlerActor : ReceiveActor
     {
         private IRepositoryFactory _repositoryFactory;
-
+        Dictionary<InputDataType, Type> t = new Dictionary<InputDataType, Type>();
         private Rsa _rsaManager;
         private Gibdd _gibddManager;
         private ReestrZalogov _fnpManager;
@@ -21,7 +21,7 @@ namespace CheckAutoBot.Actors
         public UserRequestHandlerActor()
         {
             ReceiveAsync<UserRequestMessage>(x => UserRequestHandler(x));
-            ReceiveAsync<UserRequestObjectMessage>(x => UserRequestObjectHandler(x));
+            ReceiveAsync<UserInputDataMessage>(x => UserRequestObjectHandler(x));
         }
 
         private async Task<bool> UserRequestHandler(UserRequestMessage request)
@@ -31,31 +31,15 @@ namespace CheckAutoBot.Actors
             if (requestObject == null)
                 return false;
 
-            requestObject.
+            return false;
         }
 
-        private async Task<bool> UserRequestObjectHandler(UserRequestObjectMessage message)
+        private async Task<bool> UserRequestObjectHandler(UserInputDataMessage message)
         {
-            switch (message.Type)
-            {
-                case RequestObjectType.:
-                    break;
-                case:
-                    break;
+            if (t[message.Type] == typeof(Auto))
 
-                case:
-                    break;
-
-                case:
-                    break;
-            }
-
-            var requestObject = new RequestObject
-            {
-                UserId = message.UserId
-            };
-
-            AddRequestObject();
+                return false;
+            else return false;
         }
 
         private void PreGetHistory()
@@ -90,5 +74,14 @@ namespace CheckAutoBot.Actors
         }
 
         #endregion DBQueries
+
+        private void Test()
+        {
+
+            var t = new Dictionary<InputDataType, Type>()
+            {
+
+            };
+        }
     }
 }

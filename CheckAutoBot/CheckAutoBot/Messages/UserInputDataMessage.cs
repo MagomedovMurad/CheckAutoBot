@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CheckAutoBot.Messages
 {
-    public class UserRequestObjectMessage
+    public class UserInputDataMessage
     {
         public int UserId { get; set; }
 
@@ -13,7 +13,7 @@ namespace CheckAutoBot.Messages
 
         public string Data { get; set; }
 
-        public RequestObjectType Type { get; set; }
+        public InputDataType Type { get; set; }
 
         public DateTime Date { get; set; }
     }

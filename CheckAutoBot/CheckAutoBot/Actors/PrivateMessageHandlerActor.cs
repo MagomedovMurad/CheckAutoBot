@@ -54,6 +54,7 @@ namespace CheckAutoBot.Actors
                         Data = userInpuDataTypeWithValue.Value.Value,
                         Type = userInpuDataTypeWithValue.Value.Key,
                         UserId = message.FromId,
+                        MessageId = message.Id,
                         Date = DateTime.Now
                     };
 
@@ -74,9 +75,11 @@ namespace CheckAutoBot.Actors
             {
                 var payloadEnvelop = JsonConvert.DeserializeObject<PayloadEnvelop>(message.Payload);
 
+                var payload = JsonConvert.DeserializeObject(payloadEnvelop.Payload, Type.GetType(payloadEnvelop.DotNetType));
+
                 _actorSelection
                         .ActorSelection(Context, ActorsPaths.UserRequestHandlerActor.Path)
-                        .Tell(payloadEnvelop, Self);
+                        .Tell(payload, Self);
             }
         }
 

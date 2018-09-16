@@ -8,6 +8,6 @@ namespace CheckAutoBot.Utils
     {
         public string DotNetType { get; set; }
 
-        public object Payload { get; set; }
+        public string Payload { get; set; }
     }
 }

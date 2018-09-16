@@ -13,7 +13,6 @@ namespace CheckAutoBot.Actors
     public class UserRequestHandlerActor : ReceiveActor
     {
         private IRepositoryFactory _repositoryFactory;
-        Dictionary<InputDataType, Type> t = new Dictionary<InputDataType, Type>();
         private Rsa _rsaManager;
         private Gibdd _gibddManager;
         private ReestrZalogov _fnpManager;
@@ -21,7 +20,7 @@ namespace CheckAutoBot.Actors
         public UserRequestHandlerActor()
         {
             ReceiveAsync<UserRequestMessage>(x => UserRequestHandler(x));
-            ReceiveAsync<UserInputDataMessage>(x => UserRequestObjectHandler(x));
+            ReceiveAsync<UserInputDataMessage>(x => UserInputDataMessageHandler(x));
         }
 
         private async Task<bool> UserRequestHandler(UserRequestMessage request)
@@ -34,12 +33,11 @@ namespace CheckAutoBot.Actors
             return false;
         }
 
-        private async Task<bool> UserRequestObjectHandler(UserInputDataMessage message)
+        private async Task<bool> UserInputDataMessageHandler(UserInputDataMessage message)
         {
-            if (t[message.Type] == typeof(Auto))
+            message.
 
-                return false;
-            else return false;
+            return false;
         }
 
         private void PreGetHistory()

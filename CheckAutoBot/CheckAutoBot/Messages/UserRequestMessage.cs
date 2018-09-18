@@ -21,5 +21,10 @@ namespace CheckAutoBot.Messages
         /// Тип запроса
         /// </summary>
         public RequestType RequestType { get; set; }
+
+        /// <summary>
+        /// Дата и время получения запроса
+        /// </summary>
+        public DateTime Date { get; set; }
     }
 }

@@ -23,9 +23,24 @@ namespace CheckAutoBot.Actors
             ReceiveAsync<UserInputDataMessage>(x => UserInputDataMessageHandler(x));
         }
 
-        private async Task<bool> UserRequestHandler(UserRequestMessage request)
+        private async Task<bool> UserRequestHandler(UserRequestMessage message)
         {
-            var requestObject = await GetLastUserRequestObject(request.UserId);
+            var requestObject = await GetLastUserRequestObject(message.UserId);
+
+            switch (message.RequestType)
+            {
+                case RequestType.History:
+                    PreGetHistory();
+                    break;
+                case RequestType.Dtp:
+
+                    break;
+            }
+
+            if (requestObject is Auto auto)
+            {
+                
+            }
 
             if (requestObject == null)
                 return false;
@@ -35,14 +50,71 @@ namespace CheckAutoBot.Actors
 
         private async Task<bool> UserInputDataMessageHandler(UserInputDataMessage message)
         {
-            message.
+            try
+            {
+                RequestObject data;
 
-            return false;
+                switch (message.Type)
+                {
+                    #region VIN
+                    case InputDataType.Vin:
+                        data = new Auto
+                        {
+                            Vin = message.Data,
+                            Date = message.Date,
+                            UserId = message.UserId,
+                            MessageId = message.MessageId
+                        };
+                        break;
+                    #endregion VIN
+
+                    #region LicensePlate
+                    case InputDataType.LicensePlate:
+                        data = new Auto
+                        {
+                            LicensePlate = message.Data,
+                            Date = message.Date,
+                            UserId = message.UserId,
+                            MessageId = message.MessageId
+                        };
+                        break;
+
+                    #endregion LicensePlate
+
+                    #region FullName
+                    case InputDataType.FullName:
+
+                        string[] personData = message.Data.Split(' ');
+                        string lastName = personData[0].Replace('_', ' '); //Фамилия
+                        string firstName = personData[1].Replace('_', ' '); //Имя
+                        string middleName = personData[2].Replace('_', ' '); //Отчество
+                        data = new Person
+                        {
+                            FirstName = firstName,
+                            LastName = lastName,
+                            MiddleName = middleName,
+                            Date = message.Date,
+                            UserId = message.UserId,
+                            MessageId = message.MessageId
+                        };
+                        break;
+                    #endregion FullName
+
+                    default: throw new InvalidOperationException($"Не найден обработчик для типа {message.Type}");
+                }
+
+                return await AddRequestObject(data);
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
 
-        private void PreGetHistory()
+        private void PreGetHistory(Auto auto)
         {
-            
+           
+
         }
 
         #region DBQueries
@@ -73,13 +145,6 @@ namespace CheckAutoBot.Actors
 
         #endregion DBQueries
 
-        private void Test()
-        {
 
-            var t = new Dictionary<InputDataType, Type>()
-            {
-
-            };
-        }
     }
 }

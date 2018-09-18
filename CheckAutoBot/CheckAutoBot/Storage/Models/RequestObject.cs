@@ -17,6 +17,11 @@ namespace CheckAutoBot.Storage
         public int UserId { get; set; }
 
         /// <summary>
+        /// Идентификатор сообщения 
+        /// </summary>
+        public int MessageId { get; set; }
+
+        /// <summary>
         /// Дата добавления
         /// </summary>
         public DateTime Date { get; set; }

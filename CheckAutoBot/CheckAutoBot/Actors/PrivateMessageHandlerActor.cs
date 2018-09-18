@@ -74,12 +74,23 @@ namespace CheckAutoBot.Actors
             else
             {
                 var payloadEnvelop = JsonConvert.DeserializeObject<PayloadEnvelop>(message.Payload);
-
                 var payload = JsonConvert.DeserializeObject(payloadEnvelop.Payload, Type.GetType(payloadEnvelop.DotNetType));
 
-                _actorSelection
+                if (payload is RequestPayload requestPayload)
+                {
+                    var msg = new UserRequestMessage()
+                    {
+                        MessageId = message.Id,
+                        UserId = message.FromId,
+                        RequestType = requestPayload.RequestType,
+                        Date = DateTime.Now
+                    };
+
+                    _actorSelection
                         .ActorSelection(Context, ActorsPaths.UserRequestHandlerActor.Path)
-                        .Tell(payload, Self);
+                        .Tell(requestPayload, Self);
+                }
+
             }
         }
 

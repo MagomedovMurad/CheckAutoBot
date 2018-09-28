@@ -9,6 +9,8 @@ namespace CheckAutoBot.Storage
     {
         public DbSet<RequestObject> RequestObjects { get; set; }
 
+        public DbSet<Request> Requests { get; set; }
+
         public BotDbContext()
         {
             Database.EnsureCreated();

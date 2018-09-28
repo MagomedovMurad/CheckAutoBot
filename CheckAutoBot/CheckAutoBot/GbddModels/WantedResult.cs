@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CheckAutoBot.GbddModels
 {
-    class WantedResult
+    public class WantedResult
     {
     }
 }

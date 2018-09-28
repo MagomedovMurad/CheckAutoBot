@@ -1,4 +1,7 @@
-﻿using CheckAutoBot.Infrastructure;
+﻿using Akka.Serialization;
+using CheckAutoBot.GbddModels;
+using CheckAutoBot.Infrastructure;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,24 +18,28 @@ namespace CheckAutoBot.Managers
         {
         }
 
-        public string GetHistory(string vin, string captcha, string jsessionId)
+        public HistoryResult GetHistory(string vin, string captcha, string jsessionId)
         {
-            return ExecuteRequest(vin, captcha, jsessionId, "history", "history");
+            var response = ExecuteRequest(vin, captcha, jsessionId, "history", "history");
+            return JsonConvert.DeserializeObject<HistoryResult>(response);
         }
 
-        public string GetDtp(string vin, string captcha, string jsessionId)
+        public DtpResult GetDtp(string vin, string captcha, string jsessionId)
         {
-            return ExecuteRequest(vin, captcha, jsessionId, "dtp", "aiusdtp");
+            var response = ExecuteRequest(vin, captcha, jsessionId, "dtp", "aiusdtp");
+            return JsonConvert.DeserializeObject<DtpResult>(response);
         }
 
-        public string GetWanted(string vin, string captcha, string jsessionId)
+        public WantedResult GetWanted(string vin, string captcha, string jsessionId)
         {
-            return ExecuteRequest(vin, captcha, jsessionId, "wanted", "wanted");
+            var response = ExecuteRequest(vin, captcha, jsessionId, "wanted", "wanted");
+            return JsonConvert.DeserializeObject<WantedResult>(response);
         }
 
-        public string GetRestriction(string vin, string captcha, string jsessionId)
+        public RestrictedResult GetRestriction(string vin, string captcha, string jsessionId)
         {
-            return ExecuteRequest(vin, captcha, jsessionId, "restrict", "restricted");
+            var response = ExecuteRequest(vin, captcha, jsessionId, "restrict", "restricted");
+            return JsonConvert.DeserializeObject<RestrictedResult>(response);
         }
 
         public byte[] GetIncidentImage(string[] damagePoints)

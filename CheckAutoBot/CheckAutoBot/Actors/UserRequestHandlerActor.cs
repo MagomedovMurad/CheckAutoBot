@@ -1,10 +1,13 @@
 ﻿using Akka.Actor;
 using CheckAutoBot.Enums;
+using CheckAutoBot.GbddModels;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Messages;
 using CheckAutoBot.Storage;
+using CheckAutoBot.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,36 +19,40 @@ namespace CheckAutoBot.Actors
         private Rsa _rsaManager;
         private Gibdd _gibddManager;
         private ReestrZalogov _fnpManager;
+        private Rucaptcha _rucaptchaManager;
+
+        private List<CacheItem> _captchaCacheItems = new List<CacheItem>();
 
         public UserRequestHandlerActor()
         {
             ReceiveAsync<UserRequestMessage>(x => UserRequestHandler(x));
             ReceiveAsync<UserInputDataMessage>(x => UserInputDataMessageHandler(x));
+            ReceiveAsync<CaptchaResponseMessage>(x => CaptchaResponseMessageHadler(x));
         }
 
         private async Task<bool> UserRequestHandler(UserRequestMessage message)
         {
             var requestObject = await GetLastUserRequestObject(message.UserId);
 
+            var userRequest = new Request()
+            {
+                RequestObjectId = requestObject.Id,
+                Type = message.RequestType
+            };
+
+            var requestId = await AddUserRequest(userRequest);
+
             switch (message.RequestType)
             {
                 case RequestType.History:
-                    PreGetHistory();
+                    PreGetHistory(requestObject as Auto, requestId.Value);
                     break;
                 case RequestType.Dtp:
-
+                    PreGetDtp(requestObject as Auto);
                     break;
             }
 
-            if (requestObject is Auto auto)
-            {
-                
-            }
-
-            if (requestObject == null)
-                return false;
-
-            return false;
+            return true;
         }
 
         private async Task<bool> UserInputDataMessageHandler(UserInputDataMessage message)
@@ -111,14 +118,122 @@ namespace CheckAutoBot.Actors
             }
         }
 
-        private void PreGetHistory(Auto auto)
+        private async Task<bool> CaptchaResponseMessageHadler(CaptchaResponseMessage message)
         {
-           
+            var captchaItem = _captchaCacheItems.First(x => x.CaptchaId == message.CaptchaId);
+            captchaItem.CaptchaWord = message.Value;
 
+            var items = _captchaCacheItems.Where(x => x.RequestId == captchaItem.RequestId);
+
+            var isNotCompleted = items.Any(x => string.IsNullOrEmpty(x.CaptchaWord));
+
+            if (!isNotCompleted)
+            {
+                var request = await GetUserRequest(captchaItem.RequestId);
+
+                switch (request.Type)
+                {
+                    case RequestType.History:
+                        GetHistory(request.RequestObject as Auto, items);
+                        break;
+                    case RequestType.Dtp:
+                        GetDtp();
+                        break;
+                }
+
+            }
+
+            return true;
         }
 
+        private void PreGetHistory(Auto auto, int userRequestId)
+        {
+            if (string.IsNullOrEmpty(auto.Vin))
+            {
+                var policyNumberCaptchaRequest = _rucaptchaManager.SendReCaptcha2(Rsa.dataSiteKey, Rsa.policyUrl);
+                var getPolicyNumberCacheItem = new CacheItem()
+                {
+                    RequestId = userRequestId,
+                    CaptchaId = policyNumberCaptchaRequest.Id,
+                    ActionType = ActionType.PolicyNumber,
+                    JSessionId = null,
+                    Date = DateTime.Now
+                };
+                _captchaCacheItems.Add(getPolicyNumberCacheItem);
+
+                var policyInfoCaptchaRequest = _rucaptchaManager.SendReCaptcha2(Rsa.dataSiteKey, Rsa.policyUrl);
+                var getPolicyInfoCacheItem = new CacheItem()
+                {
+                    RequestId = userRequestId,
+                    CaptchaId = policyInfoCaptchaRequest.Id,
+                    ActionType = ActionType.PolicyInfo,
+                    JSessionId = null,
+                    Date = DateTime.Now
+                };
+                _captchaCacheItems.Add(getPolicyInfoCacheItem);
+            }
+
+            var captchaResult = _gibddManager.GetCaptcha();
+            var historyCaptchaRequest = _rucaptchaManager.SendImageCaptcha(captchaResult.ImageBase64);
+            var getHistoryCacheItem = new CacheItem()
+            {
+                RequestId = userRequestId,
+                CaptchaId = historyCaptchaRequest.Id,
+                ActionType = ActionType.History,
+                JSessionId = captchaResult.JsessionId,
+                Date = DateTime.Now
+            };
+            _captchaCacheItems.Add(getHistoryCacheItem);
+        }
+
+        private void GetHistory(Auto auto, IEnumerable<CacheItem> cacheItems)
+        {
+            var vin = auto.Vin;
+
+            if (string.IsNullOrEmpty(auto.Vin))
+            {
+                var item1 = cacheItems.First(x => x.ActionType == ActionType.PolicyNumber);
+                var policyResponse = _rsaManager.GetPolicy(item1.CaptchaWord, DateTime.Now, auto.LicensePlate);
+
+                var policy = policyResponse.Policies.First();
+                var item2 = cacheItems.First(x => x.ActionType == ActionType.PolicyInfo);
+                var vechicleResponse = _rsaManager.GetPolicyInfo(policy.Serial, policy.Number, DateTime.Now, item2.CaptchaWord);
+
+                vin = vechicleResponse.Vin;
+            }
+            var item3 = cacheItems.First(x => x.ActionType == ActionType.History);
+            var historyResult = _gibddManager.GetHistory(vin, item3.CaptchaWord, item3.JSessionId);
+        }
+
+        private void HistoryToMessageText(HistoryResult history)
+        {
+            var messageText = $"Марка, модель:  {history.Vehicle.Model} \n" +
+            $"Год выпуска: {history.Vehicle.Year} \n" +
+            $"VIN:  {history.Vehicle.Vin} \n" +
+            $"Кузов:  {history.Vehicle.BodyNumber} \n" +
+            $"Цвет: {history.Vehicle.Color} \n" +
+            $"Рабочий объем(см3):  {history.Vehicle.EngineVolume} \n" +
+            $"Мощность(кВт/л.с.):  {history.Vehicle.PowerHp} \n" +
+            $"Тип:  {history.Vehicle.TypeName} \n" +
+            $"Категория: {history.Vehicle.Category}";
+        }
+
+        private void PreGetDtp(Auto auto)
+        {
+          //  if (string.IsNullOrEmpty(auto.Vin))
+        }
+
+        private void GetDtp()
+        {
+
+        }
         #region DBQueries
 
+        /// <summary>
+        /// Запрос последнего объекта запроса пользователя
+        /// </summary>
+        /// <param name="userId">Идентификатор пользователя</param>
+        /// <returns></returns>
         private async Task<RequestObject> GetLastUserRequestObject(int userId)
         {
             using (var rep = _repositoryFactory.CreateBotRepository())
@@ -127,6 +242,11 @@ namespace CheckAutoBot.Actors
             }
         }
 
+        /// <summary>
+        /// Добавление объекта запроса  
+        /// </summary>
+        /// <param name="requestObject">Объект запроса</param>
+        /// <returns></returns>
         private async Task<bool> AddRequestObject(RequestObject requestObject)
         {
             try
@@ -140,6 +260,41 @@ namespace CheckAutoBot.Actors
             catch (Exception ex)
             {
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Добавление запроса
+        /// </summary>
+        /// <param name="userRequest">Запрос пользователя</param>
+        /// <returns></returns>
+        private async Task<int?> AddUserRequest(Request userRequest)
+        {
+            try
+            {
+                using (var rep = _repositoryFactory.CreateBotRepository())
+                {
+                    return await rep.AddUserRequest(userRequest);
+                }
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        private async Task<Request> GetUserRequest(int requestId)
+        {
+            try
+            {
+                using (var rep = _repositoryFactory.CreateBotRepository())
+                {
+                    return await rep.GetUserRequest(requestId).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                return null;
             }
         }
 

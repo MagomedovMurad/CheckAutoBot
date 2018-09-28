@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace CheckAutoBot.Actors
 {
@@ -40,7 +41,7 @@ namespace CheckAutoBot.Actors
                 if (request.HttpMethod == "POST" && request.RawUrl == "/bot/captha/")
                 {
                     var response = GetStreamData(request.InputStream, request.ContentEncoding);
-                    var responseMessage = JsonConvert.DeserializeObject<CaptchaResponseMessage>(response);
+                    RucaptchaMessagesHandler(response);
 
                     context.Response.StatusCode = 200;
                     context.Response.Close();
@@ -75,6 +76,12 @@ namespace CheckAutoBot.Actors
         {
             var message = JsonConvert.DeserializeObject<PrivateMessage>(json);
             _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageHandlerActor.Path).Tell(message, Self);
+        }
+
+        private void RucaptchaMessagesHandler(string json)
+        {
+            var message = JsonConvert.DeserializeObject<CaptchaResponseMessage>(json);
+            _actorSelector.ActorSelection(Context, ActorsPaths.UserRequestObjectHandlerActor.Path).Tell(message, Self);
         }
 
         private string GetStreamData(Stream stream, Encoding encoding)

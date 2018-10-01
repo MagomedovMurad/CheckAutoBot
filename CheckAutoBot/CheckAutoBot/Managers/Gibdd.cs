@@ -18,10 +18,10 @@ namespace CheckAutoBot.Managers
         {
         }
 
-        public HistoryResult GetHistory(string vin, string captcha, string jsessionId)
+        public GibddResponse<HistoryResult> GetHistory(string vin, string captcha, string jsessionId)
         {
             var response = ExecuteRequest(vin, captcha, jsessionId, "history", "history");
-            return JsonConvert.DeserializeObject<HistoryResult>(response);
+            return JsonConvert.DeserializeObject<GibddResponse<HistoryResult>>(response);
         }
 
         public DtpResult GetDtp(string vin, string captcha, string jsessionId)

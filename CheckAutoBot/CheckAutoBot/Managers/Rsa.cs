@@ -25,9 +25,7 @@ namespace CheckAutoBot.Managers
         {
             string encodeLp = WebUtility.UrlEncode(lp);
             var stringData = $"vin={vin}&lp={encodeLp}&date={date.Date.ToString("dd.MM.yyyy")}&bodyNumber={bodyNumber}&chassisNumber={chassisNumber}&captcha={captcha}";
-            //string json = ExecuteRequest(stringData, policyUrl);
-
-            string json = "{\"bodyNumber\":\"\",\"chassisNumber\":\"\",\"licensePlate\":\"Р928УТ26\",\"vin\":\"\",\"policyUnqId\":null,	\"policyResponseUIItems\":[{\"insCompanyName\":\"ИНГОССТРАХ\",\"policyBsoNumber\":\"0031852791\",\"policyBsoSerial\":\"ХХХ\",\"policyIsRestrict\":\"1\",\"policyUnqId\":\"324402046\"}],\"validCaptcha\":true,\"errorMessage\":null,\"errorId\":0,\"warningMessage\":null}";
+            string json = ExecuteRequest(stringData, policyUrl);
             var data = JsonConvert.DeserializeObject<PolicyResponse>(json);
             return data;
         }
@@ -37,9 +35,7 @@ namespace CheckAutoBot.Managers
             string encodeSerial = WebUtility.UrlEncode(serial);
             var stringData = $"serialOsago={encodeSerial}&numberOsago={number}&dateRequest={date.Date.ToString("dd.MM.yyyy")}&captcha={captcha}";
 
-            //string json = ExecuteRequest(stringData, osagoVehicleUrl);
-
-            string json = "{\"bodyNumber\":null,\"chassisNumber\":null,\"licensePlate\":\"P928YT26RUS\",\"insurerName\":\"ИНГОССТРАХ\",\"policyStatus\":\"Действует\",\"vin\":\"XTA21150064291647\",\"validCaptcha\":true,\"errorMessage\":null,\"errorId\":0,\"warningMessage\":null}";
+            string json = ExecuteRequest(stringData, osagoVehicleUrl);
 
             var data = JsonConvert.DeserializeObject<VechicleResponse>(json);
 

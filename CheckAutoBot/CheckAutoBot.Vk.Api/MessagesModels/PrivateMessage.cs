@@ -16,6 +16,7 @@ namespace CheckAutoBot.Vk.Api.MessagesModels
         /// <summary>
         /// Время отправки в Unixtime
         ///</summary>
+        [JsonProperty("date")]
         public int Date { get; set; }
 
         /// <summary>
@@ -45,6 +46,7 @@ namespace CheckAutoBot.Vk.Api.MessagesModels
         /// <summary>
         /// Сервисное поле для сообщений ботам (полезная нагрузка)
         /// </summary>
+        [JsonProperty("payload")]
         public string Payload { get; set; }
 
         /// <summary>
@@ -56,6 +58,7 @@ namespace CheckAutoBot.Vk.Api.MessagesModels
         /// <summary>
         /// Медиавложения сообщения (фотографии, ссылки и т.п.)
         /// </summary>
+        [JsonProperty("attachments")]
         public string[] Attachments { get; set; }
 
 

@@ -53,40 +53,45 @@ namespace CheckAutoBot
             //response.Close();
 
 
-            //ActorSystem actorSystem = ActorSystem.Create("TestSystem");
-            //var server = actorSystem.ActorOf(Props.Create(typeof(ServerActor)), "ServerActor");
-            //server.Tell(new StartServerMessage());
+            ActorSystem actorSystem = ActorSystem.Create("TestSystem");
+            var server = actorSystem.ActorOf(Props.Create(typeof(ServerActor)), ActorsPaths.ServerActor.Name);
+            var groupEventsHandlerActor = actorSystem.ActorOf(Props.Create(typeof(GroupEventsHandlerActor)), ActorsPaths.GroupEventsHandlerActor.Name);
+            var privateMessageHandlerActor = actorSystem.ActorOf(Props.Create(typeof(PrivateMessageHandlerActor)), ActorsPaths.PrivateMessageHandlerActor.Name);
+            var privateMessageSenderActor = actorSystem.ActorOf(Props.Create(typeof(PrivateMessageSenderActor)), ActorsPaths.PrivateMessageSenderActor.Name);
+            var userRequestHandlerActor = actorSystem.ActorOf(Props.Create(typeof(UserRequestHandlerActor)), ActorsPaths.UserRequestHandlerActor.Name);
+            server.Tell(new StartServerMessage());
+            Console.ReadKey();
 
-            var t = WebUtility.UrlEncode("Пойдем спать &#127911;");
+            //var t = WebUtility.UrlEncode("Пойдем спать &#127911;");
 
-            var action = new ButtonAction()
-            {
-                Lable = t,
-                Type = ButtonActionType.Text,
-                Payload = "{\"button\": \"2\"}"
-            };
+            //var action = new ButtonAction()
+            //{
+            //    Lable = t,
+            //    Type = ButtonActionType.Text,
+            //    Payload = "{\"button\": \"2\"}"
+            //};
 
-            var button = new Button()
-            {
-                Action = action,
-                Color = ButtonColor.Positive
-            };
+            //var button = new Button()
+            //{
+            //    Action = action,
+            //    Color = ButtonColor.Positive
+            //};
 
-            var keyboard = new Keyboard()
-            {
-                OneTime = true,
-                Buttons = new[] { new[] { button } }
-            };
+            //var keyboard = new Keyboard()
+            //{
+            //    OneTime = true,
+            //    Buttons = new[] { new[] { button } }
+            //};
 
-            var test = new SendMessageParams()
-            {
-                PeerId = 192287910,
-                Message = "Пойдем спать &#127911;",
-                Keyboard = keyboard,
-                AccessToken = accessToken
-            };
+            //var test = new SendMessageParams()
+            //{
+            //    PeerId = 192287910,
+            //    Message = "Пойдем спать &#127911;",
+            //    Keyboard = keyboard,
+            //    AccessToken = accessToken
+            //};
 
-            Vk.Api.Messages.Send(test);
+            //Vk.Api.Messages.Send(test);
 
         }
 

@@ -16,6 +16,8 @@ namespace CheckAutoBot.Actors
     { 
         private HttpListener _httpListener;
         private ICanSelectActor _actorSelector;
+        IUntypedActorContext _context;
+        IActorRef _self;
 
         public ServerActor()
         {
@@ -23,6 +25,9 @@ namespace CheckAutoBot.Actors
 
             Receive<StartServerMessage>(message => Start());
             Receive<StopServerMessage>(message => Stop());
+
+            _context = Context;
+            _self = Self;
         }
 
         private async void Start()
@@ -40,19 +45,21 @@ namespace CheckAutoBot.Actors
 
                 if (request.HttpMethod == "POST" && request.RawUrl == "/bot/captha/")
                 {
-                    var response = GetStreamData(request.InputStream, request.ContentEncoding);
-                    RucaptchaMessagesHandler(response);
+                    var requestData = GetStreamData(request.InputStream, request.ContentEncoding);
+                    RucaptchaMessagesHandler(requestData);
+
 
                     context.Response.StatusCode = 200;
                     context.Response.Close();
                 }
                 else if (request.HttpMethod == "POST" && request.RawUrl == "/bot/vk")
                 {
-                    var response = GetStreamData(request.InputStream, request.ContentEncoding);
+                    var requestData = GetStreamData(request.InputStream, request.ContentEncoding);
                     context.Response.StatusCode = 200;
-                    context.Response.Close();
+                    byte[] buffer = Encoding.UTF8.GetBytes("ok");
+                    context.Response.Close(buffer, false);
 
-                    VKMessagesHandler(response);
+                    VKMessagesHandler(requestData);
                 }
                 else if (request.HttpMethod == "GET" && request.RawUrl == "/test")
                 {
@@ -74,14 +81,19 @@ namespace CheckAutoBot.Actors
 
         private void VKMessagesHandler(string json)
         {
-            var message = JsonConvert.DeserializeObject<PrivateMessage>(json);
-            _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageHandlerActor.Path).Tell(message, Self);
+            _actorSelector.ActorSelection(_context, ActorsPaths.GroupEventsHandlerActor.Path).Tell(json, _self);
         }
 
-        private void RucaptchaMessagesHandler(string json)
+        private void RucaptchaMessagesHandler(string stringParams)
         {
-            var message = JsonConvert.DeserializeObject<CaptchaResponseMessage>(json);
-            _actorSelector.ActorSelection(Context, ActorsPaths.UserRequestObjectHandlerActor.Path).Tell(message, Self);
+            var requestParams = ParseRequestParams(stringParams);
+
+            var message = new CaptchaResponseMessage()
+            {
+                CaptchaId = long.Parse(requestParams["id"]),
+                Value = requestParams["code"]
+            };
+            _actorSelector.ActorSelection(_context, ActorsPaths.UserRequestHandlerActor.Path).Tell(message, _self);
         }
 
         private string GetStreamData(Stream stream, Encoding encoding)
@@ -90,6 +102,23 @@ namespace CheckAutoBot.Actors
             {
                 return streamReader.ReadToEnd();
             }
+        }
+
+        private Dictionary<string, string> ParseRequestParams(string stringParams)
+        {
+            Dictionary<string, string> requestParamsDictionary = new Dictionary<string, string>();
+
+            var requestParams = stringParams.Split('&');
+            foreach (var param in requestParams)
+            {
+                var paramKeyWithValue = param.Split('=');
+                var key = paramKeyWithValue[0];
+                var value = paramKeyWithValue[1];
+
+                requestParamsDictionary.Add(key, value);
+            }
+
+            return requestParamsDictionary;
         }
 
     }

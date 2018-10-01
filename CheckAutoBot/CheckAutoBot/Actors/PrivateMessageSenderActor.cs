@@ -13,6 +13,18 @@ namespace CheckAutoBot.Actors
         {
             Receive<HelpMessage>(x => SendHelpMessage(x));
             Receive<UserRequestMessage>(x => UserRequestMessageHandler(x));
+            Receive<string>(x => SendMessage(x));
+        }
+
+        private void SendMessage(string message)
+        {
+            //var messageParams = new SendMessageParams()
+            //{
+            //    Message = message,
+            //    PeerId = msg.UserId
+            //};
+
+            //Vk.Api.Messages.Send(messageParams);
         }
 
         private void UserRequestMessageHandler(UserRequestMessage message)
@@ -29,10 +41,12 @@ namespace CheckAutoBot.Actors
                 $"Р927УТ38{Environment.NewLine}" +
                 $"Иванов Иван Иванович{Environment.NewLine}";
 
+            var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
             var messageParams = new SendMessageParams()
             {
                 Message = message,
-                PeerId = msg.UserId
+                PeerId = msg.UserId,
+                AccessToken = accessToken
             };
 
             Vk.Api.Messages.Send(messageParams);

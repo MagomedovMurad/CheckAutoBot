@@ -5,13 +5,14 @@ using System.Text;
 
 namespace CheckAutoBot.GbddModels
 {
+    [JsonObject(id: "RequestResult")]
     public class HistoryResult
     {
         /// <summary>
-        /// Периоды владения автомобилем
+        /// Конверт для периодов владения автомобилем
         /// </summary>
         [JsonProperty("ownershipPeriods")]
-        public List<OwnershipPeriod> OwnershipPeriods { get; set; }
+        public OwnershipPeriodsEnvelop OwnershipPeriodsEnvelop { get; set; }
 
         /// <summary>
         /// Данные о ПТС автомобиля

@@ -51,7 +51,23 @@ namespace CheckAutoBot.Utils
         /// <param name="objectType">Тип объекта</param>
         public Keyboard CreateKeyboard(IEnumerable<RequestType> existRequestTypes, InputDataType objectType)
         {
-            return null;
+            Dictionary<RequestType, Button> requestTypeWithButton = null;
+
+            switch (objectType)
+            {
+                case InputDataType.Vin:
+                case InputDataType.LicensePlate:
+                    requestTypeWithButton = _carRequestTypeWithButton;
+                    break;
+            }
+
+            var buttons = requestTypeWithButton.Where(x => !existRequestTypes.Contains(x.Key)).Select(x => x.Value).ToArray().First();
+
+            return new Keyboard()
+            {
+                Buttons = new[] { new[] { buttons } },
+                OneTime = true
+            };
         }
 
         private Button CreateHistoryButton()
@@ -61,11 +77,17 @@ namespace CheckAutoBot.Utils
                 RequestType = RequestType.History
             };
 
+            var envelop = new PayloadEnvelop()
+            {
+                DotNetType = payload.GetType().ToString(),
+                Payload = payload.ToString()
+            };
+
             var action = new ButtonAction()
             {
                 Lable = "История регистрации в ГИБДД",
                 Type = ButtonActionType.Text,
-                Payload = payload.ToString()
+                Payload = envelop.ToString()
             };
 
             return new Button()
@@ -82,11 +104,18 @@ namespace CheckAutoBot.Utils
                 RequestType = RequestType.Dtp
             };
 
+            var envelop = new PayloadEnvelop()
+            {
+                DotNetType = payload.GetType().ToString(),
+                Payload = payload.ToString()
+            };
+
+
             var action = new ButtonAction()
             {
                 Lable = "ДТП",
                 Type = ButtonActionType.Text,
-                Payload = payload.ToString()
+                Payload = envelop.ToString()
             };
 
             return new Button()
@@ -103,11 +132,17 @@ namespace CheckAutoBot.Utils
                 RequestType = RequestType.Restricted
             };
 
+            var envelop = new PayloadEnvelop()
+            {
+                DotNetType = payload.GetType().ToString(),
+                Payload = payload.ToString()
+            };
+
             var action = new ButtonAction()
             {
                 Lable = "Наличие ограничений",
                 Type = ButtonActionType.Text,
-                Payload = payload.ToString()
+                Payload = envelop.ToString()
             };
 
             return new Button()
@@ -124,11 +159,17 @@ namespace CheckAutoBot.Utils
                 RequestType = RequestType.Wanted
             };
 
+            var envelop = new PayloadEnvelop()
+            {
+                DotNetType = payload.GetType().ToString(),
+                Payload = payload.ToString()
+            };
+
             var action = new ButtonAction()
             {
                 Lable = "Нахождение в розыске",
                 Type = ButtonActionType.Text,
-                Payload = payload.ToString()
+                Payload = envelop.ToString()
             };
 
             var dtpButton = new Button()
@@ -148,11 +189,17 @@ namespace CheckAutoBot.Utils
                 RequestType = RequestType.Pledge
             };
 
+            var envelop = new PayloadEnvelop()
+            {
+                DotNetType = payload.GetType().ToString(),
+                Payload = payload.ToString()
+            };
+
             var action = new ButtonAction()
             {
                 Lable = "Нахождение в залоге",
                 Type = ButtonActionType.Text,
-                Payload = payload.ToString()
+                Payload = envelop.ToString()
             };
 
             return new Button()
@@ -169,11 +216,17 @@ namespace CheckAutoBot.Utils
                 RequestType = RequestType.PersonPledge
             };
 
+            var envelop = new PayloadEnvelop()
+            {
+                DotNetType = payload.GetType().ToString(),
+                Payload = payload.ToString()
+            };
+
             var action = new ButtonAction()
             {
                 Lable = "Проверить долги",
                 Type = ButtonActionType.Text,
-                Payload = payload.ToString()
+                Payload = envelop.ToString()
             };
 
             var dtpButton = new Button()

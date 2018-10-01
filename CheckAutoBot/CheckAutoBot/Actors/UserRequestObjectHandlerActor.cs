@@ -9,7 +9,7 @@ namespace CheckAutoBot.Actors
     {
         public UserRequestObjectHandlerActor()
         {
-            Receive<UserRequestObjectMessage>();
+            //Receive<UserRequestObjectMessage>();
         }
     }
 }

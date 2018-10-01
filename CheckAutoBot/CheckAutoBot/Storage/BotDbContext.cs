@@ -9,6 +9,12 @@ namespace CheckAutoBot.Storage
     {
         public DbSet<RequestObject> RequestObjects { get; set; }
 
+        public DbSet<Auto> Autos { get; set; }
+
+        public DbSet<Person> Persons { get; set; }
+
+        public DbSet<Passport> Passports { get; set; }
+
         public DbSet<Request> Requests { get; set; }
 
         public BotDbContext()

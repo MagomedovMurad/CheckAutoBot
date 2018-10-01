@@ -13,9 +13,17 @@ namespace CheckAutoBot.Vk.Api
         public static void Send(SendMessageParams args)
         {
             string url = $"https://api.vk.com/method/messages.send";
-            var encodedMsg = WebUtility.UrlEncode(args.Message);
+            //var encodedMsg = WebUtility.UrlEncode(args.Message);
 
-            string stringData = $"message={encodedMsg}&peer_id={args.PeerId}&attachment={args.Attachments}&keyboard={args.Keyboard}&access_token={args.AccessToken}&v=5.80";
+            string stringData = $"message={args.Message.UrlEncode()}" +
+                                $"&peer_id={args.PeerId.ToString().UrlEncode()}" +
+                                $"&attachment={args.Attachments.UrlEncode()}" +
+                                $"&access_token={args.AccessToken.UrlEncode()}" +
+                                $"&v=5.80";
+
+            if (args.Keyboard != null)
+                stringData += $"&keyboard={args.Keyboard.ToString().UrlEncode()}";
+
             byte[] data = Encoding.ASCII.GetBytes(stringData);
 
             HttpWebRequest request = WebRequest.CreateHttp(url);

@@ -11,8 +11,11 @@ namespace CheckAutoBot.Actors
 {
     public class GroupEventsHandlerActor : ReceiveActor
     {
+        private ICanSelectActor _actorSelector;
+
         public GroupEventsHandlerActor()
         {
+            _actorSelector = new ActorSelector();
             Receive<string>(x => GroupEventMessageHandler(x));
         }
 
@@ -33,6 +36,7 @@ namespace CheckAutoBot.Actors
 
         private void PrivateMessageHandler(PrivateMessage message)
         {
+            _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageHandlerActor.Path).Tell(message, Self);
         }
     }
 }

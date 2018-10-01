@@ -16,10 +16,11 @@ namespace CheckAutoBot
     public class Rucaptcha
     {
         private const string apiKey = "a57666df25735811384576da1a50bf36";
+        private const string pingbackUrl = "95.31.241.19/bot/captha/";
 
         public CaptchaRequest SendReCaptcha2(string dataSiteKey, string pageUrl)
         {
-            var url = $"http://rucaptcha.com/in.php?key={apiKey}&method=userrecaptcha&googlekey={dataSiteKey}&pageurl={pageUrl}&json=1";
+            var url = $"http://rucaptcha.com/in.php?key={apiKey}&method=userrecaptcha&googlekey={dataSiteKey}&pageurl={pageUrl}&pingback={pingbackUrl}&json=1";
             var json = ExecuteRequest(url, "POST");
             var data = JsonConvert.DeserializeObject<CaptchaRequest>(json);
 
@@ -32,7 +33,7 @@ namespace CheckAutoBot
 
             var encodedBase64 = WebUtility.UrlEncode(base64);
 
-            string stringData = $"key={apiKey}&body={encodedBase64}&method=base64&json=1";
+            string stringData = $"key={apiKey}&body={encodedBase64}&method=base64&pingback={pingbackUrl}&json=1";
             byte[] data = Encoding.ASCII.GetBytes(stringData);
 
             WebHeaderCollection headers = new WebHeaderCollection();

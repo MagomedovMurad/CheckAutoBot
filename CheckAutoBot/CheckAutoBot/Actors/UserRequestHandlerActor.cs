@@ -5,6 +5,7 @@ using CheckAutoBot.Managers;
 using CheckAutoBot.Messages;
 using CheckAutoBot.Storage;
 using CheckAutoBot.Utils;
+using CheckAutoBot.Vk.Api.MessagesModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,11 +21,21 @@ namespace CheckAutoBot.Actors
         private Gibdd _gibddManager;
         private ReestrZalogov _fnpManager;
         private Rucaptcha _rucaptchaManager;
+        private KeyboardBuilder _keyboardBuilder;
+        private ICanSelectActor _actorSelector;
 
         private List<CacheItem> _captchaCacheItems = new List<CacheItem>();
 
         public UserRequestHandlerActor()
         {
+            _repositoryFactory = new RepositoryFactory();
+            _rsaManager = new Rsa();
+            _gibddManager = new Gibdd();
+            _fnpManager = new ReestrZalogov();
+            _rucaptchaManager = new Rucaptcha();
+            _keyboardBuilder = new KeyboardBuilder();
+            _actorSelector = new ActorSelector();
+
             ReceiveAsync<UserRequestMessage>(x => UserRequestHandler(x));
             ReceiveAsync<UserInputDataMessage>(x => UserInputDataMessageHandler(x));
             ReceiveAsync<CaptchaResponseMessage>(x => CaptchaResponseMessageHadler(x));
@@ -32,11 +43,11 @@ namespace CheckAutoBot.Actors
 
         private async Task<bool> UserRequestHandler(UserRequestMessage message)
         {
-            var requestObject = await GetLastUserRequestObject(message.UserId);
+            var lastUserRequestObject = await GetLastUserRequestObject(message.UserId);
 
             var userRequest = new Request()
             {
-                RequestObjectId = requestObject.Id,
+                RequestObjectId = lastUserRequestObject.Id,
                 Type = message.RequestType
             };
 
@@ -45,10 +56,10 @@ namespace CheckAutoBot.Actors
             switch (message.RequestType)
             {
                 case RequestType.History:
-                    PreGetHistory(requestObject as Auto, requestId.Value);
+                    PreGetHistory(lastUserRequestObject as Auto, requestId.Value);
                     break;
                 case RequestType.Dtp:
-                    PreGetDtp(requestObject as Auto);
+                    PreGetDtp(lastUserRequestObject as Auto);
                     break;
             }
 
@@ -108,9 +119,27 @@ namespace CheckAutoBot.Actors
                     #endregion FullName
 
                     default: throw new InvalidOperationException($"Не найден обработчик для типа {message.Type}");
+                        break;
                 }
 
-                return await AddRequestObject(data);
+                await AddRequestObject(data);
+
+                var keyboard = _keyboardBuilder.CreateKeyboard(new List<RequestType>(), message.Type);
+                var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
+
+                var sendMessageParams = new SendMessageParams()
+                {
+                    AccessToken = accessToken,
+                    Keyboard = keyboard,
+                    Message = $"{message.Data}.{Environment.NewLine}Выберите доступные действия...",
+                    PeerId = message.UserId
+                };
+
+                Vk.Api.Messages.Send(sendMessageParams);
+
+                //_actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(, Self);
+
+                return true;
             }
             catch (Exception ex)
             {
@@ -120,7 +149,11 @@ namespace CheckAutoBot.Actors
 
         private async Task<bool> CaptchaResponseMessageHadler(CaptchaResponseMessage message)
         {
-            var captchaItem = _captchaCacheItems.First(x => x.CaptchaId == message.CaptchaId);
+            var captchaItem = _captchaCacheItems.FirstOrDefault(x => x.CaptchaId == message.CaptchaId);
+
+            if (captchaItem == null)
+                return true;
+
             captchaItem.CaptchaWord = message.Value;
 
             var items = _captchaCacheItems.Where(x => x.RequestId == captchaItem.RequestId);
@@ -202,12 +235,21 @@ namespace CheckAutoBot.Actors
                 vin = vechicleResponse.Vin;
             }
             var item3 = cacheItems.First(x => x.ActionType == ActionType.History);
-            var historyResult = _gibddManager.GetHistory(vin, item3.CaptchaWord, item3.JSessionId);
+            var gibddResponse = _gibddManager.GetHistory(vin, item3.CaptchaWord, item3.JSessionId);
+
+            var messageParams = new SendMessageParams()
+            {
+                Message = HistoryToMessageText(gibddResponse.RequestResult),
+                PeerId = auto.UserId,
+                AccessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2"
+        };
+
+            Vk.Api.Messages.Send(messageParams);
         }
 
-        private void HistoryToMessageText(HistoryResult history)
+        private string HistoryToMessageText(HistoryResult history)
         {
-            var messageText = $"Марка, модель:  {history.Vehicle.Model} \n" +
+            return $"Марка, модель:  {history.Vehicle.Model} \n" +
             $"Год выпуска: {history.Vehicle.Year} \n" +
             $"VIN:  {history.Vehicle.Vin} \n" +
             $"Кузов:  {history.Vehicle.BodyNumber} \n" +

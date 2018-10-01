@@ -88,7 +88,7 @@ namespace CheckAutoBot.Actors
 
                     _actorSelection
                         .ActorSelection(Context, ActorsPaths.UserRequestHandlerActor.Path)
-                        .Tell(requestPayload, Self);
+                        .Tell(msg, Self);
                 }
 
             }

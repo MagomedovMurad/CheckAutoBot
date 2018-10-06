@@ -3,6 +3,7 @@ using CheckAutoBot.Messages;
 using CheckAutoBot.Vk.Api.MessagesModels;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,19 +16,20 @@ namespace CheckAutoBot.Actors
     public class ServerActor: ReceiveActor
     { 
         private HttpListener _httpListener;
-        private ICanSelectActor _actorSelector;
-        IUntypedActorContext _context;
-        IActorRef _self;
+        private readonly ILogger _logger;
+        private readonly ICanSelectActor _actorSelector;
+        private readonly IUntypedActorContext _context;
+        private readonly IActorRef _self;
 
-        public ServerActor()
+        public ServerActor(ILogger logger)
         {
             _actorSelector = new ActorSelector();
+            _logger = logger;
+            _context = Context;
+            _self = Self;
 
             Receive<StartServerMessage>(message => Start());
             Receive<StopServerMessage>(message => Stop());
-
-            _context = Context;
-            _self = Self;
         }
 
         private async void Start()
@@ -37,6 +39,7 @@ namespace CheckAutoBot.Actors
             _httpListener.Prefixes.Add("http://192.168.0.103:8082/bot/vk/");
             _httpListener.Prefixes.Add("http://192.168.0.103:8082/test/");
             _httpListener.Start();
+            _logger.Debug("Server succesful started");
 
             while (true)
             {
@@ -47,7 +50,6 @@ namespace CheckAutoBot.Actors
                 {
                     var requestData = GetStreamData(request.InputStream, request.ContentEncoding);
                     RucaptchaMessagesHandler(requestData);
-
 
                     context.Response.StatusCode = 200;
                     context.Response.Close();
@@ -63,7 +65,7 @@ namespace CheckAutoBot.Actors
                 }
                 else if (request.HttpMethod == "GET" && request.RawUrl == "/test")
                 {
-                    byte[] buffer = Encoding.UTF8.GetBytes("Hello, Marat");
+                    byte[] buffer = Encoding.UTF8.GetBytes("Hello, I working");
                     context.Response.Close(buffer, false);
                 }
                 else
@@ -77,11 +79,13 @@ namespace CheckAutoBot.Actors
         private void Stop()
         {
             _httpListener.Stop();
+            _logger.Debug("Server succesful stoped");
         }
 
         private void VKMessagesHandler(string json)
         {
             _actorSelector.ActorSelection(_context, ActorsPaths.GroupEventsHandlerActor.Path).Tell(json, _self);
+            _logger.Debug($"VKMessagesHandler. Sending message to GroupEventsHandlerActor. Message: {json}");
         }
 
         private void RucaptchaMessagesHandler(string stringParams)
@@ -94,6 +98,8 @@ namespace CheckAutoBot.Actors
                 Value = requestParams["code"]
             };
             _actorSelector.ActorSelection(_context, ActorsPaths.UserRequestHandlerActor.Path).Tell(message, _self);
+
+            _logger.Debug($"RucaptchaMessagesHandler. Sending message to UserRequestHandlerActor. Message: CaprchaId={message.CaptchaId} Code={message.Value}");
         }
 
         private string GetStreamData(Stream stream, Encoding encoding)

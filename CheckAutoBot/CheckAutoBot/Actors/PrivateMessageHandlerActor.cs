@@ -4,6 +4,7 @@ using CheckAutoBot.Storage;
 using CheckAutoBot.Utils;
 using CheckAutoBot.Vk.Api.MessagesModels;
 using Newtonsoft.Json;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,16 +14,18 @@ namespace CheckAutoBot.Actors
 {
     public class PrivateMessageHandlerActor: ReceiveActor
     {
-        ActorSelector _actorSelection;
+        private ActorSelector _actorSelection;
+        private readonly ILogger _logger;
 
-        Regex _regNumberRussianSymbolsRegex;
-        Regex _regNumberLatinSymbolsRegex;
-        Regex _vinCodeRegex;
-        Regex _fioRegex;
+        private Regex _regNumberRussianSymbolsRegex;
+        private Regex _regNumberLatinSymbolsRegex;
+        private Regex _vinCodeRegex;
+        private Regex _fioRegex;
 
-        public PrivateMessageHandlerActor()
+        public PrivateMessageHandlerActor(ILogger logger)
         {
             _actorSelection = new ActorSelector();
+            _logger = logger;
 
             Receive<PrivateMessage>(x => MessageHandler(x));
         }
@@ -61,6 +64,8 @@ namespace CheckAutoBot.Actors
                     _actorSelection
                         .ActorSelection(Context, ActorsPaths.UserRequestHandlerActor.Path)
                         .Tell(reqestObjectMessage, Self);
+
+                    _logger.Debug($"MessageHandler: define data: {userInpuDataTypeWithValue.Value}");
                 }
                 else
                 {
@@ -68,6 +73,8 @@ namespace CheckAutoBot.Actors
                     _actorSelection
                         .ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path)
                         .Tell(helpMsg, Self);
+
+                    _logger.Debug($"MessageHandler: Send help message");
                 }
             }
             //Если сообщение содержит Payload
@@ -89,8 +96,8 @@ namespace CheckAutoBot.Actors
                     _actorSelection
                         .ActorSelection(Context, ActorsPaths.UserRequestHandlerActor.Path)
                         .Tell(msg, Self);
+                    _logger.Debug($"MessageHandler: Send user request message to UserRequestHandlerActor");
                 }
-
             }
         }
 

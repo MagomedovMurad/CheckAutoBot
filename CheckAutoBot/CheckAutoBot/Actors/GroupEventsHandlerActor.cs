@@ -3,6 +3,7 @@ using CheckAutoBot.Messages;
 using CheckAutoBot.Storage;
 using CheckAutoBot.Vk.Api.MessagesModels;
 using Newtonsoft.Json;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,10 +13,13 @@ namespace CheckAutoBot.Actors
     public class GroupEventsHandlerActor : ReceiveActor
     {
         private ICanSelectActor _actorSelector;
+        private readonly ILogger _logger;
 
-        public GroupEventsHandlerActor()
+        public GroupEventsHandlerActor(ILogger logger)
         {
             _actorSelector = new ActorSelector();
+            _logger = logger;
+
             Receive<string>(x => GroupEventMessageHandler(x));
         }
 
@@ -30,13 +34,15 @@ namespace CheckAutoBot.Actors
                     PrivateMessageHandler(privateMessage); 
                     break;
                 default:
-                    throw new InvalidOperationException($"Не найден обработчик для типа \"{message.EventType}\"");
+                    _logger.Error($"Не найден обработчик для типа \"{message.EventType}\"");
+                    break;
             }
         }
 
         private void PrivateMessageHandler(PrivateMessage message)
         {
             _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageHandlerActor.Path).Tell(message, Self);
+            _logger.Debug($"PrivateMessageHandler. Send message to PrivateMessageHandlerActor. PrivateMessage.Text={message.Text}");
         }
     }
 }

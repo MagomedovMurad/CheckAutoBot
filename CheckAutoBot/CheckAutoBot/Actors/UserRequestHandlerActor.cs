@@ -6,6 +6,7 @@ using CheckAutoBot.Messages;
 using CheckAutoBot.Storage;
 using CheckAutoBot.Utils;
 using CheckAutoBot.Vk.Api.MessagesModels;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,16 +18,18 @@ namespace CheckAutoBot.Actors
     public class UserRequestHandlerActor : ReceiveActor
     {
         private IRepositoryFactory _repositoryFactory;
+        private ICanSelectActor _actorSelector;
+        private readonly ILogger _logger;
+
         private Rsa _rsaManager;
         private Gibdd _gibddManager;
         private ReestrZalogov _fnpManager;
         private Rucaptcha _rucaptchaManager;
         private KeyboardBuilder _keyboardBuilder;
-        private ICanSelectActor _actorSelector;
 
         private List<CacheItem> _captchaCacheItems = new List<CacheItem>();
 
-        public UserRequestHandlerActor()
+        public UserRequestHandlerActor(ILogger logger)
         {
             _repositoryFactory = new RepositoryFactory();
             _rsaManager = new Rsa();
@@ -35,6 +38,7 @@ namespace CheckAutoBot.Actors
             _rucaptchaManager = new Rucaptcha();
             _keyboardBuilder = new KeyboardBuilder();
             _actorSelector = new ActorSelector();
+            _logger = logger;
 
             ReceiveAsync<UserRequestMessage>(x => UserRequestHandler(x));
             ReceiveAsync<UserInputDataMessage>(x => UserInputDataMessageHandler(x));
@@ -149,6 +153,8 @@ namespace CheckAutoBot.Actors
 
         private async Task<bool> CaptchaResponseMessageHadler(CaptchaResponseMessage message)
         {
+            _logger.Debug($"CaptchaResponseMessageHadler: Captcha={message.Value}");
+
             var captchaItem = _captchaCacheItems.FirstOrDefault(x => x.CaptchaId == message.CaptchaId);
 
             if (captchaItem == null)
@@ -162,6 +168,8 @@ namespace CheckAutoBot.Actors
 
             if (!isNotCompleted)
             {
+                _logger.Debug($"All captchas completed");
+
                 var request = await GetUserRequest(captchaItem.RequestId);
 
                 switch (request.Type)
@@ -173,7 +181,6 @@ namespace CheckAutoBot.Actors
                         GetDtp();
                         break;
                 }
-
             }
 
             return true;
@@ -181,6 +188,7 @@ namespace CheckAutoBot.Actors
 
         private void PreGetHistory(Auto auto, int userRequestId)
         {
+            _logger.Debug("PreGetHistory start");
             if (string.IsNullOrEmpty(auto.Vin))
             {
                 var policyNumberCaptchaRequest = _rucaptchaManager.SendReCaptcha2(Rsa.dataSiteKey, Rsa.policyUrl);
@@ -217,6 +225,8 @@ namespace CheckAutoBot.Actors
                 Date = DateTime.Now
             };
             _captchaCacheItems.Add(getHistoryCacheItem);
+
+            _logger.Debug("PreGetHistory end");
         }
 
         private void GetHistory(Auto auto, IEnumerable<CacheItem> cacheItems)
@@ -227,6 +237,10 @@ namespace CheckAutoBot.Actors
             {
                 var item1 = cacheItems.First(x => x.ActionType == ActionType.PolicyNumber);
                 var policyResponse = _rsaManager.GetPolicy(item1.CaptchaWord, DateTime.Now, auto.LicensePlate);
+
+                var policy = policyResponse.Policies.FirstOrDefault();
+
+                _logger.Debug($"vin: {policyResponse.Vin}, policy: {.Serial+}");
 
                 var policy = policyResponse.Policies.First();
                 var item2 = cacheItems.First(x => x.ActionType == ActionType.PolicyInfo);

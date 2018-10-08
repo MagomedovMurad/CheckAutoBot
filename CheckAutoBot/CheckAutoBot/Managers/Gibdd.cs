@@ -124,7 +124,7 @@ namespace CheckAutoBot.Managers
             byte[] bytes = response.ReadDataAsByteArray();
             var base64 = Convert.ToBase64String(bytes);
 
-            return new CaptchaResult() { JsessionId = jsessionId, ImageBase64 = base64 };
+            return new CaptchaResult() { SessionId = jsessionId, ImageBase64 = base64 };
         }
 
     }
@@ -133,7 +133,7 @@ namespace CheckAutoBot.Managers
     {
         public string ImageBase64 { get; set; }
 
-        public string JsessionId { get; set; }
+        public string SessionId { get; set; }
              
     }
         

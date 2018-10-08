@@ -33,12 +33,13 @@ namespace CheckAutoBot.RsaModels
         [JsonProperty("insurerName")]
         public string InsurerName { get; set; }
 
+
         /// <summary>
         /// Статус полиса ОСАГО (действует/недействует)
         /// </summary>
         [JsonConverter(typeof(StringEnumConverter))]
         [JsonProperty("policyStatus")]
-        public PolicyStatus PolicyStatus { get; set; }
+        public PolicyStatus? PolicyStatus { get; set; }
 
         /// <summary>
         /// Вин код автомобиля

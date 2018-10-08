@@ -221,7 +221,7 @@ namespace CheckAutoBot.Actors
                 RequestId = userRequestId,
                 CaptchaId = historyCaptchaRequest.Id,
                 ActionType = ActionType.History,
-                JSessionId = captchaResult.JsessionId,
+                JSessionId = captchaResult.SessionId,
                 Date = DateTime.Now
             };
             _captchaCacheItems.Add(getHistoryCacheItem);
@@ -233,18 +233,19 @@ namespace CheckAutoBot.Actors
         {
             var vin = auto.Vin;
 
-            if (string.IsNullOrEmpty(auto.Vin))
+            if (string.IsNullOrEmpty(vin))
             {
                 var item1 = cacheItems.First(x => x.ActionType == ActionType.PolicyNumber);
                 var policyResponse = _rsaManager.GetPolicy(item1.CaptchaWord, DateTime.Now, auto.LicensePlate);
 
                 var policy = policyResponse.Policies.FirstOrDefault();
 
-                _logger.Debug($"vin: {policyResponse.Vin}, policy: {.Serial+}");
+                _logger.Debug($"policy: {policy.Serial} {policy.Number}");
 
-                var policy = policyResponse.Policies.First();
                 var item2 = cacheItems.First(x => x.ActionType == ActionType.PolicyInfo);
                 var vechicleResponse = _rsaManager.GetPolicyInfo(policy.Serial, policy.Number, DateTime.Now, item2.CaptchaWord);
+
+                _logger.Debug($"vin: {vechicleResponse.Vin}");
 
                 vin = vechicleResponse.Vin;
             }
@@ -286,7 +287,7 @@ namespace CheckAutoBot.Actors
         #region DBQueries
 
         /// <summary>
-        /// Запрос последнего объекта запроса пользователя
+        /// Запрос пос леднего объекта запроса пользователя
         /// </summary>
         /// <param name="userId">Идентификатор пользователя</param>
         /// <returns></returns>

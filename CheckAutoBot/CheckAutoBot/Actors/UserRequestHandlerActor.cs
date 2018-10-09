@@ -20,10 +20,13 @@ namespace CheckAutoBot.Actors
         private IRepositoryFactory _repositoryFactory;
         private ICanSelectActor _actorSelector;
         private readonly ILogger _logger;
+        private Random _random;
+
 
         private Rsa _rsaManager;
         private Gibdd _gibddManager;
         private ReestrZalogov _fnpManager;
+        private Eaisto _eaistoManager;
         private Rucaptcha _rucaptchaManager;
         private KeyboardBuilder _keyboardBuilder;
 
@@ -39,6 +42,7 @@ namespace CheckAutoBot.Actors
             _keyboardBuilder = new KeyboardBuilder();
             _actorSelector = new ActorSelector();
             _logger = logger;
+            _random = new Random();
 
             ReceiveAsync<UserRequestMessage>(x => UserRequestHandler(x));
             ReceiveAsync<UserInputDataMessage>(x => UserInputDataMessageHandler(x));
@@ -188,76 +192,40 @@ namespace CheckAutoBot.Actors
 
         private void PreGetHistory(Auto auto, int userRequestId)
         {
-            _logger.Debug("PreGetHistory start");
             if (string.IsNullOrEmpty(auto.Vin))
             {
-                var policyNumberCaptchaRequest = _rucaptchaManager.SendReCaptcha2(Rsa.dataSiteKey, Rsa.policyUrl);
-                var getPolicyNumberCacheItem = new CacheItem()
-                {
-                    RequestId = userRequestId,
-                    CaptchaId = policyNumberCaptchaRequest.Id,
-                    ActionType = ActionType.PolicyNumber,
-                    JSessionId = null,
-                    Date = DateTime.Now
-                };
-                _captchaCacheItems.Add(getPolicyNumberCacheItem);
-
-                var policyInfoCaptchaRequest = _rucaptchaManager.SendReCaptcha2(Rsa.dataSiteKey, Rsa.policyUrl);
-                var getPolicyInfoCacheItem = new CacheItem()
-                {
-                    RequestId = userRequestId,
-                    CaptchaId = policyInfoCaptchaRequest.Id,
-                    ActionType = ActionType.PolicyInfo,
-                    JSessionId = null,
-                    Date = DateTime.Now
-                };
-                _captchaCacheItems.Add(getPolicyInfoCacheItem);
+                var diagnosticCardCaptchaResult = _eaistoManager.GetCaptcha();
+                var diagnosticCardCaptchaRequest = _rucaptchaManager.SendImageCaptcha(diagnosticCardCaptchaResult.ImageBase64);
+                AddCaptchaRequestToCache(userRequestId, diagnosticCardCaptchaRequest.Id, ActionType.DiagnosticCard, diagnosticCardCaptchaResult.SessionId);
             }
 
-            var captchaResult = _gibddManager.GetCaptcha();
-            var historyCaptchaRequest = _rucaptchaManager.SendImageCaptcha(captchaResult.ImageBase64);
-            var getHistoryCacheItem = new CacheItem()
-            {
-                RequestId = userRequestId,
-                CaptchaId = historyCaptchaRequest.Id,
-                ActionType = ActionType.History,
-                JSessionId = captchaResult.SessionId,
-                Date = DateTime.Now
-            };
-            _captchaCacheItems.Add(getHistoryCacheItem);
-
-            _logger.Debug("PreGetHistory end");
+            var getHistoryCaptchaResult = _gibddManager.GetCaptcha();
+            var historyCaptchaRequest = _rucaptchaManager.SendImageCaptcha(getHistoryCaptchaResult.ImageBase64);
+            AddCaptchaRequestToCache(userRequestId, historyCaptchaRequest.Id, ActionType.History, getHistoryCaptchaResult.SessionId);
         }
 
         private void GetHistory(Auto auto, IEnumerable<CacheItem> cacheItems)
         {
-            var vin = auto.Vin;
+            string vin = auto.Vin;
 
             if (string.IsNullOrEmpty(vin))
             {
-                var item1 = cacheItems.First(x => x.ActionType == ActionType.PolicyNumber);
-                var policyResponse = _rsaManager.GetPolicy(item1.CaptchaWord, DateTime.Now, auto.LicensePlate);
+                var phoneNumber = "+790" + _random.Next(10000000, 99999999);
 
-                var policy = policyResponse.Policies.FirstOrDefault();
+                var diagnosticCardCacheItem = cacheItems.First(x => x.ActionType == ActionType.DiagnosticCard);
+                var diagnosticCard = _eaistoManager.GetDiagnosticCard(diagnosticCardCacheItem.CaptchaWord, phoneNumber, diagnosticCardCacheItem.SessionId, licensePlate: auto.LicensePlate);
 
-                _logger.Debug($"policy: {policy.Serial} {policy.Number}");
-
-                var item2 = cacheItems.First(x => x.ActionType == ActionType.PolicyInfo);
-                var vechicleResponse = _rsaManager.GetPolicyInfo(policy.Serial, policy.Number, DateTime.Now, item2.CaptchaWord);
-
-                _logger.Debug($"vin: {vechicleResponse.Vin}");
-
-                vin = vechicleResponse.Vin;
+                vin = diagnosticCard.Vin;
             }
-            var item3 = cacheItems.First(x => x.ActionType == ActionType.History);
-            var gibddResponse = _gibddManager.GetHistory(vin, item3.CaptchaWord, item3.JSessionId);
+            var historyCacheItem = cacheItems.First(x => x.ActionType == ActionType.History);
+            var gibddResponse = _gibddManager.GetHistory(vin, historyCacheItem.CaptchaWord, historyCacheItem.SessionId);
 
             var messageParams = new SendMessageParams()
             {
                 Message = HistoryToMessageText(gibddResponse.RequestResult),
                 PeerId = auto.UserId,
                 AccessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2"
-        };
+            };
 
             Vk.Api.Messages.Send(messageParams);
         }
@@ -284,6 +252,36 @@ namespace CheckAutoBot.Actors
         {
 
         }
+
+        #region Helpers
+
+        private void AddCaptchaRequestToCache(int userRequestId, long captchaId, ActionType actionType, string sessionId = null)
+        {
+            var getPolicyNumberCacheItem = new CacheItem()
+            {
+                RequestId = userRequestId,
+                CaptchaId = captchaId,
+                ActionType = actionType,
+                SessionId = sessionId,
+                Date = DateTime.Now
+            };
+            _captchaCacheItems.Add(getPolicyNumberCacheItem);
+        }
+
+        //private void GetPolicy(Auto auto)
+        //{
+        //    if (string.IsNullOrEmpty(auto.Vin))
+        //    {
+        //        var policyNumberCaptchaRequest = _rucaptchaManager.SendReCaptcha2(Rsa.dataSiteKey, Rsa.policyUrl);
+        //        AddCaptchaRequestToCache();
+
+        //        var policyInfoCaptchaRequest = _rucaptchaManager.SendReCaptcha2(Rsa.dataSiteKey, Rsa.policyUrl);
+        //        AddCaptchaRequestToCache();
+        //    }
+        //}
+
+        #endregion Helpers
+
         #region DBQueries
 
         /// <summary>

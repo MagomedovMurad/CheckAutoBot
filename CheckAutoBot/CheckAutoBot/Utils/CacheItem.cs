@@ -16,7 +16,7 @@ namespace CheckAutoBot.Utils
 
         public string CaptchaWord { get; set; }
 
-        public string JSessionId { get; set; }
+        public string SessionId { get; set; }
 
         public DateTime Date { get; set; }
     }

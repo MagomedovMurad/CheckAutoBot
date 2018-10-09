@@ -49,6 +49,11 @@ namespace CheckAutoBot.Enums
         /// <summary>
         /// Получить информацию о наличии долгов у человека
         /// </summary>
-        CheckUserArrears
+        CheckUserArrears,
+
+        /// <summary>
+        /// Получить диагностическую карту
+        /// </summary>
+        DiagnosticCard
     }
 }

@@ -29,8 +29,18 @@ namespace CheckAutoBot
         {
             var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
 
-            var t = new Eaisto();
-            var tt = t.GetCaptcha();
+            var eaisto = new Eaisto();
+            var captchaResult = eaisto.GetCaptcha();
+
+            var rucaptcha = new Rucaptcha();
+            var captchaRequest = rucaptcha.SendImageCaptcha(captchaResult.ImageBase64);
+            var captchaAnswer = rucaptcha.GetCapthaResult(captchaRequest.Id);
+
+            Random rnd = new Random();
+
+            var phoneNumber = "+790" + rnd.Next(10000000, 99999999);
+
+            eaisto.GetDiagnosticCard(captchaAnswer.Answer, phoneNumber, captchaResult.SessionId, licensePlate:"Т363НН26");
 
 
             ////  var photoBinaryData = response.ReadDataAsByteArray();

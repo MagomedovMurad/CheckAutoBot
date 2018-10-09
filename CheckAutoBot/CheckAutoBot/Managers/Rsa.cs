@@ -23,8 +23,7 @@ namespace CheckAutoBot.Managers
 
         public PolicyResponse GetPolicy(string captcha, DateTime date, string lp = "", string vin = "", string bodyNumber = "", string chassisNumber = "")
         {
-            string encodeLp = WebUtility.UrlEncode(lp);
-            var stringData = $"vin={vin}&lp={encodeLp}&date={date.Date.ToString("dd.MM.yyyy")}&bodyNumber={bodyNumber}&chassisNumber={chassisNumber}&captcha={captcha}";
+            var stringData = $"vin={vin}&lp={lp.UrlEncode()}&date={date.Date.ToString("dd.MM.yyyy")}&bodyNumber={bodyNumber}&chassisNumber={chassisNumber}&captcha={captcha}";
             string json = ExecuteRequest(stringData, policyUrl);
             var data = JsonConvert.DeserializeObject<PolicyResponse>(json);
             return data;

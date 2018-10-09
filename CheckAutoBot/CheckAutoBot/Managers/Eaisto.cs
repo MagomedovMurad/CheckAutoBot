@@ -1,4 +1,6 @@
-﻿using CheckAutoBot.Infrastructure;
+﻿using CheckAutoBot.EaistoModels;
+using CheckAutoBot.Infrastructure;
+using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -11,11 +13,24 @@ namespace CheckAutoBot.Managers
         private const string url = "https://eaisto.info/";
         private const string captchaUrl = "https://eaisto.info/securimage_show.php ";
 
-        public void GetDiagnosticCard(string captcha, string sessionId, string vin = null, string licensePlate = null, string bodyNumber = null, string chassis = null, string eaisto = null)
+        public DiagnosticCard GetDiagnosticCard(string captcha,
+                                      string phoneNumber,
+                                      string sessionId, 
+                                      string vin = null,
+                                      string licensePlate = null,
+                                      string bodyNumber = null, 
+                                      string chassis = null, 
+                                      string eaisto = null)
         {
-            string url = $"https://www.reestr-zalogov.ru/search/endpoint";
+            string stringData = $"action={"checkNum"}" +
+                                $"&vin={vin.UrlEncode()}" +
+                                $"&registr={licensePlate.UrlEncode()}" +
+                                $"&body={bodyNumber.UrlEncode()}" +
+                                $"&chassis={chassis.UrlEncode()}" +
+                                $"&eaisto={eaisto.UrlEncode()}" +
+                                $"&phoneNumber={phoneNumber.UrlEncode()}" +
+                                $"&captcha_code={captcha.UrlEncode()}";
 
-            string stringData = $"action={"checkNum"}&vin={vin}&registr={licensePlate}&body={bodyNumber}&chassis={chassis}&eaisto={eaisto}&captcha_code={captcha}";
             byte[] data = Encoding.ASCII.GetBytes(stringData);
 
             #region Headers
@@ -43,6 +58,7 @@ namespace CheckAutoBot.Managers
             #endregion
 
             HttpWebRequest request = WebRequest.CreateHttp(url);
+            request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
             request.Method = "POST";
             request.Headers = headers;
             request.CookieContainer = cookieContainer;
@@ -50,10 +66,10 @@ namespace CheckAutoBot.Managers
             request.AddContent(data);
 
             WebResponse response = request.GetResponse();
-            var json = response.ReadDataAsString();
+            var responseData = response.ReadDataAsString();
             response.Close();
 
-            return json;
+            return ParseHtml(responseData);
         }
 
         public CaptchaResult GetCaptcha()
@@ -82,6 +98,37 @@ namespace CheckAutoBot.Managers
             var base64 = Convert.ToBase64String(bytes);
 
             return new CaptchaResult() { SessionId = phpsessid, ImageBase64 = base64 };
+        }
+
+        private DiagnosticCard ParseHtml(string html)
+        {
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml(html);
+
+            HtmlNode brandNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[1]/td[2]");
+
+            HtmlNode modelNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[2]/td[2]");
+
+            HtmlNode dateFromeNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[3]/td[2]");
+
+            HtmlNode dateToNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[4]/td[2]");
+
+            HtmlNode vinNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[5]/td[2]");
+
+            HtmlNode licensePlateNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[6]/td[2]");
+
+            HtmlNode eaistoNumberNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[7]/td[2]");
+
+            return new DiagnosticCard()
+            {
+                Brand = brandNode?.InnerText,
+                Model = modelNode?.InnerText,
+                Vin = vinNode?.InnerText,
+                LicensePlate = vinNode?.InnerText,
+                EaistoNumber = eaistoNumberNode?.InnerText,
+                DateFrom = dateFromeNode?.InnerText,
+                DateTo = dateToNode?.InnerText
+            };
         }
     }
 }

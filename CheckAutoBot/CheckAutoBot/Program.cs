@@ -36,13 +36,6 @@ namespace CheckAutoBot
             var captchaRequest = rucaptcha.SendImageCaptcha(captchaResult.ImageBase64);
             var captchaAnswer = rucaptcha.GetCapthaResult(captchaRequest.Id);
 
-            Random rnd = new Random();
-
-            var phoneNumber = "+790" + rnd.Next(10000000, 99999999);
-
-            eaisto.GetDiagnosticCard(captchaAnswer.Answer, phoneNumber, captchaResult.SessionId, licensePlate:"Т363НН26");
-
-
             ////  var photoBinaryData = response.ReadDataAsByteArray();
 
             //  var serverData = Photos.GetMessagesUploadServer("192287910", accessToken);

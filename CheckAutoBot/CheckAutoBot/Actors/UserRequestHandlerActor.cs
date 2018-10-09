@@ -1,4 +1,5 @@
 ﻿using Akka.Actor;
+using CheckAutoBot.EaistoModels;
 using CheckAutoBot.Enums;
 using CheckAutoBot.GbddModels;
 using CheckAutoBot.Managers;
@@ -64,10 +65,16 @@ namespace CheckAutoBot.Actors
             switch (message.RequestType)
             {
                 case RequestType.History:
-                    PreGetHistory(lastUserRequestObject as Auto, requestId.Value);
+                    PreGetGibdd(lastUserRequestObject as Auto, requestId.Value, ActionType.History);
                     break;
                 case RequestType.Dtp:
-                    PreGetDtp(lastUserRequestObject as Auto);
+                    PreGetGibdd(lastUserRequestObject as Auto, requestId.Value, ActionType.Dtp);
+                    break;
+                case RequestType.Restricted:
+                    PreGetGibdd(lastUserRequestObject as Auto, requestId.Value, ActionType.Restricted);
+                    break;
+                case RequestType.Wanted:
+                    PreGetGibdd(lastUserRequestObject as Auto, requestId.Value, ActionType.Wanted);
                     break;
             }
 
@@ -182,26 +189,12 @@ namespace CheckAutoBot.Actors
                         GetHistory(request.RequestObject as Auto, items);
                         break;
                     case RequestType.Dtp:
-                        GetDtp();
+                        GetDtp(request.RequestObject as Auto, items);
                         break;
                 }
             }
 
             return true;
-        }
-
-        private void PreGetHistory(Auto auto, int userRequestId)
-        {
-            if (string.IsNullOrEmpty(auto.Vin))
-            {
-                var diagnosticCardCaptchaResult = _eaistoManager.GetCaptcha();
-                var diagnosticCardCaptchaRequest = _rucaptchaManager.SendImageCaptcha(diagnosticCardCaptchaResult.ImageBase64);
-                AddCaptchaRequestToCache(userRequestId, diagnosticCardCaptchaRequest.Id, ActionType.DiagnosticCard, diagnosticCardCaptchaResult.SessionId);
-            }
-
-            var getHistoryCaptchaResult = _gibddManager.GetCaptcha();
-            var historyCaptchaRequest = _rucaptchaManager.SendImageCaptcha(getHistoryCaptchaResult.ImageBase64);
-            AddCaptchaRequestToCache(userRequestId, historyCaptchaRequest.Id, ActionType.History, getHistoryCaptchaResult.SessionId);
         }
 
         private void GetHistory(Auto auto, IEnumerable<CacheItem> cacheItems)
@@ -210,47 +203,70 @@ namespace CheckAutoBot.Actors
 
             if (string.IsNullOrEmpty(vin))
             {
-                var phoneNumber = "+790" + _random.Next(10000000, 99999999);
-
-                var diagnosticCardCacheItem = cacheItems.First(x => x.ActionType == ActionType.DiagnosticCard);
-                var diagnosticCard = _eaistoManager.GetDiagnosticCard(diagnosticCardCacheItem.CaptchaWord, phoneNumber, diagnosticCardCacheItem.SessionId, licensePlate: auto.LicensePlate);
-
+                var diagnosticCard = GetDiagnosticCard(auto, cacheItems);
                 vin = diagnosticCard.Vin;
             }
             var historyCacheItem = cacheItems.First(x => x.ActionType == ActionType.History);
             var gibddResponse = _gibddManager.GetHistory(vin, historyCacheItem.CaptchaWord, historyCacheItem.SessionId);
 
-            var messageParams = new SendMessageParams()
+            #region Send to user
+            var text = HistoryToMessageText(gibddResponse.RequestResult);
+
+            var message = new SendToUserMessage()
             {
-                Message = HistoryToMessageText(gibddResponse.RequestResult),
-                PeerId = auto.UserId,
-                AccessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2"
+                UserId = auto.UserId,
+                Text = text,
+                Photo = null
             };
 
-            Vk.Api.Messages.Send(messageParams);
+            var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
+            sender.Tell(message, Self);
+
+            #endregion Send to user
         }
 
-        private string HistoryToMessageText(HistoryResult history)
+       
+
+        private void PreGetGibdd(Auto auto, int userRequestId, ActionType actionType)
         {
-            return $"Марка, модель:  {history.Vehicle.Model} \n" +
-            $"Год выпуска: {history.Vehicle.Year} \n" +
-            $"VIN:  {history.Vehicle.Vin} \n" +
-            $"Кузов:  {history.Vehicle.BodyNumber} \n" +
-            $"Цвет: {history.Vehicle.Color} \n" +
-            $"Рабочий объем(см3):  {history.Vehicle.EngineVolume} \n" +
-            $"Мощность(кВт/л.с.):  {history.Vehicle.PowerHp} \n" +
-            $"Тип:  {history.Vehicle.TypeName} \n" +
-            $"Категория: {history.Vehicle.Category}";
+            if (string.IsNullOrEmpty(auto.Vin))
+            {
+                var captchaResult = _eaistoManager.GetCaptcha();
+                var captchaRequest = _rucaptchaManager.SendImageCaptcha(captchaResult.ImageBase64);
+                AddCaptchaRequestToCache(userRequestId, captchaRequest.Id, ActionType.DiagnosticCard, captchaResult.SessionId);
+            }
+
+            var getDtpCaptchaResult = _gibddManager.GetCaptcha();
+            var dtpCaptchaRequest = _rucaptchaManager.SendImageCaptcha(getDtpCaptchaResult.ImageBase64);
+            AddCaptchaRequestToCache(userRequestId, dtpCaptchaRequest.Id, actionType, getDtpCaptchaResult.SessionId);
         }
 
-        private void PreGetDtp(Auto auto)
+        private void GetDtp(Auto auto, IEnumerable<CacheItem> cacheItems)
         {
-          //  if (string.IsNullOrEmpty(auto.Vin))
-        }
+            string vin = auto.Vin;
 
-        private void GetDtp()
-        {
+            if (string.IsNullOrEmpty(vin))
+            {
+                var diagnosticCard = GetDiagnosticCard(auto, cacheItems);
+                vin = diagnosticCard.Vin;
+            }
+            var dtpCacheItem = cacheItems.First(x => x.ActionType == ActionType.Dtp);
+            var gibddResponse = _gibddManager.GetDtp(vin, dtpCacheItem.CaptchaWord, dtpCacheItem.SessionId);
 
+            #region Send to user
+            var text = HistoryToMessageText(gibddResponse.RequestResult);
+
+            var message = new SendToUserMessage()
+            {
+                UserId = auto.UserId,
+                Text = text,
+                Photo = null
+            };
+
+            var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
+            sender.Tell(message, Self);
+
+            #endregion Send to user
         }
 
         #region Helpers
@@ -268,24 +284,47 @@ namespace CheckAutoBot.Actors
             _captchaCacheItems.Add(getPolicyNumberCacheItem);
         }
 
-        //private void GetPolicy(Auto auto)
-        //{
-        //    if (string.IsNullOrEmpty(auto.Vin))
-        //    {
-        //        var policyNumberCaptchaRequest = _rucaptchaManager.SendReCaptcha2(Rsa.dataSiteKey, Rsa.policyUrl);
-        //        AddCaptchaRequestToCache();
+        private DiagnosticCard GetDiagnosticCard(Auto auto, IEnumerable<CacheItem> cacheItems)
+        {
+            var phoneNumber = "+790" + _random.Next(10000000, 99999999);
 
-        //        var policyInfoCaptchaRequest = _rucaptchaManager.SendReCaptcha2(Rsa.dataSiteKey, Rsa.policyUrl);
-        //        AddCaptchaRequestToCache();
-        //    }
-        //}
+            var diagnosticCardCacheItem = cacheItems.First(x => x.ActionType == ActionType.DiagnosticCard);
+            var diagnosticCard = _eaistoManager.GetDiagnosticCard(diagnosticCardCacheItem.CaptchaWord, phoneNumber, diagnosticCardCacheItem.SessionId, licensePlate: auto.LicensePlate);
+
+            return diagnosticCard;
+        }
+
+        private string HistoryToMessageText(HistoryResult history)
+        {
+            var t = $"Марка, модель:  {history.Vehicle.Model} \n" +
+            $"Год выпуска: {history.Vehicle.Year} \n" +
+            $"VIN:  {history.Vehicle.Vin} \n" +
+            $"Кузов:  {history.Vehicle.BodyNumber} \n" +
+            $"Цвет: {history.Vehicle.Color} \n" +
+            $"Рабочий объем(см3):  {history.Vehicle.EngineVolume} \n" +
+            $"Мощность(кВт/л.с.):  {history.Vehicle.PowerHp} \n" +
+            $"Тип:  {history.Vehicle.TypeName} \n" +
+            $"Категория: {history.Vehicle.Category}";
+
+            var periods = history.OwnershipPeriodsEnvelop.OwnershipPeriods;
+            foreach (var period in periods)
+            {
+                var ownerType = period.OwnerType == OwnerType.Natural ? "Физическое лицо" : "Юридическое лицо";
+                period.From
+            }
+        }
+
+        private string DtpToMessageHistory()
+        {
+            return $"";
+        }
 
         #endregion Helpers
 
         #region DBQueries
 
         /// <summary>
-        /// Запрос пос леднего объекта запроса пользователя
+        /// Запрос последнего объекта запроса пользователя
         /// </summary>
         /// <param name="userId">Идентификатор пользователя</param>
         /// <returns></returns>

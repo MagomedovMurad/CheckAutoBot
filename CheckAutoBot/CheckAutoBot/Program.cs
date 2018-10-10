@@ -27,14 +27,14 @@ namespace CheckAutoBot
         //JMBLYV97W7J004216 залог
         static void Main(string[] args)
         {
-            var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
+            //var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
 
-            var eaisto = new Eaisto();
-            var captchaResult = eaisto.GetCaptcha();
+            //var eaisto = new Eaisto();
+            //var captchaResult = eaisto.GetCaptcha();
 
-            var rucaptcha = new Rucaptcha();
-            var captchaRequest = rucaptcha.SendImageCaptcha(captchaResult.ImageBase64);
-            var captchaAnswer = rucaptcha.GetCapthaResult(captchaRequest.Id);
+            //var rucaptcha = new Rucaptcha();
+            //var captchaRequest = rucaptcha.SendImageCaptcha(captchaResult.ImageBase64);
+            //var captchaAnswer = rucaptcha.GetCapthaResult(captchaRequest.Id);
 
             ////  var photoBinaryData = response.ReadDataAsByteArray();
 
@@ -63,18 +63,18 @@ namespace CheckAutoBot
 
 
 
-            //LogManager.LoadConfiguration("NLog.config");
-            //var logger = LogManager.GetCurrentClassLogger();
-            //logger.Info("Hello World");
+            LogManager.LoadConfiguration("NLog.config");
+            var logger = LogManager.GetCurrentClassLogger();
+            logger.Info("Hello World");
 
-            //ActorSystem actorSystem = ActorSystem.Create("TestSystem");
-            //var server = actorSystem.ActorOf(Props.Create(() => new ServerActor(logger)), ActorsPaths.ServerActor.Name);
-            //var groupEventsHandlerActor = actorSystem.ActorOf(Props.Create(() => new GroupEventsHandlerActor(logger)), ActorsPaths.GroupEventsHandlerActor.Name);
-            //var privateMessageHandlerActor = actorSystem.ActorOf(Props.Create(() => new PrivateMessageHandlerActor(logger)), ActorsPaths.PrivateMessageHandlerActor.Name);
-            //var privateMessageSenderActor = actorSystem.ActorOf(Props.Create(typeof(PrivateMessageSenderActor)), ActorsPaths.PrivateMessageSenderActor.Name);
-            //var userRequestHandlerActor = actorSystem.ActorOf(Props.Create(() => new UserRequestHandlerActor(logger)), ActorsPaths.UserRequestHandlerActor.Name);
-            //server.Tell(new StartServerMessage());
-            //Console.ReadKey();
+            ActorSystem actorSystem = ActorSystem.Create("TestSystem");
+            var server = actorSystem.ActorOf(Props.Create(() => new ServerActor(logger)), ActorsPaths.ServerActor.Name);
+            var groupEventsHandlerActor = actorSystem.ActorOf(Props.Create(() => new GroupEventsHandlerActor(logger)), ActorsPaths.GroupEventsHandlerActor.Name);
+            var privateMessageHandlerActor = actorSystem.ActorOf(Props.Create(() => new PrivateMessageHandlerActor(logger)), ActorsPaths.PrivateMessageHandlerActor.Name);
+            var privateMessageSenderActor = actorSystem.ActorOf(Props.Create(typeof(PrivateMessageSenderActor)), ActorsPaths.PrivateMessageSenderActor.Name);
+            var userRequestHandlerActor = actorSystem.ActorOf(Props.Create(() => new UserRequestHandlerActor(logger)), ActorsPaths.UserRequestHandlerActor.Name);
+            server.Tell(new StartServerMessage());
+            Console.ReadKey();
 
 
 

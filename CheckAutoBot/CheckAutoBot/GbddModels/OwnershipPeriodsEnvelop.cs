@@ -10,7 +10,7 @@ namespace CheckAutoBot.GbddModels
         /// <summary>
         /// Периоды владения автомобилем
         /// </summary>
-        [JsonProperty("ownershipPeriods")]
+        [JsonProperty("ownershipPeriod")]
         public List<OwnershipPeriod> OwnershipPeriods { get; set; }
     }
 }

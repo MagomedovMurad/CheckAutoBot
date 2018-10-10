@@ -95,11 +95,11 @@ namespace CheckAutoBot.Managers
             response.Close();
 
             return json;
-        }
+         }
 
         public CaptchaResult GetCaptcha()
         {
-            var date = DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
+            var date = DateTime.UtcNow.AddMinutes(1).Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
             string captchaUrl = "http://сервис.гибдд.рф/proxy/captcha.jpg?" + Math.Round(date, 0);
 
             WebHeaderCollection headers = new WebHeaderCollection();

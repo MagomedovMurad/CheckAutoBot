@@ -24,10 +24,10 @@ namespace CheckAutoBot.GbddModels
         public OwnerType OwnerType { get; set; }
 
         [JsonProperty("from")]
-        public DateTimeOffset From { get; set; }
+        public string From { get; set; }
 
         [JsonProperty("to")]
-        public DateTimeOffset To { get; set; }
+        public string To { get; set; }
 
         private Dictionary<int, string> operations = new Dictionary<int, string>()
         {

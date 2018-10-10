@@ -42,6 +42,7 @@ namespace CheckAutoBot.Actors
             _rucaptchaManager = new Rucaptcha();
             _keyboardBuilder = new KeyboardBuilder();
             _actorSelector = new ActorSelector();
+            _eaistoManager = new Eaisto();
             _logger = logger;
             _random = new Random();
 
@@ -52,11 +53,11 @@ namespace CheckAutoBot.Actors
 
         private async Task<bool> UserRequestHandler(UserRequestMessage message)
         {
-            var lastUserRequestObject = await GetLastUserRequestObject(message.UserId);
+            var lastRequestObject = await GetLastUserRequestObject(message.UserId);
 
             var userRequest = new Request()
             {
-                RequestObjectId = lastUserRequestObject.Id,
+                RequestObjectId = lastRequestObject.Id,
                 Type = message.RequestType
             };
 
@@ -65,16 +66,16 @@ namespace CheckAutoBot.Actors
             switch (message.RequestType)
             {
                 case RequestType.History:
-                    PreGetGibdd(lastUserRequestObject as Auto, requestId.Value, ActionType.History);
+                    PreGetGibdd(lastRequestObject as Auto, requestId.Value, ActionType.History);
                     break;
                 case RequestType.Dtp:
-                    PreGetGibdd(lastUserRequestObject as Auto, requestId.Value, ActionType.Dtp);
+                    PreGetGibdd(lastRequestObject as Auto, requestId.Value, ActionType.Dtp);
                     break;
                 case RequestType.Restricted:
-                    PreGetGibdd(lastUserRequestObject as Auto, requestId.Value, ActionType.Restricted);
+                    PreGetGibdd(lastRequestObject as Auto, requestId.Value, ActionType.Restricted);
                     break;
                 case RequestType.Wanted:
-                    PreGetGibdd(lastUserRequestObject as Auto, requestId.Value, ActionType.Wanted);
+                    PreGetGibdd(lastRequestObject as Auto, requestId.Value, ActionType.Wanted);
                     break;
             }
 
@@ -197,7 +198,7 @@ namespace CheckAutoBot.Actors
             return true;
         }
 
-        private void GetHistory(Auto auto, IEnumerable<CacheItem> cacheItems)
+        private async void GetHistory(Auto auto, IEnumerable<CacheItem> cacheItems)
         {
             string vin = auto.Vin;
 
@@ -212,11 +213,16 @@ namespace CheckAutoBot.Actors
             #region Send to user
             var text = HistoryToMessageText(gibddResponse.RequestResult);
 
+            var requestTypes = await GetRequestTypes(auto.Id).ConfigureAwait(false);
+
+            var keyboard = _keyboardBuilder.CreateKeyboard(requestTypes, InputDataType.Vin);
+
             var message = new SendToUserMessage()
             {
                 UserId = auto.UserId,
                 Text = text,
-                Photo = null
+                Photo = null,
+                Keyboard = keyboard
             };
 
             var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
@@ -225,7 +231,7 @@ namespace CheckAutoBot.Actors
             #endregion Send to user
         }
 
-       
+
 
         private void PreGetGibdd(Auto auto, int userRequestId, ActionType actionType)
         {
@@ -243,30 +249,30 @@ namespace CheckAutoBot.Actors
 
         private void GetDtp(Auto auto, IEnumerable<CacheItem> cacheItems)
         {
-            string vin = auto.Vin;
+            //string vin = auto.Vin;
 
-            if (string.IsNullOrEmpty(vin))
-            {
-                var diagnosticCard = GetDiagnosticCard(auto, cacheItems);
-                vin = diagnosticCard.Vin;
-            }
-            var dtpCacheItem = cacheItems.First(x => x.ActionType == ActionType.Dtp);
-            var gibddResponse = _gibddManager.GetDtp(vin, dtpCacheItem.CaptchaWord, dtpCacheItem.SessionId);
+            //if (string.IsNullOrEmpty(vin))
+            //{
+            //    var diagnosticCard = GetDiagnosticCard(auto, cacheItems);
+            //    vin = diagnosticCard.Vin;
+            //}
+            //var dtpCacheItem = cacheItems.First(x => x.ActionType == ActionType.Dtp);
+            //var gibddResponse = _gibddManager.GetDtp(vin, dtpCacheItem.CaptchaWord, dtpCacheItem.SessionId);
 
-            #region Send to user
-            var text = HistoryToMessageText(gibddResponse.RequestResult);
+            //#region Send to user
+            //var text = HistoryToMessageText(gibddResponse.RequestResult);
 
-            var message = new SendToUserMessage()
-            {
-                UserId = auto.UserId,
-                Text = text,
-                Photo = null
-            };
+            //var message = new SendToUserMessage()
+            //{
+            //    UserId = auto.UserId,
+            //    Text = text,
+            //    Photo = null
+            //};
 
-            var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
-            sender.Tell(message, Self);
+            //var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
+            //sender.Tell(message, Self);
 
-            #endregion Send to user
+            //#endregion Send to user
         }
 
         #region Helpers
@@ -296,7 +302,7 @@ namespace CheckAutoBot.Actors
 
         private string HistoryToMessageText(HistoryResult history)
         {
-            var t = $"Марка, модель:  {history.Vehicle.Model} \n" +
+            var text = $"Марка, модель:  {history.Vehicle.Model} \n" +
             $"Год выпуска: {history.Vehicle.Year} \n" +
             $"VIN:  {history.Vehicle.Vin} \n" +
             $"Кузов:  {history.Vehicle.BodyNumber} \n" +
@@ -310,9 +316,27 @@ namespace CheckAutoBot.Actors
             foreach (var period in periods)
             {
                 var ownerType = period.OwnerType == OwnerType.Natural ? "Физическое лицо" : "Юридическое лицо";
-                period.From
+                var dateTo = period.To ?? "настоящее время";
+
+                string ownerPeriod = $"{Environment.NewLine}" +
+                    $"{Environment.NewLine}{ownerType}{Environment.NewLine}" +
+                                     $"c: {period.From}{Environment.NewLine}" +
+                                     $"по: {dateTo}{Environment.NewLine}" +
+                                     $"Последняя операция: {period.LastOperation}";
+                text += ownerPeriod;
             }
+
+            return text;
+
         }
+
+        //private string DtpToMessageText(DtpResult dtp)
+        //{
+        //    foreach (var accident in dtp.Accidents)
+        //    {
+        //        accident.
+        //    }
+        //}
 
         private string DtpToMessageHistory()
         {
@@ -384,6 +408,21 @@ namespace CheckAutoBot.Actors
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
                     return await rep.GetUserRequest(requestId).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        private async Task<IEnumerable<RequestType>> GetRequestTypes(int requestObjectId)
+        {
+            try
+            {
+                using (var rep = _repositoryFactory.CreateBotRepository())
+                {
+                    return await rep.GetRequestTypes(requestObjectId).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)

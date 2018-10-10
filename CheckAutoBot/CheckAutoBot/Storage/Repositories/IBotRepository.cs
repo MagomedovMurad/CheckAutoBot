@@ -15,5 +15,7 @@ namespace CheckAutoBot.Storage
 
         Task<Request> GetUserRequest(int requestId);
 
+        Task<IEnumerable<RequestType>> GetRequestTypes(int requestObjectId);
+
     }
 }

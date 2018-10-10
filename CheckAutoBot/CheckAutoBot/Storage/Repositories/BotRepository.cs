@@ -50,5 +50,12 @@ namespace CheckAutoBot.Storage
             return addedRequest.Entity.Id;
         }
 
+        public async Task<IEnumerable<RequestType>> GetRequestTypes(int requestObjectId)
+        {
+            return await _dbContext.Requests
+                                   .Where(x => x.RequestObjectId == requestObjectId)
+                                   .Select(x => x.Type).ToListAsync();
+        }
+
     }
 }

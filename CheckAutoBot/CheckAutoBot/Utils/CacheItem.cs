@@ -12,7 +12,9 @@ namespace CheckAutoBot.Utils
 
         public int RequestId { get; set; }
 
-        public ActionType ActionType { get; set; }
+        public ActionType CurrentActionType { get; set; }
+
+        public ActionType TargetActionType { get; set; }
 
         public string CaptchaWord { get; set; }
 

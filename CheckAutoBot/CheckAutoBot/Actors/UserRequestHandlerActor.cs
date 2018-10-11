@@ -51,6 +51,8 @@ namespace CheckAutoBot.Actors
             ReceiveAsync<CaptchaResponseMessage>(x => CaptchaResponseMessageHadler(x));
         }
 
+        #region Handlers
+
         private async Task<bool> UserRequestHandler(UserRequestMessage message)
         {
             var lastRequestObject = await GetLastUserRequestObject(message.UserId);
@@ -63,23 +65,29 @@ namespace CheckAutoBot.Actors
 
             var requestId = await SaveUserRequest(userRequest);
 
-            switch (message.RequestType)
+            if (lastRequestObject is Auto auto)
             {
-                case RequestType.History:
-                    PreGetGibdd(lastRequestObject as Auto, requestId.Value, ActionType.History);
-                    break;
-                case RequestType.Dtp:
-                    PreGetGibdd(lastRequestObject as Auto, requestId.Value, ActionType.Dtp);
-                    break;
-                case RequestType.Restricted:
-                    PreGetGibdd(lastRequestObject as Auto, requestId.Value, ActionType.Restricted);
-                    break;
-                case RequestType.Wanted:
-                    PreGetGibdd(lastRequestObject as Auto, requestId.Value, ActionType.Wanted);
-                    break;
-                case RequestType.DiagnosticCard:
-                    PreGetDiagnosticCard();
-                    break;
+                bool hasVin = auto.Vin != null;
+
+
+                switch (message.RequestType)
+                {
+                    case RequestType.History:
+                        PreGetFromGibdd(hasVin, requestId.Value, ActionType.History);
+                        break;
+                    case RequestType.Dtp:
+                        PreGetFromGibdd(hasVin, requestId.Value, ActionType.Dtp);
+                        break;
+                    case RequestType.Restricted:
+                        PreGetFromGibdd(hasVin, requestId.Value, ActionType.Restricted);
+                        break;
+                    case RequestType.Wanted:
+                        PreGetFromGibdd(hasVin, requestId.Value, ActionType.Wanted);
+                        break;
+                    case RequestType.Pledge:
+                        PreGetFromFnp(hasVin, requestId.Value, ActionType.Pledge);
+                        break;
+                }
             }
 
             return true;
@@ -167,122 +175,8 @@ namespace CheckAutoBot.Actors
             }
         }
 
-        //private async Task<bool> UserRequestHandler(UserRequestMessage message)
-        //{
-        //    var lastRequestObject = await GetLastUserRequestObject(message.UserId);
-
-        //    var userRequest = new Request()
-        //    {
-        //        RequestObjectId = lastRequestObject.Id,
-        //        Type = message.RequestType
-        //    };
-
-        //    var requestId = await AddUserRequest(userRequest);
-
-        //    switch (message.RequestType)
-        //    {
-        //        case RequestType.History:
-        //            PreGetGibdd(lastRequestObject as Auto, requestId.Value, ActionType.History);
-        //            break;
-        //        case RequestType.Dtp:
-        //            PreGetGibdd(lastRequestObject as Auto, requestId.Value, ActionType.Dtp);
-        //            break;
-        //        case RequestType.Restricted:
-        //            PreGetGibdd(lastRequestObject as Auto, requestId.Value, ActionType.Restricted);
-        //            break;
-        //        case RequestType.Wanted:
-        //            PreGetGibdd(lastRequestObject as Auto, requestId.Value, ActionType.Wanted);
-        //            break;
-        //    }
-
-        //    return true;
-        //}
-
-        //private async Task<bool> UserInputDataMessageHandler(UserInputDataMessage message)
-        //{
-        //    try
-        //    {
-        //        RequestObject data;
-
-        //        switch (message.Type)
-        //        {
-        //            #region VIN
-        //            case InputDataType.Vin:
-        //                data = new Auto
-        //                {
-        //                    Vin = message.Data,
-        //                    Date = message.Date,
-        //                    UserId = message.UserId,
-        //                    MessageId = message.MessageId
-        //                };
-        //                break;
-        //            #endregion VIN
-
-        //            #region LicensePlate
-        //            case InputDataType.LicensePlate:
-        //                data = new Auto
-        //                {
-        //                    LicensePlate = message.Data,
-        //                    Date = message.Date,
-        //                    UserId = message.UserId,
-        //                    MessageId = message.MessageId
-        //                };
-        //                break;
-
-        //            #endregion LicensePlate
-
-        //            #region FullName
-        //            case InputDataType.FullName:
-
-        //                string[] personData = message.Data.Split(' ');
-        //                string lastName = personData[0].Replace('_', ' '); //Фамилия
-        //                string firstName = personData[1].Replace('_', ' '); //Имя
-        //                string middleName = personData[2].Replace('_', ' '); //Отчество
-        //                data = new Person
-        //                {
-        //                    FirstName = firstName,
-        //                    LastName = lastName,
-        //                    MiddleName = middleName,
-        //                    Date = message.Date,
-        //                    UserId = message.UserId,
-        //                    MessageId = message.MessageId
-        //                };
-        //                break;
-        //            #endregion FullName
-
-        //            default: throw new InvalidOperationException($"Не найден обработчик для типа {message.Type}");
-        //                break;
-        //        }
-
-        //        await AddRequestObject(data);
-
-        //        var keyboard = _keyboardBuilder.CreateKeyboard(new List<RequestType>(), message.Type);
-        //        var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
-
-        //        var sendMessageParams = new SendMessageParams()
-        //        {
-        //            AccessToken = accessToken,
-        //            Keyboard = keyboard,
-        //            Message = $"{message.Data}.{Environment.NewLine}Выберите доступные действия...",
-        //            PeerId = message.UserId
-        //        };
-
-        //        Vk.Api.Messages.Send(sendMessageParams);
-
-        //        //_actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(, Self);
-
-        //        return true;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return false;
-        //    }
-        //}
-
         private async Task<bool> CaptchaResponseMessageHadler(CaptchaResponseMessage message)
         {
-            _logger.Debug($"CaptchaResponseMessageHadler: Captcha={message.Value}");
-
             var captchaItem = _captchaCacheItems.FirstOrDefault(x => x.CaptchaId == message.CaptchaId);
 
             if (captchaItem == null)
@@ -296,35 +190,125 @@ namespace CheckAutoBot.Actors
 
             if (!isNotCompleted)
             {
-                _logger.Debug($"All captchas completed");
-
                 var request = await GetUserRequest(captchaItem.RequestId);
 
-                switch (request.Type)
+                if (request.RequestObject is Auto auto)
                 {
-                    case RequestType.History:
-                        GetHistory(request.RequestObject as Auto, items);
-                        break;
-                    case RequestType.Dtp:
-                        GetDtp(request.RequestObject as Auto, items);
-                        break;
+                    switch (captchaItem.CurrentActionType)
+                    {
+                        case ActionType.VinByDiagnosticCard:
+                            GetVinByDiagnosticCard(items, auto.LicensePlate);
+                            break;
+                        case ActionType.PolicyInfo:
+                        case ActionType.PolicyNumber:
+                            GetVinByPolicy(items, auto.LicensePlate);
+                            break;
+                        case ActionType.History:
+                            await GetHistory(auto, items);
+                            break;
+                    }
+
                 }
+
             }
 
             return true;
         }
 
-        private async void GetHistory(Auto auto, IEnumerable<CacheItem> cacheItems)
-        {
-            string vin = auto.Vin;
+        #endregion Handlers
 
-            if (string.IsNullOrEmpty(vin))
+
+        #region PreGet
+        private void PreGetVinByDiagnosticCard(int userRequestId, ActionType targetActionType)
+        {
+            var captchaResult = _eaistoManager.GetCaptcha();
+            var captchaRequest = _rucaptchaManager.SendImageCaptcha(captchaResult.ImageBase64);
+            AddCaptchaRequestToCache(userRequestId, captchaRequest.Id, ActionType.VinByDiagnosticCard, targetActionType, captchaResult.SessionId);
+        }
+
+        private void PreGetVinByPolicy(int userRequestId, ActionType targetActionType)
+        {
+            var captchaRequest1 = _rucaptchaManager.SendReCaptcha2(Rsa.dataSiteKey, Rsa.policyUrl);
+            AddCaptchaRequestToCache(userRequestId, captchaRequest1.Id, ActionType.VinByPolicy, targetActionType);
+            var captchaRequest2 = _rucaptchaManager.SendReCaptcha2(Rsa.dataSiteKey, Rsa.osagoVehicleUrl);
+            AddCaptchaRequestToCache(userRequestId, captchaRequest2.Id, ActionType.VinByPolicy, targetActionType);
+        }
+
+        private void PreGetFromGibdd(bool hasVin, int userRequestId, ActionType targetActionType)
+        {
+            if (hasVin)
             {
-                var diagnosticCard = GetDiagnosticCard(auto, cacheItems);
-                vin = diagnosticCard.Vin;
+                var getDtpCaptchaResult = _gibddManager.GetCaptcha();
+                var dtpCaptchaRequest = _rucaptchaManager.SendImageCaptcha(getDtpCaptchaResult.ImageBase64);
+                AddCaptchaRequestToCache(userRequestId, dtpCaptchaRequest.Id, targetActionType, targetActionType, getDtpCaptchaResult.SessionId);
             }
-            var historyCacheItem = cacheItems.First(x => x.ActionType == ActionType.History);
-            var gibddResponse = _gibddManager.GetHistory(vin, historyCacheItem.CaptchaWord, historyCacheItem.SessionId);
+            else
+            {
+                PreGetVinByDiagnosticCard(userRequestId, targetActionType);
+            }
+        }
+
+        private void PreGetFromFnp(bool hasVin, int userRequestId, ActionType targetActionType)
+        {
+            if (hasVin)
+            {
+                var getDtpCaptchaResult = _fnpManager.GetCaptcha();
+                var dtpCaptchaRequest = _rucaptchaManager.SendImageCaptcha(getDtpCaptchaResult.ImageBase64);
+                AddCaptchaRequestToCache(userRequestId, dtpCaptchaRequest.Id, targetActionType, targetActionType, getDtpCaptchaResult.SessionId);
+            }
+            else
+            {
+                PreGetVinByDiagnosticCard(userRequestId, targetActionType);
+            }
+        }
+
+        #endregion PreGet
+
+
+        #region Get
+
+        private async void GetVinByDiagnosticCard(IEnumerable<CacheItem> cacheItems, string licensePlate)
+        {
+            var phoneNumber = "+790" + _random.Next(10000000, 99999999);
+
+            var diagnosticCardCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.DiagnosticCard);
+            var diagnosticCard = _eaistoManager.GetDiagnosticCard(diagnosticCardCacheItem.CaptchaWord, phoneNumber, diagnosticCardCacheItem.SessionId, licensePlate: licensePlate);
+
+            if (diagnosticCard == null)
+            {
+                PreGetVinByPolicy(diagnosticCardCacheItem.RequestId, diagnosticCardCacheItem.TargetActionType);
+            }
+            else
+            {
+                var request = await GetUserRequest(diagnosticCardCacheItem.RequestId);
+                await UpdateVinCode(request.RequestObject.Id, diagnosticCard.Vin);
+                PreGetFromGibdd(true, diagnosticCardCacheItem.RequestId, diagnosticCardCacheItem.TargetActionType);
+            }
+        }
+
+        private async void GetVinByPolicy(IEnumerable<CacheItem> cacheItems, string licensePlate)
+        {
+            var policyNumberCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.PolicyNumber);
+            var policyResponse = _rsaManager.GetPolicy(policyNumberCacheItem.CaptchaWord, DateTime.Now, lp: licensePlate);
+
+            var policy = policyResponse.Policies.FirstOrDefault();
+
+            var policyInfoCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.PolicyInfo);
+            var vechicleResponse = _rsaManager.GetPolicyInfo(policy.Serial, policy.Number, DateTime.Now, policyInfoCacheItem.CaptchaWord);
+
+            if (vechicleResponse != null)
+            {
+                var request = await GetUserRequest(policyInfoCacheItem.RequestId);
+                await UpdateVinCode(request.RequestObject.Id, vechicleResponse.Vin);
+
+                PreGetFromGibdd(true, policyInfoCacheItem.RequestId, policyInfoCacheItem.TargetActionType);
+            }
+        }
+
+        private async Task GetHistory(Auto auto, IEnumerable<CacheItem> cacheItems)
+        {
+            var historyCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.History);
+            var gibddResponse = _gibddManager.GetHistory(auto.Vin, historyCacheItem.CaptchaWord, historyCacheItem.SessionId);
 
             #region Send to user
             var text = HistoryToMessageText(gibddResponse.RequestResult);
@@ -347,78 +331,23 @@ namespace CheckAutoBot.Actors
             #endregion Send to user
         }
 
-        private void PreGetDiagnosticCard(int userRequestId)
-        {
-            var captchaResult = _eaistoManager.GetCaptcha();
-            var captchaRequest = _rucaptchaManager.SendImageCaptcha(captchaResult.ImageBase64);
-            AddCaptchaRequestToCache(userRequestId, captchaRequest.Id, ActionType.DiagnosticCard, captchaResult.SessionId);
-        }
-
-        private void PreGetHistory(string vin, int userRequestId)
-        {
-            if (vin == null)
-            {
-                PreGetDiagnosticCard(userRequestId);
-            }
-            else
-            {
-                var getDtpCaptchaResult = _gibddManager.GetCaptcha();
-                var dtpCaptchaRequest = _rucaptchaManager.SendImageCaptcha(getDtpCaptchaResult.ImageBase64);
-                AddCaptchaRequestToCache(userRequestId, dtpCaptchaRequest.Id, ActionType.History, getDtpCaptchaResult.SessionId);
-            }
-        }
-
-        private void PreGetGibdd(Auto auto, int userRequestId, ActionType actionType)
-        {
-            if (string.IsNullOrEmpty(auto.Vin))
-            {
-                var captchaResult = _eaistoManager.GetCaptcha();
-                var captchaRequest = _rucaptchaManager.SendImageCaptcha(captchaResult.ImageBase64);
-                AddCaptchaRequestToCache(userRequestId, captchaRequest.Id, ActionType.DiagnosticCard, captchaResult.SessionId);
-            }
-
-            var getDtpCaptchaResult = _gibddManager.GetCaptcha();
-            var dtpCaptchaRequest = _rucaptchaManager.SendImageCaptcha(getDtpCaptchaResult.ImageBase64);
-            AddCaptchaRequestToCache(userRequestId, dtpCaptchaRequest.Id, actionType, getDtpCaptchaResult.SessionId);
-        }
-
         private void GetDtp(Auto auto, IEnumerable<CacheItem> cacheItems)
         {
-            //string vin = auto.Vin;
 
-            //if (string.IsNullOrEmpty(vin))
-            //{
-            //    var diagnosticCard = GetDiagnosticCard(auto, cacheItems);
-            //    vin = diagnosticCard.Vin;
-            //}
-            //var dtpCacheItem = cacheItems.First(x => x.ActionType == ActionType.Dtp);
-            //var gibddResponse = _gibddManager.GetDtp(vin, dtpCacheItem.CaptchaWord, dtpCacheItem.SessionId);
-
-            //#region Send to user
-            //var text = HistoryToMessageText(gibddResponse.RequestResult);
-
-            //var message = new SendToUserMessage()
-            //{
-            //    UserId = auto.UserId,
-            //    Text = text,
-            //    Photo = null
-            //};
-
-            //var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
-            //sender.Tell(message, Self);
-
-            //#endregion Send to user
         }
+
+        #endregion Get
 
         #region Helpers
 
-        private void AddCaptchaRequestToCache(int userRequestId, long captchaId, ActionType actionType, string sessionId = null)
+        private void AddCaptchaRequestToCache(int userRequestId, long captchaId, ActionType currentActionType, ActionType targetActionType, string sessionId = null)
         {
             var getPolicyNumberCacheItem = new CacheItem()
             {
                 RequestId = userRequestId,
                 CaptchaId = captchaId,
-                ActionType = actionType,
+                CurrentActionType = currentActionType,
+                TargetActionType = targetActionType,
                 SessionId = sessionId,
                 Date = DateTime.Now
             };
@@ -429,7 +358,7 @@ namespace CheckAutoBot.Actors
         {
             var phoneNumber = "+790" + _random.Next(10000000, 99999999);
 
-            var diagnosticCardCacheItem = cacheItems.First(x => x.ActionType == ActionType.DiagnosticCard);
+            var diagnosticCardCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.DiagnosticCard);
             var diagnosticCard = _eaistoManager.GetDiagnosticCard(diagnosticCardCacheItem.CaptchaWord, phoneNumber, diagnosticCardCacheItem.SessionId, licensePlate: auto.LicensePlate);
 
             return diagnosticCard;
@@ -536,6 +465,11 @@ namespace CheckAutoBot.Actors
             }
         }
 
+        /// <summary>
+        /// Получить запрос пользователя
+        /// </summary>
+        /// <param name="requestId">Идентификатор пользователя</param>
+        /// <returns></returns>
         private async Task<Request> GetUserRequest(int requestId)
         {
             try
@@ -551,6 +485,11 @@ namespace CheckAutoBot.Actors
             }
         }
 
+        /// <summary>
+        /// Получить типы выполненных запросов
+        /// </summary>
+        /// <param name="requestObjectId"></param>
+        /// <returns></returns>
         private async Task<IEnumerable<RequestType>> GetRequestTypes(int requestObjectId)
         {
             try
@@ -563,6 +502,27 @@ namespace CheckAutoBot.Actors
             catch (Exception ex)
             {
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Обновление вин кода авто
+        /// </summary>
+        /// <param name="requestObjectId">Идентификатор объекта запроса</param>
+        /// <param name="vin">Вин код</param>
+        /// <returns></returns>
+        private async Task UpdateVinCode(int requestObjectId, string vin)
+        {
+            try
+            {
+                using (var rep = _repositoryFactory.CreateBotRepository())
+                {
+                    await rep.UpdateVinCode(requestObjectId, vin).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                
             }
         }
 

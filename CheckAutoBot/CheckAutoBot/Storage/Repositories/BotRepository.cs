@@ -57,5 +57,12 @@ namespace CheckAutoBot.Storage
                                    .Select(x => x.Type).ToListAsync();
         }
 
+        public async Task UpdateVinCode(int requestObjectId, string vin)
+        {
+            var auto = _dbContext.RequestObjects.Where(x => x.Id == requestObjectId).OfType<Auto>().First();
+            auto.Vin = vin;
+            await _dbContext.SaveChangesAsync();
+        }
+
     }
 }

@@ -61,7 +61,7 @@ namespace CheckAutoBot.Actors
                 Type = message.RequestType
             };
 
-            var requestId = await AddUserRequest(userRequest);
+            var requestId = await SaveUserRequest(userRequest);
 
             switch (message.RequestType)
             {
@@ -76,6 +76,9 @@ namespace CheckAutoBot.Actors
                     break;
                 case RequestType.Wanted:
                     PreGetGibdd(lastRequestObject as Auto, requestId.Value, ActionType.Wanted);
+                    break;
+                case RequestType.DiagnosticCard:
+                    PreGetDiagnosticCard();
                     break;
             }
 
@@ -134,7 +137,8 @@ namespace CheckAutoBot.Actors
                         break;
                     #endregion FullName
 
-                    default: throw new InvalidOperationException($"Не найден обработчик для типа {message.Type}");
+                    default:
+                        throw new InvalidOperationException($"Не найден обработчик для типа {message.Type}");
                         break;
                 }
 
@@ -162,6 +166,118 @@ namespace CheckAutoBot.Actors
                 return false;
             }
         }
+
+        //private async Task<bool> UserRequestHandler(UserRequestMessage message)
+        //{
+        //    var lastRequestObject = await GetLastUserRequestObject(message.UserId);
+
+        //    var userRequest = new Request()
+        //    {
+        //        RequestObjectId = lastRequestObject.Id,
+        //        Type = message.RequestType
+        //    };
+
+        //    var requestId = await AddUserRequest(userRequest);
+
+        //    switch (message.RequestType)
+        //    {
+        //        case RequestType.History:
+        //            PreGetGibdd(lastRequestObject as Auto, requestId.Value, ActionType.History);
+        //            break;
+        //        case RequestType.Dtp:
+        //            PreGetGibdd(lastRequestObject as Auto, requestId.Value, ActionType.Dtp);
+        //            break;
+        //        case RequestType.Restricted:
+        //            PreGetGibdd(lastRequestObject as Auto, requestId.Value, ActionType.Restricted);
+        //            break;
+        //        case RequestType.Wanted:
+        //            PreGetGibdd(lastRequestObject as Auto, requestId.Value, ActionType.Wanted);
+        //            break;
+        //    }
+
+        //    return true;
+        //}
+
+        //private async Task<bool> UserInputDataMessageHandler(UserInputDataMessage message)
+        //{
+        //    try
+        //    {
+        //        RequestObject data;
+
+        //        switch (message.Type)
+        //        {
+        //            #region VIN
+        //            case InputDataType.Vin:
+        //                data = new Auto
+        //                {
+        //                    Vin = message.Data,
+        //                    Date = message.Date,
+        //                    UserId = message.UserId,
+        //                    MessageId = message.MessageId
+        //                };
+        //                break;
+        //            #endregion VIN
+
+        //            #region LicensePlate
+        //            case InputDataType.LicensePlate:
+        //                data = new Auto
+        //                {
+        //                    LicensePlate = message.Data,
+        //                    Date = message.Date,
+        //                    UserId = message.UserId,
+        //                    MessageId = message.MessageId
+        //                };
+        //                break;
+
+        //            #endregion LicensePlate
+
+        //            #region FullName
+        //            case InputDataType.FullName:
+
+        //                string[] personData = message.Data.Split(' ');
+        //                string lastName = personData[0].Replace('_', ' '); //Фамилия
+        //                string firstName = personData[1].Replace('_', ' '); //Имя
+        //                string middleName = personData[2].Replace('_', ' '); //Отчество
+        //                data = new Person
+        //                {
+        //                    FirstName = firstName,
+        //                    LastName = lastName,
+        //                    MiddleName = middleName,
+        //                    Date = message.Date,
+        //                    UserId = message.UserId,
+        //                    MessageId = message.MessageId
+        //                };
+        //                break;
+        //            #endregion FullName
+
+        //            default: throw new InvalidOperationException($"Не найден обработчик для типа {message.Type}");
+        //                break;
+        //        }
+
+        //        await AddRequestObject(data);
+
+        //        var keyboard = _keyboardBuilder.CreateKeyboard(new List<RequestType>(), message.Type);
+        //        var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
+
+        //        var sendMessageParams = new SendMessageParams()
+        //        {
+        //            AccessToken = accessToken,
+        //            Keyboard = keyboard,
+        //            Message = $"{message.Data}.{Environment.NewLine}Выберите доступные действия...",
+        //            PeerId = message.UserId
+        //        };
+
+        //        Vk.Api.Messages.Send(sendMessageParams);
+
+        //        //_actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(, Self);
+
+        //        return true;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return false;
+        //    }
+        //}
 
         private async Task<bool> CaptchaResponseMessageHadler(CaptchaResponseMessage message)
         {
@@ -231,7 +347,26 @@ namespace CheckAutoBot.Actors
             #endregion Send to user
         }
 
+        private void PreGetDiagnosticCard(int userRequestId)
+        {
+            var captchaResult = _eaistoManager.GetCaptcha();
+            var captchaRequest = _rucaptchaManager.SendImageCaptcha(captchaResult.ImageBase64);
+            AddCaptchaRequestToCache(userRequestId, captchaRequest.Id, ActionType.DiagnosticCard, captchaResult.SessionId);
+        }
 
+        private void PreGetHistory(string vin, int userRequestId)
+        {
+            if (vin == null)
+            {
+                PreGetDiagnosticCard(userRequestId);
+            }
+            else
+            {
+                var getDtpCaptchaResult = _gibddManager.GetCaptcha();
+                var dtpCaptchaRequest = _rucaptchaManager.SendImageCaptcha(getDtpCaptchaResult.ImageBase64);
+                AddCaptchaRequestToCache(userRequestId, dtpCaptchaRequest.Id, ActionType.History, getDtpCaptchaResult.SessionId);
+            }
+        }
 
         private void PreGetGibdd(Auto auto, int userRequestId, ActionType actionType)
         {
@@ -386,7 +521,7 @@ namespace CheckAutoBot.Actors
         /// </summary>
         /// <param name="userRequest">Запрос пользователя</param>
         /// <returns></returns>
-        private async Task<int?> AddUserRequest(Request userRequest)
+        private async Task<int?> SaveUserRequest(Request userRequest)
         {
             try
             {

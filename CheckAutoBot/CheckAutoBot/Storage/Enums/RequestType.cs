@@ -41,6 +41,18 @@ namespace CheckAutoBot.Storage
         /// Долги
         /// </summary>
         [EnumMember(Value = "PersonPledge")]
-        PersonPledge
+        PersonPledge,
+
+        /// <summary>
+        /// Диагностическая карта
+        /// </summary>
+        [EnumMember(Value = "DiagnosticCard")]
+        DiagnosticCard,
+
+        /// <summary>
+        /// Полис ОСАГО
+        /// </summary>
+        [EnumMember(Value = "Policy")]
+        Policy
     }
 }

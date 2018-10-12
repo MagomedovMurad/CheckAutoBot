@@ -151,22 +151,10 @@ namespace CheckAutoBot.Actors
 
                 await AddRequestObject(data);
 
-                SendToUserMessage
+                var text = $"{message.Data}{Environment.NewLine}Выберите доступные действия...";
+                var msg = new SendToUserMessage(null, message.UserId, text, null);
 
-                var keyboard = _keyboardBuilder.CreateKeyboard(new List<RequestType>(), message.Type);
-                var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
-
-                var sendMessageParams = new SendMessageParams()
-                {
-                    AccessToken = accessToken,
-                    Keyboard = keyboard,
-                    Message = $"{message.Data}.{Environment.NewLine}Выберите доступные действия...",
-                    PeerId = message.UserId
-                };
-
-                Vk.Api.Messages.Send(sendMessageParams);
-
-                //_actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(, Self);
+               _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(msg, Self);
 
                 return true;
             }

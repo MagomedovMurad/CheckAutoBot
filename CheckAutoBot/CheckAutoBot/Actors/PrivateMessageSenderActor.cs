@@ -42,7 +42,9 @@ namespace CheckAutoBot.Actors
 
         private async void SendToUserMessageHandler(SendToUserMessage message)
         {
-            var requestTypes = await GetRequestTypes(message.RequestObjectId).ConfigureAwait(false);
+            IEnumerable<RequestType> requestTypes = new List<RequestType>();
+            if (message.RequestObjectId != null)
+                requestTypes = await GetRequestTypes(message.RequestObjectId.Value).ConfigureAwait(false);
             var keyboard = _keyboardBuilder.CreateKeyboard(requestTypes, InputDataType.Vin); //TODO: тип входных данных
 
             SendMessage(message.UserId, message.Text, keyboard);

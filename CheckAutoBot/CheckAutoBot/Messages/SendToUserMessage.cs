@@ -12,7 +12,7 @@ namespace CheckAutoBot.Messages
 
         }
 
-        public SendToUserMessage(int requestObjectId, int userId, string text, byte[] photo)
+        public SendToUserMessage(int? requestObjectId, int userId, string text, byte[] photo)
         {
             RequestObjectId = requestObjectId;
             UserId = userId;
@@ -22,7 +22,7 @@ namespace CheckAutoBot.Messages
 
         public int UserId { get; set; }
 
-        public int RequestObjectId { get; set; }
+        public int? RequestObjectId { get; set; }
 
         public string Text { get; set; }
 

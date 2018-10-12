@@ -53,7 +53,7 @@ namespace CheckAutoBot.GbddModels
         /// Поврежденные участки
         /// </summary>
         [JsonProperty("DamagePoints")]
-        public int[] DamagePoints { get; set; }
+        public string[] DamagePoints { get; set; }
 
         /// <summary>
         /// Год выпуска автомобиля

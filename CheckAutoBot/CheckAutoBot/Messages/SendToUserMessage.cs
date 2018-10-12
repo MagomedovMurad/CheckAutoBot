@@ -7,12 +7,26 @@ namespace CheckAutoBot.Messages
 {
     public class SendToUserMessage
     {
+        public SendToUserMessage()
+        {
+
+        }
+
+        public SendToUserMessage(int requestObjectId, int userId, string text, byte[] photo)
+        {
+            RequestObjectId = requestObjectId;
+            UserId = userId;
+            Text = text;
+            Photo = photo;
+        }
+
         public int UserId { get; set; }
+
+        public int RequestObjectId { get; set; }
 
         public string Text { get; set; }
 
         public byte[] Photo { get; set; }
 
-        public Keyboard Keyboard { get; set; }
     }
 }

@@ -102,8 +102,16 @@ namespace CheckAutoBot.Managers
 
         private DiagnosticCard ParseHtml(string html)
         {
+            string invalidCaptchaError = "Пожалуйста введите код, указанный на картинке";
+            string notFoundError = "По Вашему запросу ничего не найдено";
+
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(html);
+
+            HtmlNode errorNode = doc.DocumentNode.SelectSingleNode(".//div[@id='card_alert']");
+
+            if (errorNode.InnerText == notFoundError)
+                return null;
 
             HtmlNode brandNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[1]/td[2]");
 

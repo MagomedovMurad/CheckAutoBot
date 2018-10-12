@@ -1,17 +1,29 @@
 ﻿using Akka.Actor;
 using CheckAutoBot.GbddModels;
 using CheckAutoBot.Messages;
+using CheckAutoBot.Storage;
+using CheckAutoBot.Utils;
 using CheckAutoBot.Vk.Api.MessagesModels;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace CheckAutoBot.Actors
 {
     public class PrivateMessageSenderActor: ReceiveActor
     {
+        private KeyboardBuilder _keyboardBuilder;
+        private IRepositoryFactory _repositoryFactory;
+
+
+
         public PrivateMessageSenderActor()
         {
+            _keyboardBuilder = new KeyboardBuilder();
+            _repositoryFactory = new RepositoryFactory();
+
+
             Receive<HelpMessage>(x => SendHelpMessage(x));
             Receive<SendToUserMessage>(x => SendToUserMessageHandler(x));
             Receive<string>(x => SendMessage(x));
@@ -28,9 +40,12 @@ namespace CheckAutoBot.Actors
             //Vk.Api.Messages.Send(messageParams);
         }
 
-        private void SendToUserMessageHandler(SendToUserMessage message)
+        private async void SendToUserMessageHandler(SendToUserMessage message)
         {
-            SendMessage(message.UserId, message.Text, message.Keyboard);
+            var requestTypes = await GetRequestTypes(message.RequestObjectId).ConfigureAwait(false);
+            var keyboard = _keyboardBuilder.CreateKeyboard(requestTypes, InputDataType.Vin); //TODO: тип входных данных
+
+            SendMessage(message.UserId, message.Text, keyboard);
         }
 
         private void SendHelpMessage(HelpMessage msg)
@@ -59,5 +74,26 @@ namespace CheckAutoBot.Actors
 
             Vk.Api.Messages.Send(messageParams);
         }
+
+        /// <summary>
+        /// Получить типы выполненных запросов
+        /// </summary>
+        /// <param name="requestObjectId"></param>
+        /// <returns></returns>
+        private async Task<IEnumerable<RequestType>> GetRequestTypes(int requestObjectId)
+        {
+            try
+            {
+                using (var rep = _repositoryFactory.CreateBotRepository())
+                {
+                    return await rep.GetRequestTypes(requestObjectId).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
     }
 }

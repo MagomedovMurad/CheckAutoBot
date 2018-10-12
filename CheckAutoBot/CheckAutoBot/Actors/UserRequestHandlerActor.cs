@@ -4,6 +4,7 @@ using CheckAutoBot.Enums;
 using CheckAutoBot.GbddModels;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Messages;
+using CheckAutoBot.RsaModels;
 using CheckAutoBot.Storage;
 using CheckAutoBot.Utils;
 using CheckAutoBot.Vk.Api.MessagesModels;
@@ -29,7 +30,6 @@ namespace CheckAutoBot.Actors
         private ReestrZalogov _fnpManager;
         private Eaisto _eaistoManager;
         private Rucaptcha _rucaptchaManager;
-        private KeyboardBuilder _keyboardBuilder;
 
         private List<CacheItem> _captchaCacheItems = new List<CacheItem>();
 
@@ -40,7 +40,6 @@ namespace CheckAutoBot.Actors
             _gibddManager = new Gibdd();
             _fnpManager = new ReestrZalogov();
             _rucaptchaManager = new Rucaptcha();
-            _keyboardBuilder = new KeyboardBuilder();
             _actorSelector = new ActorSelector();
             _eaistoManager = new Eaisto();
             _logger = logger;
@@ -152,6 +151,8 @@ namespace CheckAutoBot.Actors
 
                 await AddRequestObject(data);
 
+                SendToUserMessage
+
                 var keyboard = _keyboardBuilder.CreateKeyboard(new List<RequestType>(), message.Type);
                 var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
 
@@ -206,6 +207,9 @@ namespace CheckAutoBot.Actors
                         case ActionType.History:
                             await GetHistory(auto, items);
                             break;
+                        case ActionType.Dtp:
+                            await GetDtp(auto, items);
+                            break;
                     }
 
                 }
@@ -229,9 +233,9 @@ namespace CheckAutoBot.Actors
         private void PreGetVinByPolicy(int userRequestId, ActionType targetActionType)
         {
             var captchaRequest1 = _rucaptchaManager.SendReCaptcha2(Rsa.dataSiteKey, Rsa.policyUrl);
-            AddCaptchaRequestToCache(userRequestId, captchaRequest1.Id, ActionType.VinByPolicy, targetActionType);
+            AddCaptchaRequestToCache(userRequestId, captchaRequest1.Id, ActionType.PolicyNumber, targetActionType);
             var captchaRequest2 = _rucaptchaManager.SendReCaptcha2(Rsa.dataSiteKey, Rsa.osagoVehicleUrl);
-            AddCaptchaRequestToCache(userRequestId, captchaRequest2.Id, ActionType.VinByPolicy, targetActionType);
+            AddCaptchaRequestToCache(userRequestId, captchaRequest2.Id, ActionType.PolicyInfo, targetActionType);
         }
 
         private void PreGetFromGibdd(bool hasVin, int userRequestId, ActionType targetActionType)
@@ -271,7 +275,7 @@ namespace CheckAutoBot.Actors
         {
             var phoneNumber = "+790" + _random.Next(10000000, 99999999);
 
-            var diagnosticCardCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.DiagnosticCard);
+            var diagnosticCardCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.VinByDiagnosticCard);
             var diagnosticCard = _eaistoManager.GetDiagnosticCard(diagnosticCardCacheItem.CaptchaWord, phoneNumber, diagnosticCardCacheItem.SessionId, licensePlate: licensePlate);
 
             if (diagnosticCard == null)
@@ -291,17 +295,26 @@ namespace CheckAutoBot.Actors
             var policyNumberCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.PolicyNumber);
             var policyResponse = _rsaManager.GetPolicy(policyNumberCacheItem.CaptchaWord, DateTime.Now, lp: licensePlate);
 
-            var policy = policyResponse.Policies.FirstOrDefault();
 
-            var policyInfoCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.PolicyInfo);
-            var vechicleResponse = _rsaManager.GetPolicyInfo(policy.Serial, policy.Number, DateTime.Now, policyInfoCacheItem.CaptchaWord);
+            VechicleResponse vechicleResponse = null;
+
+            if (policyResponse.ErrorMessage != null)
+            {
+                var policy = policyResponse.Policies.FirstOrDefault();
+                var policyInfoCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.PolicyInfo);
+                vechicleResponse = _rsaManager.GetPolicyInfo(policy.Serial, policy.Number, DateTime.Now, policyInfoCacheItem.CaptchaWord);
+            }
 
             if (vechicleResponse != null)
             {
-                var request = await GetUserRequest(policyInfoCacheItem.RequestId);
+                var request = await GetUserRequest(policyNumberCacheItem.RequestId);
                 await UpdateVinCode(request.RequestObject.Id, vechicleResponse.Vin);
 
-                PreGetFromGibdd(true, policyInfoCacheItem.RequestId, policyInfoCacheItem.TargetActionType);
+                PreGetFromGibdd(true, policyNumberCacheItem.RequestId, policyNumberCacheItem.TargetActionType);
+            }
+            else
+            {
+                //К сожалению не удалось найти информацию по номеру ... . Попробуйте выполнить поиск по vin коду
             }
         }
 
@@ -310,30 +323,15 @@ namespace CheckAutoBot.Actors
             var historyCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.History);
             var gibddResponse = _gibddManager.GetHistory(auto.Vin, historyCacheItem.CaptchaWord, historyCacheItem.SessionId);
 
-            #region Send to user
-            var text = HistoryToMessageText(gibddResponse.RequestResult);
-
-            var requestTypes = await GetRequestTypes(auto.Id).ConfigureAwait(false);
-
-            var keyboard = _keyboardBuilder.CreateKeyboard(requestTypes, InputDataType.Vin);
-
-            var message = new SendToUserMessage()
-            {
-                UserId = auto.UserId,
-                Text = text,
-                Photo = null,
-                Keyboard = keyboard
-            };
-
-            var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
-            sender.Tell(message, Self);
-
-            #endregion Send to user
+            SendHistoryToSender(gibddResponse.RequestResult, auto);
         }
 
-        private void GetDtp(Auto auto, IEnumerable<CacheItem> cacheItems)
+        private async Task GetDtp(Auto auto, IEnumerable<CacheItem> cacheItems)
         {
+            var dtpCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.Dtp);
+            var gibddResponse = _gibddManager.GetDtp(auto.Vin, dtpCacheItem.CaptchaWord, dtpCacheItem.SessionId);
 
+            SendDtpToSender(gibddResponse, auto);
         }
 
         #endregion Get
@@ -364,6 +362,29 @@ namespace CheckAutoBot.Actors
             return diagnosticCard;
         }
 
+        private void SendHistoryToSender(HistoryResult history, RequestObject requestobject)
+        {
+            var text = HistoryToMessageText(history);
+            var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
+
+            var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
+            sender.Tell(message, Self);
+        }
+
+        private void SendDtpToSender(DtpResult dtp, RequestObject requestobject)
+        {
+            var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
+
+            foreach (var accident in dtp.Accidents)
+            {
+                var incidentImage = _gibddManager.GetIncidentImage(accident.DamagePoints);
+                var text = AccidentToMessageText(accident);
+                var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, incidentImage);
+
+                sender.Tell(message, Self);
+            }
+        }
+
         private string HistoryToMessageText(HistoryResult history)
         {
             var text = $"Марка, модель:  {history.Vehicle.Model} \n" +
@@ -380,11 +401,11 @@ namespace CheckAutoBot.Actors
             foreach (var period in periods)
             {
                 var ownerType = period.OwnerType == OwnerType.Natural ? "Физическое лицо" : "Юридическое лицо";
-                var dateTo = period.To ?? "настоящее время";
+                var dateTo = period.To.ToString("dd.MM.yyyy") ?? "настоящее время";
 
                 string ownerPeriod = $"{Environment.NewLine}" +
                     $"{Environment.NewLine}{ownerType}{Environment.NewLine}" +
-                                     $"c: {period.From}{Environment.NewLine}" +
+                                     $"c: {period.From.ToString("dd.MM.yyyy")}{Environment.NewLine}" +
                                      $"по: {dateTo}{Environment.NewLine}" +
                                      $"Последняя операция: {period.LastOperation}";
                 text += ownerPeriod;
@@ -394,18 +415,18 @@ namespace CheckAutoBot.Actors
 
         }
 
-        //private string DtpToMessageText(DtpResult dtp)
-        //{
-        //    foreach (var accident in dtp.Accidents)
-        //    {
-        //        accident.
-        //    }
-        //}
-
-        private string DtpToMessageHistory()
+        private string AccidentToMessageText(Accident accident)
         {
-            return $"";
+            return $"Информация о происшествии №{accident.AccidentNumber} {Environment.NewLine}" +
+                    $"Дата и время происшествия: {accident.AccidentDateTime} {Environment.NewLine}" +
+                    $"Тип происшествия: {accident.AccidentType} {Environment.NewLine}" +
+                    $"Регион происшествия: {accident.RegionName} {Environment.NewLine}" +
+                    $"Марка ТС: {accident.VehicleMark} {Environment.NewLine}" +
+                    $"Модель ТС: {accident.VehicleModel} {Environment.NewLine}" +
+                    $"Год выпуска ТС: {accident.VehicleYear}";
         }
+
+
 
         #endregion Helpers
 
@@ -485,25 +506,6 @@ namespace CheckAutoBot.Actors
             }
         }
 
-        /// <summary>
-        /// Получить типы выполненных запросов
-        /// </summary>
-        /// <param name="requestObjectId"></param>
-        /// <returns></returns>
-        private async Task<IEnumerable<RequestType>> GetRequestTypes(int requestObjectId)
-        {
-            try
-            {
-                using (var rep = _repositoryFactory.CreateBotRepository())
-                {
-                    return await rep.GetRequestTypes(requestObjectId).ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                return null;
-            }
-        }
 
         /// <summary>
         /// Обновление вин кода авто

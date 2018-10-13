@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CheckAutoBot.PledgeModels
 {
-    public class Pledge
+    public class Pledgee
     {
         [JsonProperty("type")]
         public SubjectType Type { get; set; }

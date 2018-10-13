@@ -11,7 +11,7 @@ namespace CheckAutoBot.GbddModels
         /// Дата и время происшествия
         /// </summary>
         [JsonProperty("AccidentDateTime")]
-        public DateTimeOffset AccidentDateTime { get; set; }
+        public string AccidentDateTime { get; set; }
 
         /// <summary>
         /// Модель автомобиля

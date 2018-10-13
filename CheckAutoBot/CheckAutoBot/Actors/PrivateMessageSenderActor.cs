@@ -3,6 +3,7 @@ using CheckAutoBot.GbddModels;
 using CheckAutoBot.Messages;
 using CheckAutoBot.Storage;
 using CheckAutoBot.Utils;
+using CheckAutoBot.Vk.Api;
 using CheckAutoBot.Vk.Api.MessagesModels;
 using System;
 using System.Collections.Generic;
@@ -47,7 +48,20 @@ namespace CheckAutoBot.Actors
                 requestTypes = await GetRequestTypes(message.RequestObjectId.Value).ConfigureAwait(false);
             var keyboard = _keyboardBuilder.CreateKeyboard(requestTypes, InputDataType.Vin); //TODO: тип входных данных
 
-            SendMessage(message.UserId, message.Text, keyboard);
+            var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
+
+            string attachments = null;
+
+            if (message.Photo != null)
+            {
+                var uploadServerResponse = Photos.GetMessagesUploadServer(message.UserId.ToString(), accessToken);
+                var uploadPhotoResponse = Photos.UploadPhotoToServer(uploadServerResponse.UploadUrl, message.Photo);
+                var photo = Photos.SaveMessagesPhoto(uploadPhotoResponse, accessToken);
+                attachments = $"photo{photo.OwnerId}_{photo.Id}";
+            }
+
+
+            SendMessage(message.UserId, message.Text, keyboard, attachments);
         }
 
         private void SendHelpMessage(HelpMessage msg)

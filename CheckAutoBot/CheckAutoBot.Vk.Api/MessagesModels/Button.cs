@@ -14,5 +14,13 @@ namespace CheckAutoBot.Vk.Api.MessagesModels
         [JsonProperty("color")]
         [JsonConverter(typeof(StringEnumConverter))]
         public ButtonColor Color { get; set; }
+
+        /// <summary>
+        /// Возвращает массив с эти элементом
+        /// </summary>
+        public Button[] ToArray()
+        {
+            return new[] { this };
+        }
     }
 }

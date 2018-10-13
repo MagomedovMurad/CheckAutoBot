@@ -21,6 +21,8 @@ namespace CheckAutoBot.GbddModels
 
         [JsonProperty("w_god_vyp")]
         public string VechicleYear { get; set; }
+        [JsonProperty("w_vid_uch")]
+        public string RecordType { get; set; }
 
         [JsonProperty("w_un_gic")]
         public string w_un_gic { get; set; }

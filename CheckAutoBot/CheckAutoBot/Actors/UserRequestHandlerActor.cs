@@ -4,6 +4,7 @@ using CheckAutoBot.Enums;
 using CheckAutoBot.GbddModels;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Messages;
+using CheckAutoBot.PledgeModels;
 using CheckAutoBot.RsaModels;
 using CheckAutoBot.Storage;
 using CheckAutoBot.Utils;
@@ -47,7 +48,7 @@ namespace CheckAutoBot.Actors
 
             ReceiveAsync<UserRequestMessage>(x => UserRequestHandler(x));
             ReceiveAsync<UserInputDataMessage>(x => UserInputDataMessageHandler(x));
-            ReceiveAsync<CaptchaResponseMessage>(x => CaptchaResponseMessageHadler(x));
+            ReceiveAsync<CaptchaResponseMessage>(x =>  CaptchaResponseMessageHadler(x));
         }
 
         #region Handlers
@@ -198,6 +199,15 @@ namespace CheckAutoBot.Actors
                         case ActionType.Dtp:
                             await GetDtp(auto, items);
                             break;
+                        case ActionType.Restricted:
+                            await GetRestricted(auto, items);
+                            break;
+                        case ActionType.Wanted:
+                            await GetWanted(auto, items);
+                            break;
+                        case ActionType.Pledge:
+                            await GetPledge(auto, items);
+                            break;
                     }
 
                 }
@@ -286,7 +296,7 @@ namespace CheckAutoBot.Actors
 
             VechicleResponse vechicleResponse = null;
 
-            if (policyResponse.ErrorMessage != null)
+            if (policyResponse.Policies.Any())
             {
                 var policy = policyResponse.Policies.FirstOrDefault();
                 var policyInfoCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.PolicyInfo);
@@ -319,8 +329,33 @@ namespace CheckAutoBot.Actors
             var dtpCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.Dtp);
             var gibddResponse = _gibddManager.GetDtp(auto.Vin, dtpCacheItem.CaptchaWord, dtpCacheItem.SessionId);
 
-            SendDtpToSender(gibddResponse, auto);
+            SendDtpToSender(gibddResponse.RequestResult, auto);
+
         }
+
+        private async Task GetRestricted(Auto auto, IEnumerable<CacheItem> cacheItems)
+        {
+            var restrictedCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.Restricted);
+            var gibddResponse = _gibddManager.GetRestriction(auto.Vin, restrictedCacheItem.CaptchaWord, restrictedCacheItem.SessionId);
+
+            SendRestrictedToSender(gibddResponse.RequestResult, auto);
+        }
+        private async Task GetWanted(Auto auto, IEnumerable<CacheItem> cacheItems)
+        {
+            var wantedCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.Wanted);
+            var gibddResponse = _gibddManager.GetWanted(auto.Vin, wantedCacheItem.CaptchaWord, wantedCacheItem.SessionId);
+
+            SendWantedToSender(gibddResponse.RequestResult, auto);
+        }
+
+        private async Task GetPledge(Auto auto, IEnumerable<CacheItem> cacheItems)
+        {
+            var pledgeCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.Pledge);
+            var pledgeResponse = _fnpManager.GetPledges(auto.Vin, pledgeCacheItem.CaptchaWord, pledgeCacheItem.SessionId);
+
+            SendPledgesToSender(pledgeResponse, auto);
+        }
+
 
         #endregion Get
 
@@ -363,6 +398,13 @@ namespace CheckAutoBot.Actors
         {
             var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
 
+            if (!dtp.Accidents.Any())
+            {
+                var text = "В базе ГИБДД не найдены записи о дорожно-транспортных происшествиях";
+                var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
+                sender.Tell(message, Self);
+            }
+
             foreach (var accident in dtp.Accidents)
             {
                 var incidentImage = _gibddManager.GetIncidentImage(accident.DamagePoints);
@@ -371,6 +413,64 @@ namespace CheckAutoBot.Actors
 
                 sender.Tell(message, Self);
             }
+        }
+
+        private void SendRestrictedToSender(RestrictedResult result, RequestObject requestobject)
+        {
+            var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
+
+            if (!result.Restricteds.Any())
+            {
+                var text = "В базе ГИБДД не найдены сведения о наложении ограничений";
+                var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
+                sender.Tell(message, Self);
+            }
+
+
+            foreach (var restricted in result.Restricteds)
+            {
+                var text = RestrictedToMessageText(restricted);
+                var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
+
+                sender.Tell(message, Self);
+            }
+        }
+
+        private void SendWantedToSender(WantedResult result, RequestObject requestobject)
+        {
+            var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
+
+            if (!result.Wanteds.Any())
+            {
+                var text = "В базе ГИБДД не найдены сведения о розыске транспортного средства";
+                var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
+                sender.Tell(message, Self);
+            }
+
+
+            foreach (var wanted in result.Wanteds)
+            {
+                var text = WantedToMessageText(wanted);
+                var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
+
+                sender.Tell(message, Self);
+            }
+        }
+
+        private void SendPledgesToSender(PledgeResponse response, RequestObject requestobject)
+        {
+            var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
+
+            if (!response.Pledges.Any())
+            {
+                var defultText = "В базе ФНП не найдены сведения о нахождении транспортного средства в залоге";
+                var defultMessage = new SendToUserMessage(requestobject.Id, requestobject.UserId, defultText, null);
+                sender.Tell(defultMessage, Self);
+            }
+
+            var text = string.Join(Environment.NewLine, response.Pledges.Select(x => PledgeToText(x)));
+            var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
+            sender.Tell(message, Self);
         }
 
         private string HistoryToMessageText(HistoryResult history)
@@ -414,6 +514,52 @@ namespace CheckAutoBot.Actors
                     $"Год выпуска ТС: {accident.VehicleYear}";
         }
 
+        private string RestrictedToMessageText(Restricted restricted)
+        {
+           return $"Информация о наложении ограничения{Environment.NewLine}" +
+                  $"Марка, модель ТС: {restricted.TsModel}{Environment.NewLine}" +
+                  $"Год выпуска ТС: {restricted.VechicleYear}{Environment.NewLine}" +
+                  $"Дата наложения ограничения: {restricted.RestrictedDate}{Environment.NewLine}" +
+                  $"Регион инициатора ограничения: {restricted.RegionName}{Environment.NewLine}" +
+                  $"Кем наложено ограничение: {restricted.InitiatorType}{Environment.NewLine}" +
+                  $"Вид ограничения: {restricted.RestrictedType}{Environment.NewLine}" +
+                  $"Основание ограничения: {restricted.RestrictedFoundations}{Environment.NewLine}" +
+                  $"Телефон инициатора: {restricted.InitiatorPhone?? "не указан"}";
+        }
+
+        private string WantedToMessageText(Wanted wanted)
+        {
+            return $"Информация о постановке в розыск{Environment.NewLine}" +
+                   $"Марка, модель: {wanted.VechicleModel}{Environment.NewLine}" +
+                   $"Год выпуска: {wanted.VechicleYear}{Environment.NewLine}" +
+                   $"Дата объявления в розыск: {wanted.Date}{Environment.NewLine}" +
+                   $"Регион инициатора розыска: {wanted.RegionIniciator}";
+        }
+
+        private string PledgeToText(PledgeListItem pledge)
+        {
+            var t = pledge.Pledgors.Select(x => PledgorToText(x));
+
+            var text = $"Уведомление о возникновении залога №{pledge.ReferenceNumber} {Environment.NewLine}";
+            text += $"Дата регистрации: {pledge.RegisterDate}{Environment.NewLine}";
+            text += $"Залогодатель: {string.Join(Environment.NewLine, pledge.Pledgors.Select(x => PledgorToText(x)))}";
+            text += $"Залогодержатель: {string.Join(Environment.NewLine, pledge.Pledgees.Select(x => PledgeeToText(x)))}";
+            text += Environment.NewLine;
+
+            return text;
+        }
+
+        private string PledgorToText(Pledgor pledgor)
+        {
+            var text = pledgor.Type == SubjectType.Person ? "Физическое лицо" : "Юридическое лицо";
+            return text += Environment.NewLine;
+        }
+
+        private string PledgeeToText(Pledgee pledgee)
+        {
+            var text = pledgee.Type == SubjectType.Organization ? "Юридическое лицо" : "Физическое лицо";
+            return text += Environment.NewLine + pledgee.Name + Environment.NewLine;
+        }
 
 
         #endregion Helpers

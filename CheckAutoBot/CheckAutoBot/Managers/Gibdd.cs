@@ -24,29 +24,29 @@ namespace CheckAutoBot.Managers
             return JsonConvert.DeserializeObject<GibddResponse<HistoryResult>>(response);
         }
 
-        public DtpResult GetDtp(string vin, string captcha, string jsessionId)
+        public GibddResponse<DtpResult> GetDtp(string vin, string captcha, string jsessionId)
         {
             var response = ExecuteRequest(vin, captcha, jsessionId, "dtp", "aiusdtp");
-            return JsonConvert.DeserializeObject<DtpResult>(response);
+            return JsonConvert.DeserializeObject< GibddResponse<DtpResult>>(response);
         }
 
-        public WantedResult GetWanted(string vin, string captcha, string jsessionId)
+        public GibddResponse<WantedResult> GetWanted(string vin, string captcha, string jsessionId)
         {
             var response = ExecuteRequest(vin, captcha, jsessionId, "wanted", "wanted");
-            return JsonConvert.DeserializeObject<WantedResult>(response);
+            return JsonConvert.DeserializeObject<GibddResponse<WantedResult>>(response);
         }
 
-        public RestrictedResult GetRestriction(string vin, string captcha, string jsessionId)
+        public GibddResponse<RestrictedResult> GetRestriction(string vin, string captcha, string jsessionId)
         {
             var response = ExecuteRequest(vin, captcha, jsessionId, "restrict", "restricted");
-            return JsonConvert.DeserializeObject<RestrictedResult>(response);
+            return JsonConvert.DeserializeObject<GibddResponse<RestrictedResult>>(response);
         }
 
         public byte[] GetIncidentImage(string[] damagePoints)
         {
             var strDamagePoints = string.Join("", damagePoints);
 
-            HttpWebRequest request = WebRequest.CreateHttp("http://check.gibdd.ru/proxy/check/auto/images/cache/{strDamagePoints}.png"); //xn--b1afk4ade.xn--90adear.xn--p1ai/proxy/check/auto/dtp/damages.png?map=
+            HttpWebRequest request = WebRequest.CreateHttp($"http://check.gibdd.ru/proxy/check/auto/images/cache/{strDamagePoints}.png"); //xn--b1afk4ade.xn--90adear.xn--p1ai/proxy/check/auto/dtp/damages.png?map=
             request.Method = "GET";
             WebResponse response = request.GetResponse();
             var photoBinaryData = response.ReadDataAsByteArray();

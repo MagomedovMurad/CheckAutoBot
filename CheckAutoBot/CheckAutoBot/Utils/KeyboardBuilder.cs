@@ -61,11 +61,12 @@ namespace CheckAutoBot.Utils
                     break;
             }
 
-            var buttons = requestTypeWithButton.Where(x => !existRequestTypes.Contains(x.Key)).Select(x => x.Value).ToArray().First();
+            var buttons = requestTypeWithButton.Where(x => !existRequestTypes.Contains(x.Key)).Select(x => x.Value);
+            var buttonsArray = buttons.Select(x => x.ToArray()).ToArray();
 
             return new Keyboard()
             {
-                Buttons = new[] { new[] { buttons } },
+                Buttons = buttonsArray,
                 OneTime = true
             };
         }
@@ -121,7 +122,7 @@ namespace CheckAutoBot.Utils
             return new Button()
             {
                 Action = action,
-                Color = ButtonColor.Positive
+                Color = ButtonColor.Primary
             };
         }
 
@@ -148,7 +149,7 @@ namespace CheckAutoBot.Utils
             return new Button()
             {
                 Action = action,
-                Color = ButtonColor.Positive
+                Color = ButtonColor.Primary
             };
         }
 
@@ -175,7 +176,7 @@ namespace CheckAutoBot.Utils
             var dtpButton = new Button()
             {
                 Action = action,
-                Color = ButtonColor.Positive
+                Color = ButtonColor.Primary
             };
 
             return dtpButton;
@@ -205,7 +206,7 @@ namespace CheckAutoBot.Utils
             return new Button()
             {
                 Action = action,
-                Color = ButtonColor.Positive
+                Color = ButtonColor.Primary
             };
         }
 
@@ -232,7 +233,7 @@ namespace CheckAutoBot.Utils
             var dtpButton = new Button()
             {
                 Action = action,
-                Color = ButtonColor.Positive
+                Color = ButtonColor.Primary
             };
 
             return dtpButton;

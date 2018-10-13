@@ -22,11 +22,17 @@ namespace CheckAutoBot.PledgeModels
         [JsonProperty("properties")]
         public List<PledgeProperty> Properties { get; set; }
 
+        /// <summary>
+        /// Зологодатели
+        /// </summary>
         [JsonProperty("pledgors")]
         public List<Pledgor> Pledgors { get; set; }
 
+        /// <summary>
+        /// Залогодержатели
+        /// </summary>
         [JsonProperty("pledgees")]
-        public List<Pledge> Pledgees { get; set; }
+        public List<Pledgee> Pledgees { get; set; }
 
         [JsonProperty("position")]
         public string Position { get; set; }

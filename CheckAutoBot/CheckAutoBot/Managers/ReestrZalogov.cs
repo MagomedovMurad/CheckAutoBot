@@ -1,4 +1,6 @@
 ﻿using CheckAutoBot.Infrastructure;
+using CheckAutoBot.PledgeModels;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +11,7 @@ namespace CheckAutoBot.Managers
 {
     public class ReestrZalogov
     {
-        public string GetPledges(string vin, string captcha, string jsessionId)
+        public PledgeResponse GetPledges(string vin, string captcha, string jsessionId)
         {
             string url = $"https://www.reestr-zalogov.ru/search/endpoint";
 
@@ -46,11 +48,26 @@ namespace CheckAutoBot.Managers
 
             request.AddContent(data);
 
-            WebResponse response = request.GetResponse();
-            var json = response.ReadDataAsString();
-            response.Close();
+            try
+            {
+                WebResponse response = request.GetResponse();
+                var json = response.ReadDataAsString();
+                response.Close();
 
-            return json;
+                return JsonConvert.DeserializeObject<PledgeResponse>(json);
+            }
+            catch (WebException ex)
+            {
+                HttpStatusCode? status = (ex.Response as HttpWebResponse)?.StatusCode;
+
+                var t = status == HttpStatusCode.Forbidden;
+                return null;
+            }
+            catch (Exception ex)
+            {
+                return GetPledges(vin, captcha, jsessionId);
+            }
+
         }
 
         public CaptchaResult GetCaptcha()

@@ -1,4 +1,5 @@
 ﻿//using HtmlAgilityPack;
+using CheckAutoBot.Exceptions;
 using CheckAutoBot.Infrastructure;
 using CheckAutoBot.RsaModels;
 using Newtonsoft.Json;
@@ -13,6 +14,7 @@ namespace CheckAutoBot.Managers
 {
     public class Rsa
     {
+        private readonly string _policyNotFound = "Сведения о полисе ОСАГО с указанными серией и номером не найдены";
         public Rsa()
         {
         }
@@ -25,8 +27,20 @@ namespace CheckAutoBot.Managers
         {
             var stringData = $"vin={vin}&lp={lp.UrlEncode()}&date={date.Date.ToString("dd.MM.yyyy")}&bodyNumber={bodyNumber}&chassisNumber={chassisNumber}&captcha={captcha}";
             string json = ExecuteRequest(stringData, policyUrl);
-            var data = JsonConvert.DeserializeObject<PolicyResponse>(json);
-            return data;
+            var policyResponse = JsonConvert.DeserializeObject<PolicyResponse>(json);
+
+            if (!policyResponse.ValidCaptcha)
+                throw new InvalidCaptchaException(captcha);
+
+            if (policyResponse.ErrorId == 0)
+            {
+                if (policyResponse.WarningMessage.Equals(_policyNotFound))
+                    return policyResponse;
+            }
+            else if (policyResponse.ErrorId == 7002 || policyResponse.ErrorId == 7005)
+                return null;
+
+            throw new Exception(policyResponse.ErrorMessage);
         }
 
         public VechicleResponse GetPolicyInfo(string serial, string number, DateTime date, string captcha)
@@ -36,9 +50,19 @@ namespace CheckAutoBot.Managers
 
             string json = ExecuteRequest(stringData, osagoVehicleUrl);
 
-            var data = JsonConvert.DeserializeObject<VechicleResponse>(json);
+            var vechicleResponse = JsonConvert.DeserializeObject<VechicleResponse>(json);
 
-            return data;
+            if (!vechicleResponse.ValidCaptcha)
+                throw new InvalidCaptchaException(captcha);
+
+            if (vechicleResponse.ErrorId == 0)
+                return vechicleResponse;
+            else if (vechicleResponse.ErrorId == 7002 || vechicleResponse.ErrorId == 7005)
+                return null;
+
+            throw new Exception($"ErrorId: {vechicleResponse?.ErrorId}. " +
+                                $"Error: {vechicleResponse?.ErrorMessage}. " +
+                                $"Warning: {vechicleResponse?.WarningMessage}");
         }
 
         private string ExecuteRequest(string stringData, string url)

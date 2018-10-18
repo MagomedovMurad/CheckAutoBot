@@ -19,5 +19,7 @@ namespace CheckAutoBot.EaistoModels
         public string LicensePlate { get; set; }
 
         public string EaistoNumber { get; set; }
+
+        public string ErrorMessage { get; set; }
     }
 }

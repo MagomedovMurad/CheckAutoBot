@@ -46,6 +46,9 @@ namespace CheckAutoBot.GbddModels
         [JsonProperty("powerHp")]
         public string PowerHp { get; set; }
 
+        [JsonProperty("powerKwt")]
+        public string PowerKwt { get; set; }
+
         private Dictionary<int, string> vechicleTypes = new Dictionary<int, string>()
         {
             { 1, "Грузовые автомобили бортовые"},

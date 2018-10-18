@@ -1,4 +1,5 @@
 ﻿using CheckAutoBot.EaistoModels;
+using CheckAutoBot.Exceptions;
 using CheckAutoBot.Infrastructure;
 using HtmlAgilityPack;
 using System;
@@ -13,6 +14,9 @@ namespace CheckAutoBot.Managers
         private const string url = "https://eaisto.info/";
         private const string captchaUrl = "https://eaisto.info/securimage_show.php ";
 
+        private const string _invalidCaptchaError = "Пожалуйста введите код, указанный на картинке";
+        private const string _notFoundError = "По Вашему запросу ничего не найдено";
+
         public DiagnosticCard GetDiagnosticCard(string captcha,
                                       string phoneNumber,
                                       string sessionId, 
@@ -22,14 +26,37 @@ namespace CheckAutoBot.Managers
                                       string chassis = null, 
                                       string eaisto = null)
         {
+            var response = ExecuteRequest(captcha, phoneNumber, sessionId, vin, licensePlate, bodyNumber, chassis, eaisto);
+            var diagnosticCard = ParseHtml(response);
+
+
+            if (string.IsNullOrEmpty(diagnosticCard.ErrorMessage))
+                return diagnosticCard;
+            else if (diagnosticCard.ErrorMessage == _notFoundError)
+                return null;
+            else if (diagnosticCard.ErrorMessage == _invalidCaptchaError)
+                throw new InvalidCaptchaException(captcha);
+
+            throw new Exception(diagnosticCard.ErrorMessage);
+        }
+
+        private string ExecuteRequest(string captcha,
+                                      string phoneNumber,
+                                      string sessionId,
+                                      string vin = null,
+                                      string licensePlate = null,
+                                      string bodyNumber = null,
+                                      string chassis = null,
+                                      string eaisto = null)
+        {
             string stringData = $"action={"checkNum"}" +
-                                $"&vin={vin.UrlEncode()}" +
-                                $"&registr={licensePlate.UrlEncode()}" +
-                                $"&body={bodyNumber.UrlEncode()}" +
-                                $"&chassis={chassis.UrlEncode()}" +
-                                $"&eaisto={eaisto.UrlEncode()}" +
-                                $"&phoneNumber={phoneNumber.UrlEncode()}" +
-                                $"&captcha_code={captcha.UrlEncode()}";
+                    $"&vin={vin.UrlEncode()}" +
+                    $"&registr={licensePlate.UrlEncode()}" +
+                    $"&body={bodyNumber.UrlEncode()}" +
+                    $"&chassis={chassis.UrlEncode()}" +
+                    $"&eaisto={eaisto.UrlEncode()}" +
+                    $"&phoneNumber={phoneNumber.UrlEncode()}" +
+                    $"&captcha_code={captcha.UrlEncode()}";
 
             byte[] data = Encoding.ASCII.GetBytes(stringData);
 
@@ -69,7 +96,7 @@ namespace CheckAutoBot.Managers
             var responseData = response.ReadDataAsString();
             response.Close();
 
-            return ParseHtml(responseData);
+            return responseData;
         }
 
         public CaptchaResult GetCaptcha()
@@ -102,16 +129,15 @@ namespace CheckAutoBot.Managers
 
         private DiagnosticCard ParseHtml(string html)
         {
-            string invalidCaptchaError = "Пожалуйста введите код, указанный на картинке";
-            string notFoundError = "По Вашему запросу ничего не найдено";
+            string errorMessage = null;
 
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(html);
 
             HtmlNode errorNode = doc.DocumentNode.SelectSingleNode(".//div[@id='card_alert']");
 
-            if (errorNode.InnerText == notFoundError)
-                return null;
+            if (string.IsNullOrEmpty(errorNode.InnerText))
+                errorMessage = errorNode.InnerText;
 
             HtmlNode brandNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[1]/td[2]");
 
@@ -135,7 +161,8 @@ namespace CheckAutoBot.Managers
                 LicensePlate = vinNode?.InnerText,
                 EaistoNumber = eaistoNumberNode?.InnerText,
                 DateFrom = dateFromeNode?.InnerText,
-                DateTo = dateToNode?.InnerText
+                DateTo = dateToNode?.InnerText,
+                ErrorMessage = errorMessage
             };
         }
     }

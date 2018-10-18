@@ -1,6 +1,7 @@
 ﻿using Akka.Actor;
 using CheckAutoBot.EaistoModels;
 using CheckAutoBot.Enums;
+using CheckAutoBot.Exceptions;
 using CheckAutoBot.GbddModels;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Messages;
@@ -293,10 +294,9 @@ namespace CheckAutoBot.Actors
             var policyNumberCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.PolicyNumber);
             var policyResponse = _rsaManager.GetPolicy(policyNumberCacheItem.CaptchaWord, DateTime.Now, lp: licensePlate);
 
-
             VechicleResponse vechicleResponse = null;
 
-            if (policyResponse.Policies.Any())
+            if (policyResponse != null)
             {
                 var policy = policyResponse.Policies.FirstOrDefault();
                 var policyInfoCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.PolicyInfo);
@@ -318,42 +318,65 @@ namespace CheckAutoBot.Actors
 
         private async Task GetHistory(Auto auto, IEnumerable<CacheItem> cacheItems)
         {
-            var historyCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.History);
-            var gibddResponse = _gibddManager.GetHistory(auto.Vin, historyCacheItem.CaptchaWord, historyCacheItem.SessionId);
+            try
+            {
+                var historyCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.History);
+                var historyResult = _gibddManager.GetHistory(auto.Vin, historyCacheItem.CaptchaWord, historyCacheItem.SessionId);
 
-            SendHistoryToSender(gibddResponse.RequestResult, auto);
+                SendHistoryToSender(historyResult, auto);
+            }
+            catch (InvalidCaptchaException ex)
+            {
+
+            }
+            catch (InvalidOperationException ex)
+            {
+
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
         private async Task GetDtp(Auto auto, IEnumerable<CacheItem> cacheItems)
         {
             var dtpCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.Dtp);
-            var gibddResponse = _gibddManager.GetDtp(auto.Vin, dtpCacheItem.CaptchaWord, dtpCacheItem.SessionId);
+            var dtpResult = _gibddManager.GetDtp(auto.Vin, dtpCacheItem.CaptchaWord, dtpCacheItem.SessionId);
 
-            SendDtpToSender(gibddResponse.RequestResult, auto);
-
+            SendDtpToSender(dtpResult, auto);
         }
 
         private async Task GetRestricted(Auto auto, IEnumerable<CacheItem> cacheItems)
         {
             var restrictedCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.Restricted);
-            var gibddResponse = _gibddManager.GetRestriction(auto.Vin, restrictedCacheItem.CaptchaWord, restrictedCacheItem.SessionId);
+            var restrictedResult = _gibddManager.GetRestriction(auto.Vin, restrictedCacheItem.CaptchaWord, restrictedCacheItem.SessionId);
 
-            SendRestrictedToSender(gibddResponse.RequestResult, auto);
+            SendRestrictedToSender(restrictedResult, auto);
         }
         private async Task GetWanted(Auto auto, IEnumerable<CacheItem> cacheItems)
         {
             var wantedCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.Wanted);
-            var gibddResponse = _gibddManager.GetWanted(auto.Vin, wantedCacheItem.CaptchaWord, wantedCacheItem.SessionId);
+            var wantedResponse = _gibddManager.GetWanted(auto.Vin, wantedCacheItem.CaptchaWord, wantedCacheItem.SessionId);
 
-            SendWantedToSender(gibddResponse.RequestResult, auto);
+            SendWantedToSender(wantedResponse, auto);
         }
 
         private async Task GetPledge(Auto auto, IEnumerable<CacheItem> cacheItems)
         {
-            var pledgeCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.Pledge);
-            var pledgeResponse = _fnpManager.GetPledges(auto.Vin, pledgeCacheItem.CaptchaWord, pledgeCacheItem.SessionId);
+            try
+            {
+                var pledgeCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.Pledge);
+                var pledgeResponse = _fnpManager.GetPledges(auto.Vin, pledgeCacheItem.CaptchaWord, pledgeCacheItem.SessionId);
 
-            SendPledgesToSender(pledgeResponse, auto);
+                SendPledgesToSender(pledgeResponse, auto);
+            }
+            catch (InvalidCaptchaException ex)
+            {
+            }
+            catch (Exception ex)
+            {
+            }
         }
 
 
@@ -387,31 +410,41 @@ namespace CheckAutoBot.Actors
 
         private void SendHistoryToSender(HistoryResult history, RequestObject requestobject)
         {
-            var text = HistoryToMessageText(history);
-            var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
-
             var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
-            sender.Tell(message, Self);
+
+            if (history == null)
+            {
+                var text = "В базе ГИБДД не найдены сведения о регистрации транспортного средства";
+                var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
+                sender.Tell(message, Self);
+            }
+            else
+            {
+                var text = HistoryToMessageText(history);
+                var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
+                sender.Tell(message, Self);
+            }
         }
 
         private void SendDtpToSender(DtpResult dtp, RequestObject requestobject)
         {
             var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
 
-            if (!dtp.Accidents.Any())
+            if (dtp == null)
             {
-                var text = "В базе ГИБДД не найдены записи о дорожно-транспортных происшествиях";
+                var text = "В базе ГИБДД не найдены сведения о дорожно-транспортных происшествиях";
                 var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
                 sender.Tell(message, Self);
             }
-
-            foreach (var accident in dtp.Accidents)
+            else
             {
-                var incidentImage = _gibddManager.GetIncidentImage(accident.DamagePoints);
-                var text = AccidentToMessageText(accident);
-                var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, incidentImage);
-
-                sender.Tell(message, Self);
+                foreach (var accident in dtp.Accidents)
+                {
+                    var incidentImage = _gibddManager.GetIncidentImage(accident.DamagePoints);
+                    var text = AccidentToMessageText(accident);
+                    var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, incidentImage);
+                    sender.Tell(message, Self);
+                }
             }
         }
 
@@ -419,20 +452,20 @@ namespace CheckAutoBot.Actors
         {
             var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
 
-            if (!result.Restricteds.Any())
+            if (result == null)
             {
                 var text = "В базе ГИБДД не найдены сведения о наложении ограничений";
                 var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
                 sender.Tell(message, Self);
             }
-
-
-            foreach (var restricted in result.Restricteds)
+            else
             {
-                var text = RestrictedToMessageText(restricted);
-                var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
-
-                sender.Tell(message, Self);
+                foreach (var restricted in result.Restricteds)
+                {
+                    var text = RestrictedToMessageText(restricted);
+                    var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
+                    sender.Tell(message, Self);
+                }
             }
         }
 
@@ -440,20 +473,20 @@ namespace CheckAutoBot.Actors
         {
             var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
 
-            if (!result.Wanteds.Any())
+            if (result == null)
             {
                 var text = "В базе ГИБДД не найдены сведения о розыске транспортного средства";
                 var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
                 sender.Tell(message, Self);
             }
-
-
-            foreach (var wanted in result.Wanteds)
+            else
             {
-                var text = WantedToMessageText(wanted);
-                var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
-
-                sender.Tell(message, Self);
+                foreach (var wanted in result.Wanteds)
+                {
+                    var text = WantedToMessageText(wanted);
+                    var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
+                    sender.Tell(message, Self);
+                }
             }
         }
 
@@ -461,16 +494,26 @@ namespace CheckAutoBot.Actors
         {
             var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
 
-            if (!response.Pledges.Any())
+            if (response == null)
             {
-                var defultText = "В базе ФНП не найдены сведения о нахождении транспортного средства в залоге";
-                var defultMessage = new SendToUserMessage(requestobject.Id, requestobject.UserId, defultText, null);
-                sender.Tell(defultMessage, Self);
+                var text = "В базе ФНП не найдены сведения о нахождении транспортного средства в залоге";
+                var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
+                sender.Tell(message, Self);
             }
+            else
+            {
+                var text = string.Join(Environment.NewLine, response.Pledges.Select(x => PledgeToText(x)));
+                var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
+                sender.Tell(message, Self);
+            }
+        }
 
-            var text = string.Join(Environment.NewLine, response.Pledges.Select(x => PledgeToText(x)));
-            var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
-            sender.Tell(message, Self);
+        private void SendIfVinNotFoudToSender()
+        {
+            //var sender = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
+            //var text = "В базе ФНП не найдены сведения о нахождении транспортного средства в залоге";
+            //var message = new SendToUserMessage(requestobject.Id, requestobject.UserId, text, null);
+            //sender.Tell(message, Self);
         }
 
         private string HistoryToMessageText(HistoryResult history)
@@ -489,7 +532,8 @@ namespace CheckAutoBot.Actors
             foreach (var period in periods)
             {
                 var ownerType = period.OwnerType == OwnerType.Natural ? "Физическое лицо" : "Юридическое лицо";
-                var dateTo = period.To.ToString("dd.MM.yyyy") ?? "настоящее время";
+                var stringDateTo = period.To.ToString("dd.MM.yyyy");
+                var dateTo = stringDateTo == "01.01.0001" ? "настоящее время" : stringDateTo;
 
                 string ownerPeriod = $"{Environment.NewLine}" +
                     $"{Environment.NewLine}{ownerType}{Environment.NewLine}" +
@@ -538,8 +582,6 @@ namespace CheckAutoBot.Actors
 
         private string PledgeToText(PledgeListItem pledge)
         {
-            var t = pledge.Pledgors.Select(x => PledgorToText(x));
-
             var text = $"Уведомление о возникновении залога №{pledge.ReferenceNumber} {Environment.NewLine}";
             text += $"Дата регистрации: {pledge.RegisterDate}{Environment.NewLine}";
             text += $"Залогодатель: {string.Join(Environment.NewLine, pledge.Pledgors.Select(x => PledgorToText(x)))}";

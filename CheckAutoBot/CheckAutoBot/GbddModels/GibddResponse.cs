@@ -20,6 +20,12 @@ namespace CheckAutoBot.GbddModels
         public string Vin { get; set; }
 
         /// <summary>
+        /// Информация об ошибке
+        /// </summary>
+        [JsonProperty("message")]
+        public string Message { get; set; }
+
+        /// <summary>
         /// Статус 
         /// </summary>
         [JsonProperty("status")]

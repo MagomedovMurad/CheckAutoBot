@@ -1,4 +1,5 @@
-﻿using CheckAutoBot.Infrastructure;
+﻿using CheckAutoBot.Exceptions;
+using CheckAutoBot.Infrastructure;
 using CheckAutoBot.PledgeModels;
 using Newtonsoft.Json;
 using System;
@@ -13,43 +14,44 @@ namespace CheckAutoBot.Managers
     {
         public PledgeResponse GetPledges(string vin, string captcha, string jsessionId)
         {
-            string url = $"https://www.reestr-zalogov.ru/search/endpoint";
-
-            string stringData = $"VIN={vin}&formName=vehicle-form&token={captcha}&uuid={Guid.NewGuid()}"; 
-            byte[] data = Encoding.ASCII.GetBytes(stringData);
-
-            #region Headers
-            WebHeaderCollection headers = new WebHeaderCollection();
-            headers.Add(HttpRequestHeader.Host, "www.reestr-zalogov.ru");
-            headers.Add(HttpRequestHeader.Connection, "keep-alive");
-            headers.Add(HttpRequestHeader.ContentLength, data.Length.ToString());
-            headers.Add(HttpRequestHeader.Accept, "*/*");
-            headers.Add("Origin", "https://www.reestr-zalogov.ru");
-            headers.Add("X-Requested-With", "XMLHttpRequest");
-            headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 YaBrowser/18.6.1.770 Yowser/2.5 Safari/537.36");
-            headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded; charset=UTF-8");
-            headers.Add(HttpRequestHeader.Referer, "https://www.reestr-zalogov.ru/search/index");
-            headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br");
-            headers.Add(HttpRequestHeader.AcceptLanguage, "ru,en;q=0.9");
-            #endregion
-
-            #region Cookie
-            CookieContainer cookieContainer = new CookieContainer();
-            Cookie cookie = new Cookie();
-            cookie.Name = "JSESSIONID";
-            cookie.Value = jsessionId;
-            cookieContainer.Add(new Uri(url), cookie);
-            #endregion
-
-            HttpWebRequest request = WebRequest.CreateHttp(url);
-            request.Method = "POST";
-            request.Headers = headers;
-            request.CookieContainer = cookieContainer;
-
-            request.AddContent(data);
-
             try
             {
+                string url = $"https://www.reestr-zalogov.ru/search/endpoint";
+
+                string stringData = $"VIN={vin}&formName=vehicle-form&token={captcha}&uuid={Guid.NewGuid()}";
+                byte[] data = Encoding.ASCII.GetBytes(stringData);
+
+                #region Headers
+                WebHeaderCollection headers = new WebHeaderCollection();
+                headers.Add(HttpRequestHeader.Host, "www.reestr-zalogov.ru");
+                headers.Add(HttpRequestHeader.Connection, "keep-alive");
+                headers.Add(HttpRequestHeader.ContentLength, data.Length.ToString());
+                headers.Add(HttpRequestHeader.Accept, "*/*");
+                headers.Add("Origin", "https://www.reestr-zalogov.ru");
+                headers.Add("X-Requested-With", "XMLHttpRequest");
+                headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 YaBrowser/18.6.1.770 Yowser/2.5 Safari/537.36");
+                headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded; charset=UTF-8");
+                headers.Add(HttpRequestHeader.Referer, "https://www.reestr-zalogov.ru/search/index");
+                headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br");
+                headers.Add(HttpRequestHeader.AcceptLanguage, "ru,en;q=0.9");
+                #endregion
+
+                #region Cookie
+                CookieContainer cookieContainer = new CookieContainer();
+                Cookie cookie = new Cookie();
+                cookie.Name = "JSESSIONID";
+                cookie.Value = jsessionId;
+                cookieContainer.Add(new Uri(url), cookie);
+                #endregion
+
+                HttpWebRequest request = WebRequest.CreateHttp(url);
+                request.Method = "POST";
+                request.Headers = headers;
+                request.CookieContainer = cookieContainer;
+
+                request.AddContent(data);
+
+
                 WebResponse response = request.GetResponse();
                 var json = response.ReadDataAsString();
                 response.Close();
@@ -59,15 +61,14 @@ namespace CheckAutoBot.Managers
             catch (WebException ex)
             {
                 HttpStatusCode? status = (ex.Response as HttpWebResponse)?.StatusCode;
+                if (status == HttpStatusCode.Forbidden)
+                    throw new InvalidCaptchaException(captcha);
 
-                var t = status == HttpStatusCode.Forbidden;
-                return null;
-            }
-            catch (Exception ex)
-            {
-                return GetPledges(vin, captcha, jsessionId);
-            }
+                if (status == HttpStatusCode.NotFound)
+                    return null;
 
+                throw ex;
+            }
         }
 
         public CaptchaResult GetCaptcha()

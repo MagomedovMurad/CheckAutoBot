@@ -17,28 +17,13 @@ namespace CheckAutoBot.Actors
         private KeyboardBuilder _keyboardBuilder;
         private IRepositoryFactory _repositoryFactory;
 
-
-
         public PrivateMessageSenderActor()
         {
             _keyboardBuilder = new KeyboardBuilder();
             _repositoryFactory = new RepositoryFactory();
 
-
             Receive<HelpMessage>(x => SendHelpMessage(x));
             Receive<SendToUserMessage>(x => SendToUserMessageHandler(x));
-            Receive<string>(x => SendMessage(x));
-        }
-
-        private void SendMessage(string message)
-        {
-            //var messageParams = new SendMessageParams()
-            //{
-            //    Message = message,
-            //    PeerId = msg.UserId
-            //};
-
-            //Vk.Api.Messages.Send(messageParams);
         }
 
         private async void SendToUserMessageHandler(SendToUserMessage message)
@@ -50,7 +35,7 @@ namespace CheckAutoBot.Actors
 
             var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
 
-            string attachments = null;
+            string attachments = null; 
 
             if (message.Photo != null)
             {
@@ -59,7 +44,6 @@ namespace CheckAutoBot.Actors
                 var photo = Photos.SaveMessagesPhoto(uploadPhotoResponse, accessToken);
                 attachments = $"photo{photo.OwnerId}_{photo.Id}";
             }
-
 
             SendMessage(message.UserId, message.Text, keyboard, attachments);
         }

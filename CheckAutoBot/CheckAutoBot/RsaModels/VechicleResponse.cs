@@ -69,6 +69,6 @@ namespace CheckAutoBot.RsaModels
         /// Идентификатор ошибки
         /// </summary>
         [JsonProperty("errorId")]
-        public string ErrorId { get; set; }
+        public int ErrorId { get; set; }
     }
 }

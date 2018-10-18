@@ -64,8 +64,6 @@ namespace CheckAutoBot.Actors
                     _actorSelection
                         .ActorSelection(Context, ActorsPaths.UserRequestHandlerActor.Path)
                         .Tell(reqestObjectMessage, Self);
-
-                    _logger.Debug($"MessageHandler: define data: {userInpuDataTypeWithValue.Value}");
                 }
                 else
                 {
@@ -73,8 +71,6 @@ namespace CheckAutoBot.Actors
                     _actorSelection
                         .ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path)
                         .Tell(helpMsg, Self);
-
-                    _logger.Debug($"MessageHandler: Send help message");
                 }
             }
             //Если сообщение содержит Payload
@@ -96,7 +92,6 @@ namespace CheckAutoBot.Actors
                     _actorSelection
                         .ActorSelection(Context, ActorsPaths.UserRequestHandlerActor.Path)
                         .Tell(msg, Self);
-                    _logger.Debug($"MessageHandler: Send user request message to UserRequestHandlerActor");
                 }
             }
         }

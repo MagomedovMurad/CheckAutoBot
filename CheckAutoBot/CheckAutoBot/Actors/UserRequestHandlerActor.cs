@@ -29,7 +29,7 @@ namespace CheckAutoBot.Actors
 
         private Rsa _rsaManager;
         private Gibdd _gibddManager;
-        private ReestrZalogov _fnpManager;
+        private Fnp _fnpManager;
         private Eaisto _eaistoManager;
         private Rucaptcha _rucaptchaManager;
 
@@ -40,7 +40,7 @@ namespace CheckAutoBot.Actors
             _repositoryFactory = new RepositoryFactory();
             _rsaManager = new Rsa();
             _gibddManager = new Gibdd();
-            _fnpManager = new ReestrZalogov();
+            _fnpManager = new Fnp();
             _rucaptchaManager = new Rucaptcha();
             _actorSelector = new ActorSelector();
             _eaistoManager = new Eaisto();
@@ -285,7 +285,10 @@ namespace CheckAutoBot.Actors
             {
                 var request = await GetUserRequest(diagnosticCardCacheItem.RequestId);
                 await UpdateVinCode(request.RequestObject.Id, diagnosticCard.Vin);
-                PreGetFromGibdd(true, diagnosticCardCacheItem.RequestId, diagnosticCardCacheItem.TargetActionType);
+                if (diagnosticCardCacheItem.TargetActionType == ActionType.Pledge)
+                    PreGetFromFnp(true, diagnosticCardCacheItem.RequestId, diagnosticCardCacheItem.TargetActionType);
+                else
+                    PreGetFromGibdd(true, diagnosticCardCacheItem.RequestId, diagnosticCardCacheItem.TargetActionType);
             }
         }
 
@@ -308,7 +311,11 @@ namespace CheckAutoBot.Actors
                 var request = await GetUserRequest(policyNumberCacheItem.RequestId);
                 await UpdateVinCode(request.RequestObject.Id, vechicleResponse.Vin);
 
-                PreGetFromGibdd(true, policyNumberCacheItem.RequestId, policyNumberCacheItem.TargetActionType);
+                if (policyNumberCacheItem.TargetActionType == ActionType.Pledge)
+                    PreGetFromFnp(true, policyNumberCacheItem.RequestId, policyNumberCacheItem.TargetActionType);
+                else
+                    PreGetFromGibdd(true, policyNumberCacheItem.RequestId, policyNumberCacheItem.TargetActionType);
+
             }
             else
             {

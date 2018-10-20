@@ -10,12 +10,11 @@ using System.Text;
 
 namespace CheckAutoBot.Managers
 {
-    public class ReestrZalogov
+    public class Fnp
     {
+        private const string url = "https://www.reestr-zalogov.ru/search/endpoint";
         public PledgeResponse GetPledges(string vin, string captcha, string jsessionId)
         {
-            try
-            {
                 string url = $"https://www.reestr-zalogov.ru/search/endpoint";
 
                 string stringData = $"VIN={vin}&formName=vehicle-form&token={captcha}&uuid={Guid.NewGuid()}";
@@ -57,18 +56,6 @@ namespace CheckAutoBot.Managers
                 response.Close();
 
                 return JsonConvert.DeserializeObject<PledgeResponse>(json);
-            }
-            catch (WebException ex)
-            {
-                HttpStatusCode? status = (ex.Response as HttpWebResponse)?.StatusCode;
-                if (status == HttpStatusCode.Forbidden)
-                    throw new InvalidCaptchaException(captcha);
-
-                if (status == HttpStatusCode.NotFound)
-                    return null;
-
-                throw ex;
-            }
         }
 
         public CaptchaResult GetCaptcha()

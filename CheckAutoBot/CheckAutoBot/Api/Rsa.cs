@@ -14,11 +14,6 @@ namespace CheckAutoBot.Managers
 {
     public class Rsa
     {
-        private readonly string _policyNotFound = "Сведения о полисе ОСАГО с указанными серией и номером не найдены";
-        public Rsa()
-        {
-        }
-
         public const string policyUrl = "https://dkbm-web.autoins.ru/dkbm-web-1.0/policy.htm";
         public const string osagoVehicleUrl = "https://dkbm-web.autoins.ru/dkbm-web-1.0/osagovehicle.htm";
         public const string dataSiteKey = "6Lf2uycUAAAAALo3u8D10FqNuSpUvUXlfP7BzHOk";
@@ -27,42 +22,16 @@ namespace CheckAutoBot.Managers
         {
             var stringData = $"vin={vin}&lp={lp.UrlEncode()}&date={date.Date.ToString("dd.MM.yyyy")}&bodyNumber={bodyNumber}&chassisNumber={chassisNumber}&captcha={captcha}";
             string json = ExecuteRequest(stringData, policyUrl);
-            var policyResponse = JsonConvert.DeserializeObject<PolicyResponse>(json);
-
-            if (!policyResponse.ValidCaptcha)
-                throw new InvalidCaptchaException(captcha);
-
-            if (policyResponse.ErrorId == 0)
-            {
-                if (policyResponse.WarningMessage.Equals(_policyNotFound))
-                    return policyResponse;
-            }
-            else if (policyResponse.ErrorId == 7002 || policyResponse.ErrorId == 7005)
-                return null;
-
-            throw new Exception(policyResponse.ErrorMessage);
+            return JsonConvert.DeserializeObject<PolicyResponse>(json);
         }
 
-        public VechicleResponse GetPolicyInfo(string serial, string number, DateTime date, string captcha)
+        public VechicleResponse GetVechicleInfo(string serial, string number, DateTime date, string captcha)
         {
-            string encodeSerial = WebUtility.UrlEncode(serial);
-            var stringData = $"serialOsago={encodeSerial}&numberOsago={number}&dateRequest={date.Date.ToString("dd.MM.yyyy")}&captcha={captcha}";
+            var stringData = $"serialOsago={serial.UrlEncode()}&numberOsago={number}&dateRequest={date.Date.ToString("dd.MM.yyyy")}&captcha={captcha}";
 
             string json = ExecuteRequest(stringData, osagoVehicleUrl);
 
-            var vechicleResponse = JsonConvert.DeserializeObject<VechicleResponse>(json);
-
-            if (!vechicleResponse.ValidCaptcha)
-                throw new InvalidCaptchaException(captcha);
-
-            if (vechicleResponse.ErrorId == 0)
-                return vechicleResponse;
-            else if (vechicleResponse.ErrorId == 7002 || vechicleResponse.ErrorId == 7005)
-                return null;
-
-            throw new Exception($"ErrorId: {vechicleResponse?.ErrorId}. " +
-                                $"Error: {vechicleResponse?.ErrorMessage}. " +
-                                $"Warning: {vechicleResponse?.WarningMessage}");
+            return JsonConvert.DeserializeObject<VechicleResponse>(json);
         }
 
         private string ExecuteRequest(string stringData, string url)

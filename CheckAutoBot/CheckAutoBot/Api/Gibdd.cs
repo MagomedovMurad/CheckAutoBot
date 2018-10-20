@@ -15,109 +15,28 @@ namespace CheckAutoBot.Managers
 {
     public class Gibdd
     {
-        private readonly string _invalidCaptchaError = "Цифры с картинки введены неверно";
-        private readonly string _captchaTimeOutError = "Прошло слишком много времени с момента загрузки картинки, или Ваш брузер не поддеживает cookie";
-
-        public HistoryResult GetHistory(string vin, string captcha, string jsessionId)
+        public GibddResponse<HistoryResult> GetHistory(string vin, string captcha, string jsessionId)
         {
             var response = ExecuteRequest(vin, captcha, jsessionId, "history", "history");
-            var gibddResponse = JsonConvert.DeserializeObject<GibddResponse<HistoryResult>>(response);
-
-            if (gibddResponse.Status == (int)HttpStatusCode.OK)
-                return gibddResponse.RequestResult;
-
-            else if (gibddResponse.Status == (int)HttpStatusCode.NotFound)
-                return null;
-
-            else if (gibddResponse.Status == (int)HttpStatusCode.Created)
-            {
-                if (gibddResponse.Message.Equals(_invalidCaptchaError))
-                    throw new InvalidCaptchaException(captcha);
-                else if (gibddResponse.Message.Equals(_captchaTimeOutError))
-                    throw new InvalidOperationException(_captchaTimeOutError);
-            }
-
-            else if (gibddResponse.Status == (int)HttpStatusCode.ServiceUnavailable)
-                throw new InvalidOperationException();
-
-            throw new Exception(gibddResponse.Message);
+            return JsonConvert.DeserializeObject<GibddResponse<HistoryResult>>(response);
         }
 
-        public DtpResult GetDtp(string vin, string captcha, string jsessionId)
+        public GibddResponse<DtpResult> GetDtp(string vin, string captcha, string jsessionId)
         {
             var response = ExecuteRequest(vin, captcha, jsessionId, "dtp", "aiusdtp");
-            var gibddResponse = JsonConvert.DeserializeObject<GibddResponse<DtpResult>>(response);
-
-            if (gibddResponse.Status == (int)HttpStatusCode.OK)
-            {
-                if (gibddResponse.RequestResult.Accidents.Any())
-                    return gibddResponse.RequestResult;
-                else
-                    return null;
-            }
-            else if (gibddResponse.Status == (int)HttpStatusCode.Created)
-            {
-                if (gibddResponse.Message.Equals(_invalidCaptchaError))
-                    throw new InvalidCaptchaException(captcha);
-                else if (gibddResponse.Message.Equals(_captchaTimeOutError))
-                    throw new InvalidOperationException(_captchaTimeOutError);
-            }
-            else if (gibddResponse.Status == (int)HttpStatusCode.ServiceUnavailable)
-                throw new InvalidOperationException();
-
-            throw new Exception(gibddResponse.Message);
+            return JsonConvert.DeserializeObject<GibddResponse<DtpResult>>(response);
         }
 
-        public WantedResult GetWanted(string vin, string captcha, string jsessionId)
+        public GibddResponse<WantedResult> GetWanted(string vin, string captcha, string jsessionId)
         {
             var response = ExecuteRequest(vin, captcha, jsessionId, "wanted", "wanted");
-            var gibddResponse = JsonConvert.DeserializeObject<GibddResponse<WantedResult>>(response);
-
-            if (gibddResponse.Status == (int)HttpStatusCode.OK)
-            {
-                if (gibddResponse.RequestResult.Wanteds.Any())
-                    return gibddResponse.RequestResult;
-                else
-                    return null;
-            }
-            else if (gibddResponse.Status == (int)HttpStatusCode.Created)
-            {
-                if (gibddResponse.Message.Equals(_invalidCaptchaError))
-                    throw new InvalidCaptchaException(captcha);
-                else if (gibddResponse.Message.Equals(_captchaTimeOutError))
-                    throw new InvalidOperationException(_captchaTimeOutError);
-            }
-
-            else if (gibddResponse.Status == (int)HttpStatusCode.ServiceUnavailable)
-                throw new InvalidOperationException();
-
-            throw new Exception(gibddResponse.Message);
+            return JsonConvert.DeserializeObject<GibddResponse<WantedResult>>(response);
         }
 
-        public RestrictedResult GetRestriction(string vin, string captcha, string jsessionId)
+        public GibddResponse<RestrictedResult> GetRestriction(string vin, string captcha, string jsessionId)
         {
             var response = ExecuteRequest(vin, captcha, jsessionId, "restrict", "restricted");
-            var gibddResponse = JsonConvert.DeserializeObject<GibddResponse<RestrictedResult>>(response);
-
-            if (gibddResponse.Status == (int)HttpStatusCode.OK)
-            {
-                if (gibddResponse.RequestResult.Restricteds.Any())
-                    return gibddResponse.RequestResult;
-                else
-                    return null;
-            }
-            else if (gibddResponse.Status == (int)HttpStatusCode.Created)
-            {
-                if (gibddResponse.Message.Equals(_invalidCaptchaError))
-                    throw new InvalidCaptchaException(captcha);
-                else if (gibddResponse.Message.Equals(_captchaTimeOutError))
-                    throw new InvalidOperationException(_captchaTimeOutError);
-            }
-
-            else if (gibddResponse.Status == (int)HttpStatusCode.ServiceUnavailable)
-                throw new InvalidOperationException();
-
-            throw new Exception(gibddResponse.Message);
+            return JsonConvert.DeserializeObject<GibddResponse<RestrictedResult>>(response);
         }
 
         public byte[] GetIncidentImage(string[] damagePoints)

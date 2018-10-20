@@ -14,8 +14,6 @@ namespace CheckAutoBot.Managers
         private const string url = "https://eaisto.info/";
         private const string captchaUrl = "https://eaisto.info/securimage_show.php ";
 
-        private const string _invalidCaptchaError = "Пожалуйста введите код, указанный на картинке";
-        private const string _notFoundError = "По Вашему запросу ничего не найдено";
 
         public DiagnosticCard GetDiagnosticCard(string captcha,
                                       string phoneNumber,
@@ -27,17 +25,7 @@ namespace CheckAutoBot.Managers
                                       string eaisto = null)
         {
             var response = ExecuteRequest(captcha, phoneNumber, sessionId, vin, licensePlate, bodyNumber, chassis, eaisto);
-            var diagnosticCard = ParseHtml(response);
-
-
-            if (string.IsNullOrEmpty(diagnosticCard.ErrorMessage))
-                return diagnosticCard;
-            else if (diagnosticCard.ErrorMessage == _notFoundError)
-                return null;
-            else if (diagnosticCard.ErrorMessage == _invalidCaptchaError)
-                throw new InvalidCaptchaException(captcha);
-
-            throw new Exception(diagnosticCard.ErrorMessage);
+            return ParseHtml(response);
         }
 
         private string ExecuteRequest(string captcha,

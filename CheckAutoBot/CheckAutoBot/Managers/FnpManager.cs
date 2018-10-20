@@ -11,6 +11,11 @@ namespace CheckAutoBot.Managers
     {
         private readonly Fnp _fnp;
 
+        public FnpManager()
+        {
+            _fnp = new Fnp();
+        }
+
         public PledgeResponse GetPledges(string vin, string captcha, string sessionId)
         {
             try

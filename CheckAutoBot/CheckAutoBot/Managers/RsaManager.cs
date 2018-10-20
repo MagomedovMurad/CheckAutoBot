@@ -11,6 +11,11 @@ namespace CheckAutoBot.Managers
         private readonly Rsa _rsa;
         private readonly string _policyNotFound = "Сведения о полисе ОСАГО с указанными серией и номером не найдены";
 
+        public RsaManager()
+        {
+            _rsa = new Rsa();
+        }
+
         public PolicyResponse GetPolicy(string captcha, DateTime date, string lp = "", string vin = "", string bodyNumber = "", string chassisNumber = "")
         {
             var response = _rsa.GetPolicy(captcha, date, lp, vin, bodyNumber, chassisNumber);
@@ -19,10 +24,8 @@ namespace CheckAutoBot.Managers
                 throw new InvalidCaptchaException(captcha);
 
             if (response.ErrorId == 0)
-            {
-                if (response.WarningMessage.Equals(_policyNotFound))
-                    return response;
-            }
+                return response;
+
             else if (response.ErrorId == 7002 || response.ErrorId == 7005)
                 return null;
 
@@ -31,12 +34,18 @@ namespace CheckAutoBot.Managers
 
         public VechicleResponse GetVechicleInfo(string serial, string number, DateTime date, string captcha)
         {
-            var response = _rsa.GetPolicyInfo(serial, number, date, captcha);
+            var response = _rsa.GetVechicleInfo(serial, number, date, captcha);
             if (!response.ValidCaptcha)
                 throw new InvalidCaptchaException(captcha);
 
             if (response.ErrorId == 0)
-                return response;
+            {
+                if (response.WarningMessage == null)
+                    return response;
+                else if (!response.WarningMessage.Equals(_policyNotFound))
+                    return null;
+            }
+
             else if (response.ErrorId == 7002 || response.ErrorId == 7005)
                 return null;
 

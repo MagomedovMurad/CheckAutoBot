@@ -124,7 +124,7 @@ namespace CheckAutoBot.Managers
 
             HtmlNode errorNode = doc.DocumentNode.SelectSingleNode(".//div[@id='card_alert']");
 
-            if (string.IsNullOrEmpty(errorNode.InnerText))
+            if (!string.IsNullOrWhiteSpace(errorNode.InnerText))
                 errorMessage = errorNode.InnerText;
 
             HtmlNode brandNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[1]/td[2]");

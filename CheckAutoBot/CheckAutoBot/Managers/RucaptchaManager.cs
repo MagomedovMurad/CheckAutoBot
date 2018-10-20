@@ -9,6 +9,11 @@ namespace CheckAutoBot.Managers
     {
         private readonly Rucaptcha _rucaptcha;
 
+        public RucaptchaManager()
+        {
+            _rucaptcha = new Rucaptcha();
+        }
+
         public CaptchaRequest SendImageCaptcha(string base64)
         {
             return _rucaptcha.SendImageCaptcha(base64);

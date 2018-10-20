@@ -15,6 +15,10 @@ namespace CheckAutoBot.Managers
         private readonly string _invalidCaptchaError = "Цифры с картинки введены неверно";
         private readonly string _captchaTimeOutError = "Прошло слишком много времени с момента загрузки картинки, или Ваш брузер не поддеживает cookie";
 
+        public GibddManager()
+        {
+            _gibdd = new Gibdd();
+        }
 
         public HistoryResult GetHistory(string vin, string captcha, string sessionId)
         {
@@ -86,7 +90,7 @@ namespace CheckAutoBot.Managers
             throw new Exception(response.Message);
         }
 
-        public RestrictedResult GetRestricted(string vin, string captcha, string sessionId)
+        public RestrictedResult GetRestrictions(string vin, string captcha, string sessionId)
         {
             var response = _gibdd.GetRestriction(vin, captcha, sessionId);
             if (response.Status == (int)HttpStatusCode.OK)

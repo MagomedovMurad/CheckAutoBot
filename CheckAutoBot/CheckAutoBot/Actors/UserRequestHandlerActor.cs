@@ -27,25 +27,26 @@ namespace CheckAutoBot.Actors
         private Random _random;
 
 
-        private Rsa _rsaManager;
-        private Gibdd _gibddManager;
-        private Fnp _fnpManager;
-        private Eaisto _eaistoManager;
-        private Rucaptcha _rucaptchaManager;
+        private RsaManager _rsaManager;
+        private GibddManager _gibddManager;
+        private FnpManager _fnpManager;
+        private EaistoManager _eaistoManager;
+        private RucaptchaManager _rucaptchaManager;
 
         private List<CacheItem> _captchaCacheItems = new List<CacheItem>();
 
         public UserRequestHandlerActor(ILogger logger)
         {
             _repositoryFactory = new RepositoryFactory();
-            _rsaManager = new Rsa();
-            _gibddManager = new Gibdd();
-            _fnpManager = new Fnp();
-            _rucaptchaManager = new Rucaptcha();
-            _actorSelector = new ActorSelector();
-            _eaistoManager = new Eaisto();
-            _logger = logger;
+            _rsaManager = new RsaManager();
+            _gibddManager = new GibddManager();
+            _fnpManager = new FnpManager();
+            _rucaptchaManager = new RucaptchaManager();
+            _eaistoManager = new EaistoManager();
             _random = new Random();
+            _actorSelector = new ActorSelector();
+
+            _logger = logger;
 
             ReceiveAsync<UserRequestMessage>(x => UserRequestHandler(x));
             ReceiveAsync<UserInputDataMessage>(x => UserInputDataMessageHandler(x));
@@ -177,7 +178,7 @@ namespace CheckAutoBot.Actors
 
             var items = _captchaCacheItems.Where(x => x.RequestId == captchaItem.RequestId);
 
-            var isNotCompleted = items.Any(x => string.IsNullOrEmpty(x.CaptchaWord));
+            var isNotCompleted = items.Any(x => string.IsNullOrWhiteSpace(x.CaptchaWord));
 
             if (!isNotCompleted)
             {
@@ -303,7 +304,7 @@ namespace CheckAutoBot.Actors
             {
                 var policy = policyResponse.Policies.FirstOrDefault();
                 var policyInfoCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.PolicyInfo);
-                vechicleResponse = _rsaManager.GetPolicyInfo(policy.Serial, policy.Number, DateTime.Now, policyInfoCacheItem.CaptchaWord);
+                vechicleResponse = _rsaManager.GetVechicleInfo(policy.Serial, policy.Number, DateTime.Now, policyInfoCacheItem.CaptchaWord);
             }
 
             if (vechicleResponse != null)
@@ -357,7 +358,7 @@ namespace CheckAutoBot.Actors
         private async Task GetRestricted(Auto auto, IEnumerable<CacheItem> cacheItems)
         {
             var restrictedCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.Restricted);
-            var restrictedResult = _gibddManager.GetRestriction(auto.Vin, restrictedCacheItem.CaptchaWord, restrictedCacheItem.SessionId);
+            var restrictedResult = _gibddManager.GetRestrictions(auto.Vin, restrictedCacheItem.CaptchaWord, restrictedCacheItem.SessionId);
 
             SendRestrictedToSender(restrictedResult, auto);
         }
@@ -531,7 +532,7 @@ namespace CheckAutoBot.Actors
             $"Кузов:  {history.Vehicle.BodyNumber} \n" +
             $"Цвет: {history.Vehicle.Color} \n" +
             $"Рабочий объем(см3):  {history.Vehicle.EngineVolume} \n" +
-            $"Мощность(кВт/л.с.):  {history.Vehicle.PowerHp} \n" +
+            $"Мощность(кВт/л.с.):  {history.Vehicle.PowerKwt?? "н.д."}/{history.Vehicle.PowerHp} \n" +
             $"Тип:  {history.Vehicle.TypeName} \n" +
             $"Категория: {history.Vehicle.Category}";
 

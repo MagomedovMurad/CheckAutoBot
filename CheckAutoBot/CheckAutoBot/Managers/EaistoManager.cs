@@ -8,11 +8,15 @@ namespace CheckAutoBot.Managers
 {
     public class EaistoManager
     {
+        private readonly Eaisto _eaisto;
+
         private const string _invalidCaptchaError = "Пожалуйста введите код, указанный на картинке";
         private const string _notFoundError = "По Вашему запросу ничего не найдено";
 
-
-        private readonly Eaisto _eaisto;
+        public EaistoManager()
+        {
+            _eaisto = new Eaisto();
+        }
 
         public DiagnosticCard GetDiagnosticCard(string captcha,
                                       string phoneNumber,
@@ -25,7 +29,7 @@ namespace CheckAutoBot.Managers
         {
             var diagnosticCard = _eaisto.GetDiagnosticCard(captcha, phoneNumber, sessionId, vin, licensePlate, bodyNumber, chassis, eaisto);
 
-            if (string.IsNullOrEmpty(diagnosticCard.ErrorMessage))
+            if (string.IsNullOrWhiteSpace(diagnosticCard.ErrorMessage))
                 return diagnosticCard;
             else if (diagnosticCard.ErrorMessage == _notFoundError)
                 return null;

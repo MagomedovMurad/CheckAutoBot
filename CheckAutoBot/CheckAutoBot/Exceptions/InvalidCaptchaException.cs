@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CheckAutoBot.Exceptions
 {
-    public class InvalidCaptchaException: Exception
+    public class InvalidCaptchaException: InvalidOperationException
     {
         public InvalidCaptchaException(string captchaWord)
         {

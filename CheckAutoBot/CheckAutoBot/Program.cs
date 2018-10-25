@@ -4,6 +4,7 @@ using CheckAutoBot.Captcha;
 using CheckAutoBot.Infrastructure;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Messages;
+using CheckAutoBot.Storage;
 using CheckAutoBot.Vk.Api;
 using CheckAutoBot.Vk.Api.MessagesModels;
 using CheckAutoBot.Vk.Api.PhotosModels;
@@ -67,12 +68,15 @@ namespace CheckAutoBot
             var logger = LogManager.GetCurrentClassLogger();
             logger.Info("Hello World");
 
+            IRepositoryFactory repositoryFactory = new RepositoryFactory(); 
+            DbQueryExecutor queryExecutor = new DbQueryExecutor(repositoryFactory);
+
             ActorSystem actorSystem = ActorSystem.Create("TestSystem");
             var server = actorSystem.ActorOf(Props.Create(() => new ServerActor(logger)), ActorsPaths.ServerActor.Name);
             var groupEventsHandlerActor = actorSystem.ActorOf(Props.Create(() => new GroupEventsHandlerActor(logger)), ActorsPaths.GroupEventsHandlerActor.Name);
             var privateMessageHandlerActor = actorSystem.ActorOf(Props.Create(() => new PrivateMessageHandlerActor(logger)), ActorsPaths.PrivateMessageHandlerActor.Name);
             var privateMessageSenderActor = actorSystem.ActorOf(Props.Create(typeof(PrivateMessageSenderActor)), ActorsPaths.PrivateMessageSenderActor.Name);
-            var userRequestHandlerActor = actorSystem.ActorOf(Props.Create(() => new UserRequestHandlerActor(logger)), ActorsPaths.UserRequestHandlerActor.Name);
+            var userRequestHandlerActor = actorSystem.ActorOf(Props.Create(() => new UserRequestHandlerActor(logger, queryExecutor)), ActorsPaths.UserRequestHandlerActor.Name);
             server.Tell(new StartServerMessage());
             Console.ReadKey();
 

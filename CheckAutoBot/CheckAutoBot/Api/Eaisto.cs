@@ -16,7 +16,6 @@ namespace CheckAutoBot.Managers
 
 
         public DiagnosticCard GetDiagnosticCard(string captcha,
-                                      string phoneNumber,
                                       string sessionId, 
                                       string vin = null,
                                       string licensePlate = null,
@@ -24,12 +23,11 @@ namespace CheckAutoBot.Managers
                                       string chassis = null, 
                                       string eaisto = null)
         {
-            var response = ExecuteRequest(captcha, phoneNumber, sessionId, vin, licensePlate, bodyNumber, chassis, eaisto);
+            var response = ExecuteRequest(captcha, sessionId, vin, licensePlate, bodyNumber, chassis, eaisto);
             return ParseHtml(response);
         }
 
         private string ExecuteRequest(string captcha,
-                                      string phoneNumber,
                                       string sessionId,
                                       string vin = null,
                                       string licensePlate = null,
@@ -43,7 +41,6 @@ namespace CheckAutoBot.Managers
                     $"&body={bodyNumber.UrlEncode()}" +
                     $"&chassis={chassis.UrlEncode()}" +
                     $"&eaisto={eaisto.UrlEncode()}" +
-                    $"&phoneNumber={phoneNumber.UrlEncode()}" +
                     $"&captcha_code={captcha.UrlEncode()}";
 
             byte[] data = Encoding.ASCII.GetBytes(stringData);

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CheckAutoBot.PledgeModels
 {
-    public class PledgeResponse
+    public class PledgeResult
     {
         [JsonProperty("list")]
         public List<PledgeListItem> Pledges { get; set; }

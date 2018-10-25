@@ -1,4 +1,5 @@
-﻿using CheckAutoBot.Exceptions;
+﻿using CheckAutoBot.Contracts;
+using CheckAutoBot.Exceptions;
 using CheckAutoBot.GbddModels;
 using System;
 using System.Collections.Generic;

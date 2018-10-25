@@ -14,7 +14,7 @@ namespace CheckAutoBot.Enums
         /// <summary>
         /// Получить информацию о полисе ОСАГО
         /// </summary>
-        PolicyInfo,
+        OsagoVechicle,
 
         /// <summary>
         /// Получить историю автомобиля
@@ -60,11 +60,5 @@ namespace CheckAutoBot.Enums
         /// Получить вин код по дигностической карте
         /// </summary>
         VinByDiagnosticCard,
-
-        /// <summary>
-        /// Получить вин код по полису ОСАГО
-        /// </summary>
-        VinByPolicy
-
     }
 }

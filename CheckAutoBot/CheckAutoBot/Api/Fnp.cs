@@ -13,7 +13,7 @@ namespace CheckAutoBot.Managers
     public class Fnp
     {
         private const string url = "https://www.reestr-zalogov.ru/search/endpoint";
-        public PledgeResponse GetPledges(string vin, string captcha, string jsessionId)
+        public PledgeResult GetPledges(string vin, string captcha, string jsessionId)
         {
                 string url = $"https://www.reestr-zalogov.ru/search/endpoint";
 
@@ -55,7 +55,7 @@ namespace CheckAutoBot.Managers
                 var json = response.ReadDataAsString();
                 response.Close();
 
-                return JsonConvert.DeserializeObject<PledgeResponse>(json);
+                return JsonConvert.DeserializeObject<PledgeResult>(json);
         }
 
         public CaptchaResult GetCaptcha()

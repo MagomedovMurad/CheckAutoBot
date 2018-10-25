@@ -16,7 +16,7 @@ namespace CheckAutoBot.Managers
             _fnp = new Fnp();
         }
 
-        public PledgeResponse GetPledges(string vin, string captcha, string sessionId)
+        public PledgeResult GetPledges(string vin, string captcha, string sessionId)
         {
             try
             {

@@ -37,7 +37,7 @@ namespace CheckAutoBot.Handlers
             return new PreGetResult(captchaRequest.Id, captchaResult.SessionId);
         }
 
-        public Dictionary<string, byte[]> Get(RequestObject requestObject, IEnumerable<CacheItem> cacheItems)
+        public Dictionary<string, byte[]> Get(RequestObject requestObject, IEnumerable<CaptchaCacheItem> cacheItems)
         {
             var auto = requestObject as Auto;
 

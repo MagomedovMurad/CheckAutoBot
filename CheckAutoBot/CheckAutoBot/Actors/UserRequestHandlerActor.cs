@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 namespace CheckAutoBot.Actors
 {
     public class UserRequestHandlerActor : ReceiveActor
-    { 
+    {
         private ICanSelectActor _actorSelector;
         private DbQueryExecutor _queryExecutor;
         private Random _random;
@@ -35,7 +35,8 @@ namespace CheckAutoBot.Actors
         private EaistoManager _eaistoManager;
         private RucaptchaManager _rucaptchaManager;
 
-        private List<CacheItem> _captchaCacheItems = new List<CacheItem>();
+        private List<CaptchaCacheItem> _captchaCacheItems = new List<CaptchaCacheItem>();
+        private List<CacheItem> _cacheItems = new List<CacheItem>();
 
         private Dictionary<RequestType, ActionType> _requestTypeToActionType = new Dictionary<RequestType, ActionType>()
         {
@@ -69,7 +70,7 @@ namespace CheckAutoBot.Actors
 
             ReceiveAsync<UserRequestMessage>(x => UserRequestHandler(x));
             ReceiveAsync<UserInputDataMessage>(x => UserInputDataMessageHandler(x));
-            ReceiveAsync<CaptchaResponseMessage>(x =>  CaptchaResponseMessageHadler(x));
+            ReceiveAsync<CaptchaResponseMessage>(x => CaptchaResponseMessageHadler(x));
             Receive<StartActionMessage>(x => StartActionMessageHandler(x));
         }
 
@@ -98,25 +99,19 @@ namespace CheckAutoBot.Actors
         {
             try
             {
+                AddOrUpdateCacheItem(message.RequestId, message.CurrentActionType);
                 var handler = _handlers.FirstOrDefault(x => x.SupportedActionType == message.CurrentActionType);
-
-                if (!CheckCacheItem(message.RequestId, message.CurrentActionType))
-                {
-                    SendErrorMessage(message.RequestId, StaticResources.RequestFailedError);
-                    return;
-                }
-
                 var preGetResults = handler.PreGet();
-                AddOrUpdateCacheItem(message.RequestId, 
-                                     preGetResults.CaptchaId, 
-                                     message.CurrentActionType, 
-                                     message.TargetActionType, 
+                AddCaptchaCacheItem(message.RequestId,
+                                     preGetResults.CaptchaId,
+                                     message.CurrentActionType,
+                                     message.TargetActionType,
                                      preGetResults.SessionId);
             }
             catch (InvalidOperationException ex)
             {
-                StartActionMessageHandler(message);
                 _logger.Warn(ex);
+                TryExecuteRequestAgain(message.RequestId, message.CurrentActionType,message.TargetActionType);
             }
             catch (Exception ex)
             {
@@ -153,7 +148,7 @@ namespace CheckAutoBot.Actors
                     RequestId = requestId.Value,
                     CurrentActionType = currentActionType,
                     TargetActionType = targetActionType
-                }); 
+                });
             }
 
             return true;
@@ -221,7 +216,7 @@ namespace CheckAutoBot.Actors
                 var text = $"{message.Data}{Environment.NewLine}Выберите доступные действия...";
                 var msg = new SendToUserMessage(null, message.UserId, text, null);
 
-               _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(msg, Self);
+                _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(msg, Self);
 
                 return true;
             }
@@ -264,22 +259,13 @@ namespace CheckAutoBot.Actors
                     if (ex is InvalidCaptchaException icEx)
                         _logger.Error("InvalidCaptcha" + icEx);
 
-                    if (captchaItem.AttemptsCount < 1) //(с 0)/если меньше двух
-                    {
-                        Self.Tell(new StartActionMessage()
-                        {
-                            RequestId = request.Id,
-                            CurrentActionType = captchaItem.CurrentActionType,
-                            TargetActionType = captchaItem.TargetActionType
-                        });
-
-                        return true;
-                    }
+                    TryExecuteRequestAgain(captchaItem.RequestId, captchaItem.CurrentActionType, captchaItem.TargetActionType);
                 }
                 catch (Exception ex)
                 {
                     _logger.Error(ex, "Непредвиденная ошибка");
                     SendErrorMessage(request.Id, StaticResources.UnexpectedError);
+                    _cacheItems.RemoveAll(x => x.RequestId == request.Id && x.CurrentActionType == captchaItem.CurrentActionType);
                 }
 
                 _captchaCacheItems.RemoveAll(x => x.RequestId == captchaItem.RequestId);
@@ -291,42 +277,73 @@ namespace CheckAutoBot.Actors
         #endregion Handlers
 
         #region Helpers
-        private bool CheckCacheItem(int requestId, ActionType currentActionType)
+        private void TryExecuteRequestAgain(int requestId, ActionType currentActionType, ActionType targetActionType)
         {
-            var item = _captchaCacheItems.FirstOrDefault(x => x.RequestId == requestId && x.CurrentActionType == currentActionType);
-            if (item == null)
-                return true;
+            var item = _cacheItems.FirstOrDefault(x => x.RequestId == requestId && x.CurrentActionType == currentActionType);
 
-            return item.AttemptsCount < 1;
+            if (item == null)
+                return;
+
+            if (item.AttemptsCount == 1)
+            {
+                if(currentActionType == ActionType.VinByDiagnosticCard)
+                {
+                    Self.Tell(new StartActionMessage
+                    {
+                        RequestId = requestId,
+                        CurrentActionType = currentActionType,
+                        TargetActionType = targetActionType
+                    });
+                    return;
+                }
+                SendErrorMessage(requestId, StaticResources.RequestFailedError);
+                _cacheItems.Remove(item);
+
+                return;
+            }
+
+            Self.Tell(new StartActionMessage()
+            {
+                RequestId = requestId,
+                CurrentActionType = currentActionType,
+                TargetActionType = targetActionType
+            });
         }
 
-        private void AddOrUpdateCacheItem(int requestId, long captchaId, ActionType currentActionType, ActionType targetActionType, string sessionId = null)
+        private void AddCaptchaCacheItem(int requestId, long captchaId, ActionType currentActionType, ActionType targetActionType, string sessionId = null)
         {
-            var item = _captchaCacheItems.FirstOrDefault(x => x.RequestId == requestId && x.CurrentActionType == currentActionType);
+            var getPolicyNumberCacheItem = new CaptchaCacheItem()
+            {
+                RequestId = requestId,
+                CaptchaId = captchaId,
+                CurrentActionType = currentActionType,
+                TargetActionType = targetActionType,
+                SessionId = sessionId,
+                Date = DateTime.Now
+            };
+            _captchaCacheItems.Add(getPolicyNumberCacheItem);
+        }
+
+        private void AddOrUpdateCacheItem(int requestId, ActionType currentActionType)
+        {
+            var item = _cacheItems.FirstOrDefault(x => x.RequestId == requestId && x.CurrentActionType == currentActionType);
             if (item == null)
             {
-                var getPolicyNumberCacheItem = new CacheItem()
+                _cacheItems.Add(new CacheItem()
                 {
                     RequestId = requestId,
-                    CaptchaId = captchaId,
-                    CurrentActionType = currentActionType,
-                    TargetActionType = targetActionType,
-                    SessionId = sessionId,
-                    Date = DateTime.Now
-                };
-                _captchaCacheItems.Add(getPolicyNumberCacheItem);
+                    CurrentActionType = currentActionType
+                });
             }
             else
             {
-                item.CaptchaId = captchaId;
-                item.SessionId = sessionId;
-                item.AttemptsCount ++;
+                item.AttemptsCount++;
             }
         }
 
         private void AddCaptchaRequestToCache(int userRequestId, long captchaId, ActionType currentActionType, ActionType targetActionType, string sessionId = null)
         {
-            var getPolicyNumberCacheItem = new CacheItem()
+            var getPolicyNumberCacheItem = new CaptchaCacheItem()
             {
                 RequestId = userRequestId,
                 CaptchaId = captchaId,

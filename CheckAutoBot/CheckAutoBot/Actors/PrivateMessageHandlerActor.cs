@@ -17,8 +17,7 @@ namespace CheckAutoBot.Actors
         private ActorSelector _actorSelection;
         private readonly ILogger _logger;
 
-        private Regex _regNumberRussianSymbolsRegex;
-        private Regex _regNumberLatinSymbolsRegex;
+        private Regex _regNumberRegex;
         private Regex _vinCodeRegex;
         private Regex _fioRegex;
 
@@ -30,15 +29,29 @@ namespace CheckAutoBot.Actors
             Receive<PrivateMessage>(x => MessageHandler(x));
         }
 
+        private Dictionary<string, string> _latinToRussianSymbols = new Dictionary<string, string>()
+        {
+            { "A", "А"},
+            { "B", "В" },
+            { "E", "Е"},
+            { "K", "К"},
+            { "M", "М"},
+            { "H", "Н"},
+            { "O", "О"},
+            { "P", "Р"},
+            { "C", "С"},
+            { "T", "Т"},
+            { "Y", "У"},
+            { "X", "Х"}
+        };
+
         protected override void PreStart()
         {
-            var regNumberRussianSymbolsPattern = @"[АВЕКМНОРСТУХавекмнорстух][\d]{3}[АВЕКМНОРСТУХавекмнорстух]{2}[\d]{2,3}";
-            var regNumberLatinSymbolsPattern = @"[ABEKMHOPCTYXabekmhopctyx][\d]{3}[ABEKMHOPCTYXabekmhopctyx]{2}[\d]{2,3}";
-            var vinCodePattern = "[0123456789ABCDEFGHJKLMNPRSTUVWXYZabcdefghjklmnprstuvwxyz]{17}";
+            var regNumberPattern = @"[ABEKMHOPCTYXabekmhopctyxАВЕКМНОРСТУХавекмнорстух][\d]{3}[ABEKMHOPCTYXabekmhopctyxАВЕКМНОРСТУХавекмнорстух]{2}[\d]{2,3}";
+            var vinCodePattern = @"[0123456789ABCDEFGHJKLMNPRSTUVWXYZabcdefghjklmnprstuvwxyz]{17}";
             var fioPattern = @"([\s]?[А-ЯЁа-яё\-]+[\s][А-ЯЁа-яё\-]+[\s][А-ЯЁа-яё\-]+[\s]?[А-ЯЁа-яё]+)";
 
-            _regNumberRussianSymbolsRegex = new Regex(regNumberRussianSymbolsPattern);
-            _regNumberLatinSymbolsRegex = new Regex(regNumberLatinSymbolsPattern);
+            _regNumberRegex = new Regex(regNumberPattern);
             _vinCodeRegex = new Regex(vinCodePattern);
             _fioRegex = new Regex(fioPattern);
         }
@@ -99,13 +112,12 @@ namespace CheckAutoBot.Actors
         private KeyValuePair<InputDataType, string>? DefineInputDataType(string inputStr)
         {
             Match match;
-            match = _regNumberRussianSymbolsRegex.Match(inputStr);
+            match = _regNumberRegex.Match(inputStr);
             if (match.Success)
-                return new KeyValuePair<InputDataType, string>(InputDataType.LicensePlate, match.Value);
-
-            match = _regNumberLatinSymbolsRegex.Match(inputStr);
-            if (match.Success)
-                return new KeyValuePair<InputDataType, string>(InputDataType.LicensePlate, match.Value);
+            {
+                var value = ConvertToValidLicensePlate(match.Value);
+                return new KeyValuePair<InputDataType, string>(InputDataType.LicensePlate, value);
+            }
 
             match = _vinCodeRegex.Match(inputStr);
             if (match.Success)
@@ -122,6 +134,18 @@ namespace CheckAutoBot.Actors
         {
             var payload = JsonConvert.DeserializeObject<RequestPayload>(stringPayload);
             return payload.RequestType;
+        }
+
+        private string ConvertToValidLicensePlate(string inputString)
+        {
+            var upperCaseText= inputString.ToUpper();
+
+            foreach (var symbol in _latinToRussianSymbols)
+            {
+                upperCaseText = upperCaseText.Replace(symbol.Key, symbol.Value);
+            }
+
+            return upperCaseText;
         }
     }
 }

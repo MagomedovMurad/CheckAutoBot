@@ -11,6 +11,6 @@ namespace CheckAutoBot.Captcha
         public bool State { get; set; }
 
         [JsonProperty("request")]
-        public long Id { get; set; }
+        public string Id { get; set; }
     }
 }

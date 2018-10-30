@@ -16,6 +16,8 @@ namespace CheckAutoBot.Managers
         private readonly string _invalidCaptchaError = "Цифры с картинки введены неверно";
         private readonly string _captchaTimeOutError = "Прошло слишком много времени с момента загрузки картинки, или Ваш брузер не поддеживает cookie";
         private readonly string _genericError = "Generic error:Cannot save soap";
+        private readonly string _emptyResponseError = "Server returned empty response";
+
         public GibddManager()
         {
             _gibdd = new Gibdd();
@@ -36,14 +38,14 @@ namespace CheckAutoBot.Managers
                     throw new InvalidCaptchaException(captcha);
                 else if (response.Message.Equals(_captchaTimeOutError))
                     throw new InvalidOperationException(_captchaTimeOutError);
-                
             }
 
             else if (response.Status == (int)HttpStatusCode.ServiceUnavailable)
                 throw new InvalidOperationException();
             else if (response.Status == 0)
-                throw new InvalidOperationException("Server returned empty response");
-
+                throw new InvalidOperationException(_emptyResponseError);
+            else if (response?.Message == _genericError)
+                throw new InvalidOperationException(_genericError);
             throw new Exception(response.Message);
         }
 
@@ -67,7 +69,9 @@ namespace CheckAutoBot.Managers
             else if (response.Status == (int)HttpStatusCode.ServiceUnavailable)
                 throw new InvalidOperationException("ServiceUnavailable");
             else if (response.Status == 0)
-                throw new InvalidOperationException("Server returned empty response");
+                throw new InvalidOperationException(_emptyResponseError);
+            else if (response?.Message == _genericError)
+                throw new InvalidOperationException(_genericError);
 
             throw new Exception(response.Message);
         }
@@ -94,7 +98,9 @@ namespace CheckAutoBot.Managers
                 throw new InvalidOperationException();
 
             else if (response.Status == 0)
-                throw new InvalidOperationException("Server returned empty response");
+                throw new InvalidOperationException(_emptyResponseError);
+            else if (response?.Message == _genericError)
+                throw new InvalidOperationException(_genericError);
 
             throw new Exception(response.Message);
         }
@@ -120,7 +126,11 @@ namespace CheckAutoBot.Managers
             else if (response.Status == (int)HttpStatusCode.ServiceUnavailable)
                 throw new InvalidOperationException();
             else if (response.Status == 0)
-                throw new InvalidOperationException("Server returned empty response");
+                throw new InvalidOperationException(_emptyResponseError);
+
+            else if (response?.Message == _genericError)
+                throw new InvalidOperationException(_genericError);
+
 
             throw new Exception(response.Message);
         }

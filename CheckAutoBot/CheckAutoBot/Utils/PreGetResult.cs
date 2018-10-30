@@ -10,12 +10,12 @@ namespace CheckAutoBot.Utils
         {
         }
 
-        public PreGetResult(long captchaId, string sessionId)
+        public PreGetResult(string captchaId, string sessionId)
         {
             CaptchaId = captchaId;
             SessionId = sessionId;
         }
-        public long CaptchaId { get; set; }
+        public string CaptchaId { get; set; }
 
         public string SessionId { get; set; }
     }

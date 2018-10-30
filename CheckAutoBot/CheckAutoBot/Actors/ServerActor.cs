@@ -94,7 +94,7 @@ namespace CheckAutoBot.Actors
 
             var message = new CaptchaResponseMessage()
             {
-                CaptchaId = long.Parse(requestParams["id"]),
+                CaptchaId = requestParams["id"],
                 Value = requestParams["code"]
             };
             _actorSelector.ActorSelection(_context, ActorsPaths.UserRequestHandlerActor.Path).Tell(message, _self);

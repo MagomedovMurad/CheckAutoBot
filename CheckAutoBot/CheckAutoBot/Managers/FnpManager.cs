@@ -22,7 +22,6 @@ namespace CheckAutoBot.Managers
             {
                 return _fnp.GetPledges(vin, captcha, sessionId);
             }
-
             catch (WebException ex)
             {
                 HttpStatusCode? status = (ex.Response as HttpWebResponse)?.StatusCode;

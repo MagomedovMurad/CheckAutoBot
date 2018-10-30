@@ -14,7 +14,7 @@ namespace CheckAutoBot.Messages
 
         }
 
-        public CaptchaResponseMessage(long captchaId, string value)
+        public CaptchaResponseMessage(string captchaId, string value)
         {
             CaptchaId = captchaId;
             Value = value;
@@ -23,7 +23,7 @@ namespace CheckAutoBot.Messages
         #endregion Ctor
 
         [JsonProperty()]
-        public long CaptchaId { get; set; }
+        public string CaptchaId { get; set; }
 
         [JsonProperty()]
         public string Value { get; set; }

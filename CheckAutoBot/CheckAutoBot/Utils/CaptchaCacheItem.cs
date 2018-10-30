@@ -8,7 +8,7 @@ namespace CheckAutoBot.Utils
 {
     public class CaptchaCacheItem
     {
-        public long CaptchaId { get; set; }
+        public string CaptchaId { get; set; }
 
         public int RequestId { get; set; }
 

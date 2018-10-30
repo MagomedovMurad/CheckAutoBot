@@ -229,49 +229,53 @@ namespace CheckAutoBot.Actors
         private async Task<bool> CaptchaResponseMessageHadler(CaptchaResponseMessage message)
         {
             var captchaItem = _captchaCacheItems.FirstOrDefault(x => x.CaptchaId == message.CaptchaId);
-
-            if (captchaItem == null)
-                return true;
-
-            captchaItem.CaptchaWord = message.Value;
-
-            var requestCptchaItems = _captchaCacheItems.Where(x => x.RequestId == captchaItem.RequestId);
-            var isNotCompleted = requestCptchaItems.Any(x => string.IsNullOrWhiteSpace(x.CaptchaWord));
-
-            if (!isNotCompleted)
+            try
             {
-                var request = await _queryExecutor.GetUserRequest(captchaItem.RequestId);
-                var handler = _handlers.FirstOrDefault(x => x.SupportedActionType == captchaItem.CurrentActionType);
+                RucaptchaManager.CheckCaptchaWord(message.Value); // Выбросит исключение, если от Rucaptcha вернулась ошибка
 
-                try
-                {
-                    var data = handler.Get(request.RequestObject, requestCptchaItems);
-                    if (data == null)
-                        return true;
-                    foreach (var item in data)
-                    {
-                        var msg = new SendToUserMessage(request.RequestObjectId, request.RequestObject.UserId, item.Key, item.Value);
-                        _senderActor.Tell(msg, Self);
-                    }
-                }
-                catch (InvalidOperationException ex)
-                {
-                    if (ex is InvalidCaptchaException icEx)
-                        _logger.Error("InvalidCaptcha" + icEx);
+                if (captchaItem == null)
+                    throw new Exception($"В кэше не найдена запись с идентификатором каптчи {message.CaptchaId}");
 
-                    TryExecuteRequestAgain(captchaItem.RequestId, captchaItem.CurrentActionType, captchaItem.TargetActionType);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex, "Непредвиденная ошибка");
-                    SendErrorMessage(request.Id, StaticResources.UnexpectedError);
-                    _cacheItems.RemoveAll(x => x.RequestId == request.Id && x.CurrentActionType == captchaItem.CurrentActionType);
-                }
+                captchaItem.CaptchaWord = message.Value;
 
-                _captchaCacheItems.RemoveAll(x => x.RequestId == captchaItem.RequestId);
+                var requestCptchaItems = _captchaCacheItems.Where(x => x.RequestId == captchaItem.RequestId);
+                var isNotCompleted = requestCptchaItems.Any(x => string.IsNullOrWhiteSpace(x.CaptchaWord));
+
+                if (!isNotCompleted)
+                    await ExecuteGet(captchaItem, requestCptchaItems);
+
+            }
+            catch (InvalidOperationException ex)
+            {
+                if (ex is InvalidCaptchaException icEx)
+                    _logger.Error("InvalidCaptcha" + icEx);
+
+                TryExecuteRequestAgain(captchaItem.RequestId, captchaItem.CurrentActionType, captchaItem.TargetActionType);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Непредвиденная ошибка");
+                SendErrorMessage(captchaItem.RequestId, StaticResources.UnexpectedError);
+                _cacheItems.RemoveAll(x => x.RequestId == captchaItem.RequestId && x.CurrentActionType == captchaItem.CurrentActionType);
             }
 
             return true;
+        }
+
+        private async Task ExecuteGet(CaptchaCacheItem currentCaptchaItem, IEnumerable<CaptchaCacheItem> requestCaptchaItems)
+        {
+            var request = await _queryExecutor.GetUserRequest(currentCaptchaItem.RequestId);
+            var handler = _handlers.FirstOrDefault(x => x.SupportedActionType == currentCaptchaItem.CurrentActionType);
+
+            var data = handler.Get(request.RequestObject, requestCaptchaItems);
+
+            foreach (var item in data)
+            {
+                var msg = new SendToUserMessage(request.RequestObjectId, request.RequestObject.UserId, item.Key, item.Value);
+                _senderActor.Tell(msg, Self);
+            }
+
+            _captchaCacheItems.RemoveAll(x => x.RequestId == currentCaptchaItem.RequestId);
         }
 
         #endregion Handlers
@@ -310,7 +314,7 @@ namespace CheckAutoBot.Actors
             });
         }
 
-        private void AddCaptchaCacheItem(int requestId, long captchaId, ActionType currentActionType, ActionType targetActionType, string sessionId = null)
+        private void AddCaptchaCacheItem(int requestId, string captchaId, ActionType currentActionType, ActionType targetActionType, string sessionId = null)
         {
             var getPolicyNumberCacheItem = new CaptchaCacheItem()
             {
@@ -341,7 +345,7 @@ namespace CheckAutoBot.Actors
             }
         }
 
-        private void AddCaptchaRequestToCache(int userRequestId, long captchaId, ActionType currentActionType, ActionType targetActionType, string sessionId = null)
+        private void AddCaptchaRequestToCache(int userRequestId, string captchaId, ActionType currentActionType, ActionType targetActionType, string sessionId = null)
         {
             var getPolicyNumberCacheItem = new CaptchaCacheItem()
             {

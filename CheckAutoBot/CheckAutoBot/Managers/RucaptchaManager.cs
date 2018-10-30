@@ -7,7 +7,7 @@ namespace CheckAutoBot.Managers
 {
     public class RucaptchaManager
     {
-        private readonly List<string> _warnings= new List<string>()
+        private readonly List<string> _inWarnings = new List<string>()
         {
             "ERROR_NO_SLOT_AVAILABLE",
             "ERROR_ZERO_CAPTCHA_FILESIZE",
@@ -16,6 +16,12 @@ namespace CheckAutoBot.Managers
             "ERROR_IMAGE_TYPE_NOT_SUPPORTED",
             "ERROR_UPLOAD",
             "ERROR_CAPTCHAIMAGE_BLOCKED",
+        };
+
+        private static readonly List<string> _resWarnings = new List<string>()
+        {
+            "ERROR_CAPTCHA_UNSOLVABLE",
+            "ERROR_BAD_DUPLICATES"
         };
 
         private readonly Rucaptcha _rucaptcha;
@@ -31,7 +37,7 @@ namespace CheckAutoBot.Managers
 
             if (!captchaRequest.State)
             {
-                if (_warnings.Contains(captchaRequest.Id))
+                if (_inWarnings.Contains(captchaRequest.Id))
                     throw new InvalidOperationException(captchaRequest.Id);
                 else
                     throw new Exception(captchaRequest.Id);
@@ -46,7 +52,7 @@ namespace CheckAutoBot.Managers
 
             if (!captchaRequest.State)
             {
-                if (_warnings.Contains(captchaRequest.Id))
+                if (_inWarnings.Contains(captchaRequest.Id))
                     throw new InvalidOperationException(captchaRequest.Id);
                 else
                     throw new Exception(captchaRequest.Id);
@@ -61,10 +67,10 @@ namespace CheckAutoBot.Managers
         /// <param name="value"></param>
         public static void CheckCaptchaWord(string value)
         {
-            if (!long.TryParse(value, out long _))
+            if (value.StartsWith("ERROR"))
             {
-                if (value.Equals("ERROR_CAPTCHA_UNSOLVABLE"))
-                    throw new InvalidOperationException("ERROR_CAPTCHA_UNSOLVABLE");
+                if (_resWarnings.Contains(value))
+                    throw new InvalidOperationException(value);
                 else
                     throw new Exception(value);
             }

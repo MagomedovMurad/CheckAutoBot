@@ -5,9 +5,9 @@ VisualStudioVersion = 15.0.27703.2042
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckAutoBot", "CheckAutoBot\CheckAutoBot.csproj", "{84EACA14-07E2-44B3-AA18-0E873D7BC1FE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckAutoBot.Infrastructure", "CheckAutoBot.Infrastructure\CheckAutoBot.Infrastructure.csproj", "{B9173730-CC19-4B8C-9C15-785839252915}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckAutoBot.Infrastructure", "CheckAutoBot.Infrastructure\CheckAutoBot.Infrastructure.csproj", "{B9173730-CC19-4B8C-9C15-785839252915}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckAutoBot.Vk.Api", "CheckAutoBot.Vk.Api\CheckAutoBot.Vk.Api.csproj", "{CB39359C-BE6E-4A9A-A691-3C5408FD81DB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckAutoBot.Vk.Api", "CheckAutoBot.Vk.Api\CheckAutoBot.Vk.Api.csproj", "{CB39359C-BE6E-4A9A-A691-3C5408FD81DB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

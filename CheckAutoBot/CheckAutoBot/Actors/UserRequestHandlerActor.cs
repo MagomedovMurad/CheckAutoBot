@@ -269,6 +269,9 @@ namespace CheckAutoBot.Actors
 
             var data = handler.Get(request.RequestObject, requestCaptchaItems);
 
+            if (data == null)           //Если нет данных для отправки пользователю
+                return;
+
             foreach (var item in data)
             {
                 var msg = new SendToUserMessage(request.RequestObjectId, request.RequestObject.UserId, item.Key, item.Value);

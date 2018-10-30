@@ -249,7 +249,7 @@ namespace CheckAutoBot.Actors
             {
                 if (ex is InvalidCaptchaException icEx)
                     _logger.Error("InvalidCaptcha" + icEx);
-
+                _logger.Warn(ex);
                 TryExecuteRequestAgain(captchaItem.RequestId, captchaItem.CurrentActionType, captchaItem.TargetActionType);
             }
             catch (Exception ex)

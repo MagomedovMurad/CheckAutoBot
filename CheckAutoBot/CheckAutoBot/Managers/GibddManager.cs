@@ -140,6 +140,11 @@ namespace CheckAutoBot.Managers
             return _gibdd.GetIncidentImage(damagePoints);
         }
 
+        public string GetAccidentImageLink(string[] damagePoints)
+        {
+            return _gibdd.GetAccidentImageLink(damagePoints);
+        }
+
         public CaptchaResult GetCaptcha()
         {
             return _gibdd.GetCaptcha();

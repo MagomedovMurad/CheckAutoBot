@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using CheckAutoBot.Enums;
 using CheckAutoBot.GbddModels;
@@ -42,8 +43,20 @@ namespace CheckAutoBot.Handlers
             {
                 foreach (var accident in result.Accidents)
                 {
-                    var incidentImage = _gibddManager.GetIncidentImage(accident.DamagePoints);
+                    byte[] incidentImage = null;
                     var text = AccidentToMessageText(accident);
+
+                    try
+                    {
+                        if (accident.DamagePoints.Any())
+                            incidentImage = _gibddManager.GetIncidentImage(accident.DamagePoints);
+                    }
+                    catch (WebException ex)
+                    {
+                        var accidentImageUrl = _gibddManager.GetAccidentImageLink(accident.DamagePoints);
+                        text += Environment.NewLine + Environment.NewLine + accidentImageUrl;
+                    }
+                    
                     messages.Add(text, incidentImage);
                 }
             }
@@ -62,6 +75,13 @@ namespace CheckAutoBot.Handlers
                     $"Год выпуска ТС: {accident.VehicleYear}";
         }
 
+        private byte[] GetAccidentImage(Accident accident)
+        {
+            byte[] incidentImage = null;
+            if (accident.DamagePoints.Any())
+                incidentImage = _gibddManager.GetIncidentImage(accident.DamagePoints);
+            return incidentImage;
+        }
 
 
 

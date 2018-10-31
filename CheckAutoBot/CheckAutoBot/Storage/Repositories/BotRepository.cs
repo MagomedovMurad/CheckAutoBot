@@ -50,10 +50,10 @@ namespace CheckAutoBot.Storage
             return addedRequest.Entity.Id;
         }
 
-        public async Task<IEnumerable<RequestType>> GetRequestTypes(int requestObjectId)
+        public async Task<IEnumerable<RequestType>> GetExecutedRequestTypes(int requestObjectId)
         {
             return await _dbContext.Requests
-                                   .Where(x => x.RequestObjectId == requestObjectId)
+                                   .Where(x => x.RequestObjectId == requestObjectId && !x.IsCompleted)
                                    .Select(x => x.Type).ToListAsync();
         }
 
@@ -61,6 +61,13 @@ namespace CheckAutoBot.Storage
         {
             var auto = _dbContext.RequestObjects.Where(x => x.Id == requestObjectId).OfType<Auto>().First();
             auto.Vin = vin;
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task MarkRequestCompleted(int requestId)
+        {
+            var request = _dbContext.Requests.FirstOrDefault(x => x.Id == requestId);
+            request.IsCompleted = true;
             await _dbContext.SaveChangesAsync();
         }
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,12 +9,13 @@ namespace CheckAutoBot.Storage
     public class DbQueryExecutor
     {
         private IRepositoryFactory _repositoryFactory;
+        private ILogger _logger;
 
-        public DbQueryExecutor(IRepositoryFactory repositoryFactory)
+        public DbQueryExecutor(IRepositoryFactory repositoryFactory, ILogger logger)
         {
             _repositoryFactory = repositoryFactory;
+            _logger = logger;
         }
-
 
         /// <summary>
         /// Получить запрос пользователя
@@ -31,10 +33,10 @@ namespace CheckAutoBot.Storage
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, $"Ошибка в БД при получении запроса с идентификатором {requestId}");
                 return null;
             }
         }
-
 
         /// <summary>
         /// Обновление вин кода авто
@@ -42,18 +44,18 @@ namespace CheckAutoBot.Storage
         /// <param name="requestObjectId">Идентификатор объекта запроса</param>
         /// <param name="vin">Вин код</param>
         /// <returns></returns>
-        public void UpdateVinCode(int requestObjectId, string vin)
+        public async Task UpdateVinCode(int requestObjectId, string vin)
         {
             try
             {
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
-                    rep.UpdateVinCode(requestObjectId, vin).ConfigureAwait(false);
+                    await rep.UpdateVinCode(requestObjectId, vin).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
             {
-
+                _logger.Error(ex, $"Ошибка в БД при обновлении VIN кода в объекте запроса.  RequestObjectId: {requestObjectId}, vin: {vin}");
             }
         }
 
@@ -64,9 +66,17 @@ namespace CheckAutoBot.Storage
         /// <returns></returns>
         public async Task<RequestObject> GetLastUserRequestObject(int userId)
         {
-            using (var rep = _repositoryFactory.CreateBotRepository())
+            try
             {
-                return await rep.GetLastUserRequestObject(userId).ConfigureAwait(false);
+                using (var rep = _repositoryFactory.CreateBotRepository())
+                {
+                    return await rep.GetLastUserRequestObject(userId).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Ошибка в БД при получении последнего объекта запроса пользователя({userId})");
+                return null;
             }
         }
 
@@ -87,6 +97,7 @@ namespace CheckAutoBot.Storage
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, $"Ошибка в БД при добавлении объекта запроса. UserId: {requestObject.UserId}");
                 return false;
             }
         }
@@ -107,6 +118,48 @@ namespace CheckAutoBot.Storage
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, $"Ошибка в БД при сохранении запроса пользователя. RequestObjectId: {userRequest.RequestObjectId}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Отметить запрос выполненным
+        /// </summary>
+        /// <param name="requestId"></param>
+        /// <returns></returns>
+        public async Task MarkRequestCompleted(int requestId)
+        {
+            try
+            {
+                using (var rep = _repositoryFactory.CreateBotRepository())
+                {
+                    await rep.MarkRequestCompleted(requestId).ConfigureAwait(false);
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.Error(ex, $"Ошибка в БД при установке IsCompleted = true для запроса с идентификатором {requestId}");
+            }
+        }
+
+        /// <summary>
+        /// Получить типы выполненных запросов
+        /// </summary>
+        /// <param name="requestObjectId"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<RequestType>> GetExecutedRequestTypes(int requestObjectId)
+        {
+            try
+            {
+                using (var rep = _repositoryFactory.CreateBotRepository())
+                {
+                    return await rep.GetExecutedRequestTypes(requestObjectId).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Ошибка в БД при получении типов выполненных запросов для RequestObject с id: {requestObjectId}");
                 return null;
             }
         }

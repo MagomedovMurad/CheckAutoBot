@@ -5,6 +5,7 @@ using CheckAutoBot.Storage;
 using CheckAutoBot.Utils;
 using CheckAutoBot.Vk.Api;
 using CheckAutoBot.Vk.Api.MessagesModels;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,11 +17,15 @@ namespace CheckAutoBot.Actors
     {
         private KeyboardBuilder _keyboardBuilder;
         private IRepositoryFactory _repositoryFactory;
+        private ILogger _logger;
+        private DbQueryExecutor _queryExecutor;
 
-        public PrivateMessageSenderActor()
+        public PrivateMessageSenderActor(DbQueryExecutor queryExecutor, ILogger logger)
         {
             _keyboardBuilder = new KeyboardBuilder();
             _repositoryFactory = new RepositoryFactory();
+            _queryExecutor = queryExecutor;
+            _logger = logger;
 
             Receive<HelpMessage>(x => SendHelpMessage(x));
             Receive<SendToUserMessage>(x => SendToUserMessageHandler(x));
@@ -30,7 +35,7 @@ namespace CheckAutoBot.Actors
         {
             IEnumerable<RequestType> requestTypes = new List<RequestType>();
             if (message.RequestObjectId != null)
-                requestTypes = await GetRequestTypes(message.RequestObjectId.Value).ConfigureAwait(false);
+                requestTypes = await _queryExecutor.GetExecutedRequestTypes(message.RequestObjectId.Value).ConfigureAwait(false);
             var keyboard = _keyboardBuilder.CreateKeyboard(requestTypes, InputDataType.Vin); //TODO: тип входных данных
 
             var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
@@ -73,26 +78,6 @@ namespace CheckAutoBot.Actors
             };
 
             Vk.Api.Messages.Send(messageParams);
-        }
-
-        /// <summary>
-        /// Получить типы выполненных запросов
-        /// </summary>
-        /// <param name="requestObjectId"></param>
-        /// <returns></returns>
-        private async Task<IEnumerable<RequestType>> GetRequestTypes(int requestObjectId)
-        {
-            try
-            {
-                using (var rep = _repositoryFactory.CreateBotRepository())
-                {
-                    return await rep.GetRequestTypes(requestObjectId).ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                return null;
-            }
         }
 
     }

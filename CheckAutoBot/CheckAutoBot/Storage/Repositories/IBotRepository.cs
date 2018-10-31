@@ -15,9 +15,11 @@ namespace CheckAutoBot.Storage
 
         Task<Request> GetUserRequest(int requestId);
 
-        Task<IEnumerable<RequestType>> GetRequestTypes(int requestObjectId);
+        Task<IEnumerable<RequestType>> GetExecutedRequestTypes(int requestObjectId);
 
         Task UpdateVinCode(int requestObjectId, string vin);
+
+        Task MarkRequestCompleted(int requestId);
 
     }
 }

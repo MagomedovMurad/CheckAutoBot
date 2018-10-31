@@ -28,92 +28,21 @@ namespace CheckAutoBot
         //JMBLYV97W7J004216 залог
         static void Main(string[] args)
         {
-            //var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
-
-            //var eaisto = new Eaisto();
-            //var captchaResult = eaisto.GetCaptcha();
-
-            //var rucaptcha = new Rucaptcha();
-            //var captchaRequest = rucaptcha.SendImageCaptcha(captchaResult.ImageBase64);
-            //var captchaAnswer = rucaptcha.GetCapthaResult(captchaRequest.Id);
-
-            ////  var photoBinaryData = response.ReadDataAsByteArray();
-
-            //  var serverData = Photos.GetMessagesUploadServer("192287910", accessToken);
-
-            //  var photoData = Photos.UploadPhotoToServer(serverData.UploadUrl, photoBinaryData);
-
-            //  var photo = Photos.SaveMessagesPhoto(photoData, accessToken);
-
-            //  var messageParams = new SendMessageParams()
-            //  {
-            //      PeerId = 102769356,
-            //      Message = "Test message",
-            //      Attachments = $"photo{photo.OwnerId}_{photo.Id}",
-            //      AccessToken = accessToken
-            //  };
-
-            //  Vk.Api.Messages.Send(messageParams);
-
-            //RequestHelper.AddRequestContent(request, data);
-
-            //WebResponse response = request.GetResponse();
-            //var responseData = RequestHelper.ResponseToString(response);
-            //response.Close();
-
-
-
-
             LogManager.LoadConfiguration("NLog.config");
             var logger = LogManager.GetCurrentClassLogger();
             logger.Info("Hello World");
 
             IRepositoryFactory repositoryFactory = new RepositoryFactory(); 
-            DbQueryExecutor queryExecutor = new DbQueryExecutor(repositoryFactory);
+            DbQueryExecutor queryExecutor = new DbQueryExecutor(repositoryFactory, logger);
 
             ActorSystem actorSystem = ActorSystem.Create("TestSystem");
             var server = actorSystem.ActorOf(Props.Create(() => new ServerActor(logger)), ActorsPaths.ServerActor.Name);
             var groupEventsHandlerActor = actorSystem.ActorOf(Props.Create(() => new GroupEventsHandlerActor(logger)), ActorsPaths.GroupEventsHandlerActor.Name);
             var privateMessageHandlerActor = actorSystem.ActorOf(Props.Create(() => new PrivateMessageHandlerActor(logger)), ActorsPaths.PrivateMessageHandlerActor.Name);
-            var privateMessageSenderActor = actorSystem.ActorOf(Props.Create(typeof(PrivateMessageSenderActor)), ActorsPaths.PrivateMessageSenderActor.Name);
+            var privateMessageSenderActor = actorSystem.ActorOf(Props.Create(() => new PrivateMessageSenderActor(queryExecutor, logger)), ActorsPaths.PrivateMessageSenderActor.Name);
             var userRequestHandlerActor = actorSystem.ActorOf(Props.Create(() => new UserRequestHandlerActor(logger, queryExecutor)), ActorsPaths.UserRequestHandlerActor.Name);
             server.Tell(new StartServerMessage());
             Console.ReadKey();
-
-
-
-
-            //var t = WebUtility.UrlEncode("Пойдем спать &#127911;");
-
-            //var action = new ButtonAction()
-            //{
-            //    Lable = t,
-            //    Type = ButtonActionType.Text,
-            //    Payload = "{\"button\": \"2\"}"
-            //};
-
-            //var button = new Button()
-            //{
-            //    Action = action,
-            //    Color = ButtonColor.Positive
-            //};
-
-            //var keyboard = new Keyboard()
-            //{
-            //    OneTime = true,
-            //    Buttons = new[] { new[] { button } }
-            //};
-
-            //var test = new SendMessageParams()
-            //{
-            //    PeerId = 192287910,
-            //    Message = "Пойдем спать &#127911;",
-            //    Keyboard = keyboard,
-            //    AccessToken = accessToken
-            //};
-
-            //Vk.Api.Messages.Send(test);
-
         }
 
         private static CaptchaAnswer Test(long id, Rucaptcha rucaptcha)

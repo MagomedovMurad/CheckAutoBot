@@ -229,7 +229,7 @@ namespace CheckAutoBot.Actors
             var captchaItem = _captchaCacheItems.FirstOrDefault(x => x.CaptchaId == message.CaptchaId);
             try
             {
-                RucaptchaManager.CheckCaptchaWord(message.Value); // Выбросит исключение, если от Rucaptcha вернулась ошибка
+                RucaptchaManager.CheckCaptchaWord(message.Value); // Выбросит исключение, если от Rucaptcha вернулась ошибка вместо ответа на каптчу
 
                 if (captchaItem == null)
                     throw new Exception($"В кэше не найдена запись с идентификатором каптчи {message.CaptchaId}");
@@ -267,6 +267,8 @@ namespace CheckAutoBot.Actors
             var handler = _handlers.FirstOrDefault(x => x.SupportedActionType == currentCaptchaItem.CurrentActionType);
 
             var data = handler.Get(request.RequestObject, requestCaptchaItems);
+
+            await _queryExecutor.MarkRequestCompleted(currentCaptchaItem.RequestId);
 
             if (data == null)           //Если нет данных для отправки пользователю
                 return;
@@ -365,7 +367,6 @@ namespace CheckAutoBot.Actors
             var message = new SendToUserMessage(request.RequestObjectId, request.RequestObject.UserId, text, null);
             _senderActor.Tell(message, Self);
         }
-
         #endregion Helpers
 
     }

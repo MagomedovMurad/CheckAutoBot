@@ -52,6 +52,7 @@ namespace CheckAutoBot.Actors
         public UserRequestHandlerActor(ILogger logger, DbQueryExecutor queryExecutor)
         {
             _queryExecutor = queryExecutor;
+            _logger = logger;
 
             _rsaManager = new RsaManager();
             _gibddManager = new GibddManager();
@@ -61,10 +62,7 @@ namespace CheckAutoBot.Actors
             _random = new Random();
             _actorSelector = new ActorSelector();
 
-            _logger = logger;
-
             _senderActor = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
-
 
             InitHandlers();
 
@@ -243,7 +241,6 @@ namespace CheckAutoBot.Actors
 
                 if (!isNotCompleted)
                     await ExecuteGet(captchaItem, requestCptchaItems);
-
             }
             catch (InvalidOperationException ex)
             {
@@ -258,6 +255,8 @@ namespace CheckAutoBot.Actors
                 SendErrorMessage(captchaItem.RequestId, StaticResources.UnexpectedError);
                 _cacheItems.RemoveAll(x => x.RequestId == captchaItem.RequestId && x.CurrentActionType == captchaItem.CurrentActionType);
             }
+
+            _captchaCacheItems.RemoveAll(x => x.RequestId == captchaItem.RequestId);
 
             return true;
         }
@@ -277,8 +276,6 @@ namespace CheckAutoBot.Actors
                 var msg = new SendToUserMessage(request.RequestObjectId, request.RequestObject.UserId, item.Key, item.Value);
                 _senderActor.Tell(msg, Self);
             }
-
-            _captchaCacheItems.RemoveAll(x => x.RequestId == currentCaptchaItem.RequestId);
         }
 
         #endregion Handlers

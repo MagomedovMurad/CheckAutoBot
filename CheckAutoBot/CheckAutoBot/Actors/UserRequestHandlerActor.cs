@@ -34,6 +34,7 @@ namespace CheckAutoBot.Actors
         private FnpManager _fnpManager;
         private EaistoManager _eaistoManager;
         private RucaptchaManager _rucaptchaManager;
+        private KeyboardBuilder _keyboardBuilder;
 
         private List<CaptchaCacheItem> _captchaCacheItems = new List<CaptchaCacheItem>();
         private List<CacheItem> _cacheItems = new List<CacheItem>();
@@ -61,7 +62,7 @@ namespace CheckAutoBot.Actors
             _eaistoManager = new EaistoManager();
             _random = new Random();
             _actorSelector = new ActorSelector();
-
+            _keyboardBuilder = new KeyboardBuilder();
             _senderActor = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
 
             InitHandlers();
@@ -69,7 +70,7 @@ namespace CheckAutoBot.Actors
             ReceiveAsync<UserRequestMessage>(x => UserRequestHandler(x));
             ReceiveAsync<UserInputDataMessage>(x => UserInputDataMessageHandler(x));
             ReceiveAsync<CaptchaResponseMessage>(x => CaptchaResponseMessageHadler(x));
-            Receive<StartActionMessage>(x => StartActionMessageHandler(x));
+            ReceiveAsync<StartActionMessage>(x => StartActionMessageHandler(x));
         }
 
         #region Handlers
@@ -93,7 +94,7 @@ namespace CheckAutoBot.Actors
         /// PreGet
         /// </summary>
         /// <param name="message"></param>
-        private void StartActionMessageHandler(StartActionMessage message)
+        private async Task<bool> StartActionMessageHandler(StartActionMessage message)
         {
             try
             {
@@ -116,6 +117,8 @@ namespace CheckAutoBot.Actors
                 SendErrorMessage(message.RequestId, StaticResources.UnexpectedError);
                 _logger.Error(ex, "Непредвиденная ошибка");
             }
+
+            return true;
         }
 
         private async Task<bool> UserRequestHandler(UserRequestMessage message)
@@ -273,9 +276,11 @@ namespace CheckAutoBot.Actors
             if (data == null)           //Если нет данных для отправки пользователю
                 return;
 
+            var keyboard = await CreateKeyBoard(request.RequestObject).ConfigureAwait(false);
+
             foreach (var item in data)
             {
-                var msg = new SendToUserMessage(request.RequestObjectId, request.RequestObject.UserId, item.Key, item.Value);
+                var msg = new SendToUserMessage(keyboard, request.RequestObject.UserId, item.Key, item.Value);
                 _senderActor.Tell(msg, Self);
             }
         }
@@ -364,8 +369,14 @@ namespace CheckAutoBot.Actors
         private async void SendErrorMessage(int requestId, string text)
         {
             var request = await _queryExecutor.GetUserRequest(requestId);
-            var message = new SendToUserMessage(request.RequestObjectId, request.RequestObject.UserId, text, null);
+            var message = new SendToUserMessage(null, request.RequestObject.UserId, text, null);
             _senderActor.Tell(message, Self);
+        }
+
+        private async Task<Keyboard> CreateKeyBoard(RequestObject requestObject)
+        {
+            var requestTypes = await _queryExecutor.GetExecutedRequestTypes(requestObject.Id).ConfigureAwait(false);
+            return _keyboardBuilder.CreateKeyboard(requestTypes, requestObject.GetType());
         }
         #endregion Helpers
 

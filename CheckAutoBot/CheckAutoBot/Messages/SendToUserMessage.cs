@@ -12,9 +12,9 @@ namespace CheckAutoBot.Messages
 
         }
 
-        public SendToUserMessage(int? requestObjectId, int userId, string text, byte[] photo)
+        public SendToUserMessage(Keyboard keyboard, int userId, string text, byte[] photo)
         {
-            RequestObjectId = requestObjectId;
+            Keyboard = keyboard;
             UserId = userId;
             Text = text;
             Photo = photo;
@@ -22,7 +22,7 @@ namespace CheckAutoBot.Messages
 
         public int UserId { get; set; }
 
-        public int? RequestObjectId { get; set; }
+        public Keyboard Keyboard { get; set; }
 
         public string Text { get; set; }
 

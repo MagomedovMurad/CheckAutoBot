@@ -15,16 +15,13 @@ namespace CheckAutoBot.Actors
 {
     public class PrivateMessageSenderActor: ReceiveActor
     {
-        private KeyboardBuilder _keyboardBuilder;
-        private IRepositoryFactory _repositoryFactory;
         private ILogger _logger;
-        private DbQueryExecutor _queryExecutor;
 
-        public PrivateMessageSenderActor(DbQueryExecutor queryExecutor, ILogger logger)
+        private const string accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
+
+
+        public PrivateMessageSenderActor(ILogger logger)
         {
-            _keyboardBuilder = new KeyboardBuilder();
-            _repositoryFactory = new RepositoryFactory();
-            _queryExecutor = queryExecutor;
             _logger = logger;
 
             Receive<HelpMessage>(x => SendHelpMessage(x));
@@ -34,23 +31,20 @@ namespace CheckAutoBot.Actors
         private async void SendToUserMessageHandler(SendToUserMessage message)
         {
             IEnumerable<RequestType> requestTypes = new List<RequestType>();
-            if (message.RequestObjectId != null)
-                requestTypes = await _queryExecutor.GetExecutedRequestTypes(message.RequestObjectId.Value).ConfigureAwait(false);
-            var keyboard = _keyboardBuilder.CreateKeyboard(requestTypes, InputDataType.Vin); //TODO: тип входных данных
 
-            var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
+            var attachments = PhotoToAttachment(message.UserId, message.Photo);
+            SendMessage(message.UserId, message.Text, message.Keyboard, attachments);
+        }
 
-            string attachments = null; 
+        private string PhotoToAttachment(int userId, byte[] photoBin)
+        {
+            if (photoBin == null)
+                return null;
 
-            if (message.Photo != null)
-            {
-                var uploadServerResponse = Photos.GetMessagesUploadServer(message.UserId.ToString(), accessToken);
-                var uploadPhotoResponse = Photos.UploadPhotoToServer(uploadServerResponse.UploadUrl, message.Photo);
-                var photo = Photos.SaveMessagesPhoto(uploadPhotoResponse, accessToken);
-                attachments = $"photo{photo.OwnerId}_{photo.Id}";
-            }
-
-            SendMessage(message.UserId, message.Text, keyboard, attachments);
+            var uploadServerResponse = Photos.GetMessagesUploadServer(userId.ToString(), accessToken);
+            var uploadPhotoResponse = Photos.UploadPhotoToServer(uploadServerResponse.UploadUrl, photoBin);
+            var photo = Photos.SaveMessagesPhoto(uploadPhotoResponse, accessToken);
+            return $"photo{photo.OwnerId}_{photo.Id}";
         }
 
         private void SendHelpMessage(HelpMessage msg)
@@ -67,17 +61,24 @@ namespace CheckAutoBot.Actors
 
         private void SendMessage(int userId, string text, Keyboard keyboard = null, string attachments = null)
         {
-            var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
-            var messageParams = new SendMessageParams()
+            try
             {
-                Message = text,
-                PeerId = userId,
-                AccessToken = accessToken,
-                Attachments = attachments,
-                Keyboard = keyboard
-            };
+                var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
+                var messageParams = new SendMessageParams()
+                {
+                    Message = text,
+                    PeerId = userId,
+                    AccessToken = accessToken,
+                    Attachments = attachments,
+                    Keyboard = keyboard
+                };
 
-            Vk.Api.Messages.Send(messageParams);
+                Vk.Api.Messages.Send(messageParams);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Произошла ошибка при отправке сообщения пользователю");
+            }
         }
 
     }

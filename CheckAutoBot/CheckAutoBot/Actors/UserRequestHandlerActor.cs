@@ -215,7 +215,8 @@ namespace CheckAutoBot.Actors
                 await _queryExecutor.AddRequestObject(data);
 
                 var text = $"{message.Data}{Environment.NewLine}Выберите доступные действия...";
-                var msg = new SendToUserMessage(null, message.UserId, text, null);
+                var keyboard = await CreateKeyBoard(data).ConfigureAwait(false);
+                var msg = new SendToUserMessage(keyboard, message.UserId, text, null);
 
                 _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(msg, Self);
 
@@ -230,17 +231,16 @@ namespace CheckAutoBot.Actors
         private async Task<bool> CaptchaResponseMessageHadler(CaptchaResponseMessage message)
         {
             var captchaItem = _captchaCacheItems.FirstOrDefault(x => x.CaptchaId == message.CaptchaId);
+            if (captchaItem == null)
+                _logger.Error($"В кэше не найдена запись с идентификатором каптчи {message.CaptchaId}");
+
+            captchaItem.CaptchaWord = message.Value;
+            var requestCptchaItems = _captchaCacheItems.Where(x => x.RequestId == captchaItem.RequestId);
+            var isNotCompleted = requestCptchaItems.Any(x => string.IsNullOrWhiteSpace(x.CaptchaWord));
+
             try
             {
                 RucaptchaManager.CheckCaptchaWord(message.Value); // Выбросит исключение, если от Rucaptcha вернулась ошибка вместо ответа на каптчу
-
-                if (captchaItem == null)
-                    throw new Exception($"В кэше не найдена запись с идентификатором каптчи {message.CaptchaId}");
-
-                captchaItem.CaptchaWord = message.Value;
-
-                var requestCptchaItems = _captchaCacheItems.Where(x => x.RequestId == captchaItem.RequestId);
-                var isNotCompleted = requestCptchaItems.Any(x => string.IsNullOrWhiteSpace(x.CaptchaWord));
 
                 if (!isNotCompleted)
                     await ExecuteGet(captchaItem, requestCptchaItems);
@@ -256,10 +256,11 @@ namespace CheckAutoBot.Actors
             {
                 _logger.Error(ex, "Непредвиденная ошибка");
                 SendErrorMessage(captchaItem.RequestId, StaticResources.UnexpectedError);
-                _cacheItems.RemoveAll(x => x.RequestId == captchaItem.RequestId && x.CurrentActionType == captchaItem.CurrentActionType);
+                //_cacheItems.RemoveAll(x => x.RequestId == captchaItem.RequestId && x.CurrentActionType == captchaItem.CurrentActionType);
             }
 
-            _captchaCacheItems.RemoveAll(x => x.RequestId == captchaItem.RequestId);
+            if (!isNotCompleted)
+                _captchaCacheItems.RemoveAll(x => x.RequestId == captchaItem.RequestId);
 
             return true;
         }
@@ -295,14 +296,20 @@ namespace CheckAutoBot.Actors
             if (item == null)
                 return;
 
-            if (item.AttemptsCount == 1)
+            if (item.AttemptsCount >= 0)
             {
                 if(currentActionType == ActionType.VinByDiagnosticCard)
                 {
                     Self.Tell(new StartActionMessage
                     {
                         RequestId = requestId,
-                        CurrentActionType = currentActionType,
+                        CurrentActionType = ActionType.PolicyNumber,
+                        TargetActionType = targetActionType
+                    });
+                    Self.Tell(new StartActionMessage
+                    {
+                        RequestId = requestId,
+                        CurrentActionType = ActionType.OsagoVechicle,
                         TargetActionType = targetActionType
                     });
                     return;
@@ -350,20 +357,6 @@ namespace CheckAutoBot.Actors
             {
                 item.AttemptsCount++;
             }
-        }
-
-        private void AddCaptchaRequestToCache(int userRequestId, string captchaId, ActionType currentActionType, ActionType targetActionType, string sessionId = null)
-        {
-            var getPolicyNumberCacheItem = new CaptchaCacheItem()
-            {
-                RequestId = userRequestId,
-                CaptchaId = captchaId,
-                CurrentActionType = currentActionType,
-                TargetActionType = targetActionType,
-                SessionId = sessionId,
-                Date = DateTime.Now
-            };
-            _captchaCacheItems.Add(getPolicyNumberCacheItem);
         }
 
         private async void SendErrorMessage(int requestId, string text)

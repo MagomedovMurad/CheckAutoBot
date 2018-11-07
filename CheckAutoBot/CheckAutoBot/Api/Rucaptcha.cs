@@ -16,7 +16,7 @@ namespace CheckAutoBot
     public class Rucaptcha
     {
         private const string apiKey = "a57666df25735811384576da1a50bf36";
-        private const string pingbackUrl = "95.31.241.19/bot/captha/";
+        private const string pingbackUrl = "http://95.31.241.19/bot/captha/";
 
         public CaptchaRequest SendReCaptcha2(string dataSiteKey, string pageUrl)
         {
@@ -30,23 +30,13 @@ namespace CheckAutoBot
         public CaptchaRequest SendImageCaptcha(string base64)
         {
             string url = "http://rucaptcha.com/in.php";
+            string stringData = $"?key={apiKey}&body={base64.UrlEncode()}&method=base64&pingback={pingbackUrl}&json=1";
 
-            var encodedBase64 = WebUtility.UrlEncode(base64);
-
-            string stringData = $"key={apiKey}&body={encodedBase64}&method=base64&pingback={pingbackUrl}&json=1";
-            byte[] data = Encoding.ASCII.GetBytes(stringData);
-
-            WebHeaderCollection headers = new WebHeaderCollection();
-            headers.Add(HttpRequestHeader.Host, "rucaptcha.com");
-            headers.Add(HttpRequestHeader.Connection, "Keep-Alive");
-            headers.Add(HttpRequestHeader.ContentLength, data.Length.ToString());
-            headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
+            url += stringData;
 
             HttpWebRequest request = WebRequest.CreateHttp(url);
+            request.KeepAlive = false;
             request.Method = "POST";
-            request.Headers = headers;
-
-            request.AddContent(data);
 
             WebResponse response = request.GetResponse();
             var json = response.ReadDataAsString();
@@ -67,19 +57,12 @@ namespace CheckAutoBot
         private string ExecuteRequest(string url, string requestMethod)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-
             request.Method = requestMethod;
+            request.KeepAlive = false;
             var response = request.GetResponse();
-            string responseData;
-            using (Stream stream = response.GetResponseStream())
-            {
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    responseData = reader.ReadToEnd();
-                }
-            }
+            var json = response.ReadDataAsString();
             response.Close();
-            return responseData;
+            return json;
         }
 
     }

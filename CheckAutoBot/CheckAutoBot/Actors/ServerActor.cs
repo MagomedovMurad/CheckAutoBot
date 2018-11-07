@@ -35,9 +35,9 @@ namespace CheckAutoBot.Actors
         private async void Start()
         {
             _httpListener = new HttpListener();
-            _httpListener.Prefixes.Add("http://192.168.0.103:8082/bot/captha/");
-            _httpListener.Prefixes.Add("http://192.168.0.103:8082/bot/vk/");
-            _httpListener.Prefixes.Add("http://192.168.0.103:8082/test/");
+            _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/captha/");
+            _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/vk/");
+            _httpListener.Prefixes.Add("http://192.168.0.103:26565/test/");
             _httpListener.Start();
             _logger.Debug("Server succesful started");
 
@@ -48,6 +48,7 @@ namespace CheckAutoBot.Actors
 
                 if (request.HttpMethod == "POST" && request.RawUrl == "/bot/captha/")
                 {
+                    _logger.Debug("Received from Rucaptcha");
                     var requestData = GetStreamData(request.InputStream, request.ContentEncoding);
                     RucaptchaMessagesHandler(requestData);
 
@@ -72,6 +73,7 @@ namespace CheckAutoBot.Actors
                 {
                     context.Response.StatusCode = 501;
                     context.Response.Close();
+                    _logger.Debug("Received from Unknow");
                 }
             }
         }
@@ -85,7 +87,7 @@ namespace CheckAutoBot.Actors
         private void VKMessagesHandler(string json)
         {
             _actorSelector.ActorSelection(_context, ActorsPaths.GroupEventsHandlerActor.Path).Tell(json, _self);
-            _logger.Debug($"VKMessagesHandler. Sending message to GroupEventsHandlerActor. Message: {json}");
+            //_logger.Debug($"VKMessagesHandler. Sending message to GroupEventsHandlerActor. Message: {json}");
         }
 
         private void RucaptchaMessagesHandler(string stringParams)
@@ -99,7 +101,7 @@ namespace CheckAutoBot.Actors
             };
             _actorSelector.ActorSelection(_context, ActorsPaths.UserRequestHandlerActor.Path).Tell(message, _self);
 
-            _logger.Debug($"RucaptchaMessagesHandler. Sending message to UserRequestHandlerActor. Message: CaprchaId={message.CaptchaId} Code={message.Value}");
+            //_logger.Debug($"RucaptchaMessagesHandler. Sending message to UserRequestHandlerActor. Message: CaprchaId={message.CaptchaId} Code={message.Value}");
         }
 
         private string GetStreamData(Stream stream, Encoding encoding)

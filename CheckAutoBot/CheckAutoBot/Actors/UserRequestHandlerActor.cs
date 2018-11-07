@@ -1,13 +1,9 @@
 ﻿using Akka.Actor;
-using CheckAutoBot.EaistoModels;
 using CheckAutoBot.Enums;
 using CheckAutoBot.Exceptions;
-using CheckAutoBot.GbddModels;
 using CheckAutoBot.Handlers;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Messages;
-using CheckAutoBot.PledgeModels;
-using CheckAutoBot.RsaModels;
 using CheckAutoBot.Storage;
 using CheckAutoBot.Utils;
 using CheckAutoBot.Vk.Api.MessagesModels;
@@ -15,8 +11,6 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CheckAutoBot.Actors
@@ -98,7 +92,7 @@ namespace CheckAutoBot.Actors
         {
             try
             {
-                AddOrUpdateCacheItem(message.RequestId, message.CurrentActionType);
+                //AddOrUpdateCacheItem(message.RequestId, message.CurrentActionType);
                 var handler = _handlers.FirstOrDefault(x => x.SupportedActionType == message.CurrentActionType);
                 var preGetResults = handler.PreGet();
                 AddCaptchaCacheItem(message.RequestId,
@@ -230,13 +224,24 @@ namespace CheckAutoBot.Actors
 
         private async Task<bool> CaptchaResponseMessageHadler(CaptchaResponseMessage message)
         {
+            _logger.Debug($"Получена каптча с ID: {message.CaptchaId}. Значение: {message.Value}");
             var captchaItem = _captchaCacheItems.FirstOrDefault(x => x.CaptchaId == message.CaptchaId);
+
+            _logger.Debug($"Найден элемент в кэше с ID: {captchaItem.CaptchaId}. CurrentActionType: {captchaItem.CurrentActionType}. RequestId: {captchaItem.RequestId}. Всего в кэше элементов: {_captchaCacheItems.Count}");
             if (captchaItem == null)
                 _logger.Error($"В кэше не найдена запись с идентификатором каптчи {message.CaptchaId}");
 
             captchaItem.CaptchaWord = message.Value;
             var requestCptchaItems = _captchaCacheItems.Where(x => x.RequestId == captchaItem.RequestId);
+
+            _logger.Debug($"Все записи в кэше с RequestId: {captchaItem.RequestId}");
+            foreach (var item in requestCptchaItems)
+            {
+                _logger.Debug($"CaptchaId: {item.CaptchaId}. CurrentActionType: {item.CurrentActionType}. TargetActionType: {item.TargetActionType}. CaptchaWord: {item.CaptchaWord}. SessionId: {item.SessionId}");
+            }
+
             var isNotCompleted = requestCptchaItems.Any(x => string.IsNullOrWhiteSpace(x.CaptchaWord));
+            _logger.Debug($"isNotCompleted: {isNotCompleted}");
 
             try
             {
@@ -248,19 +253,20 @@ namespace CheckAutoBot.Actors
             catch (InvalidOperationException ex)
             {
                 if (ex is InvalidCaptchaException icEx)
-                    _logger.Error("InvalidCaptcha" + icEx);
+                    _logger.Error($"Неверно решена каптча. Ответ: {icEx.CaptchaWord}");
                 _logger.Warn(ex);
                 TryExecuteRequestAgain(captchaItem.RequestId, captchaItem.CurrentActionType, captchaItem.TargetActionType);
+                isNotCompleted = false;
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, "Непредвиденная ошибка");
                 SendErrorMessage(captchaItem.RequestId, StaticResources.UnexpectedError);
-                //_cacheItems.RemoveAll(x => x.RequestId == captchaItem.RequestId && x.CurrentActionType == captchaItem.CurrentActionType);
+                isNotCompleted = false;
             }
 
             if (!isNotCompleted)
-                _captchaCacheItems.RemoveAll(x => x.RequestId == captchaItem.RequestId);
+                RemoveCaptchaCacheItems(captchaItem.RequestId);
 
             return true;
         }
@@ -268,14 +274,20 @@ namespace CheckAutoBot.Actors
         private async Task ExecuteGet(CaptchaCacheItem currentCaptchaItem, IEnumerable<CaptchaCacheItem> requestCaptchaItems)
         {
             var request = await _queryExecutor.GetUserRequest(currentCaptchaItem.RequestId);
+            _logger.Debug($"Из БД получен Request с ID: {request.Id}.");
+
             var handler = _handlers.FirstOrDefault(x => x.SupportedActionType == currentCaptchaItem.CurrentActionType);
+            _logger.Debug($"Получен обработчик типа: {handler.SupportedActionType}");
 
             var data = handler.Get(request.RequestObject, requestCaptchaItems);
+            _logger.Debug($"Выполнен GET запрос");
 
             await _queryExecutor.MarkRequestCompleted(currentCaptchaItem.RequestId);
 
             if (data == null)           //Если нет данных для отправки пользователю
                 return;
+
+            _logger.Debug($"Запрос с ID {currentCaptchaItem.RequestId} отмечен выполненным");
 
             var keyboard = await CreateKeyBoard(request.RequestObject).ConfigureAwait(false);
 
@@ -291,12 +303,18 @@ namespace CheckAutoBot.Actors
         #region Helpers
         private void TryExecuteRequestAgain(int requestId, ActionType currentActionType, ActionType targetActionType)
         {
+            _logger.Debug($"Попытка повторного выполнения запроса с ID: {requestId}. CurrentActionType: {currentActionType}. TargetActionType: {targetActionType}");
+            //var item = _cacheItems.FirstOrDefault(x => x.RequestId == requestId && x.CurrentActionType == currentActionType);
+
+            //if (item == null)
+            //    return;
+
+            AddOrUpdateCacheItem(requestId, currentActionType);
             var item = _cacheItems.FirstOrDefault(x => x.RequestId == requestId && x.CurrentActionType == currentActionType);
 
-            if (item == null)
-                return;
+            _logger.Debug($"В кэше повторных запросов найдена запись с ID запроса: {item.RequestId}. CurrentActionType: {item.CurrentActionType}. Попыток: {item.AttemptsCount}. Всего записей: {_cacheItems.Count}");
 
-            if (item.AttemptsCount >= 0)
+            if (item.AttemptsCount >= 2 )
             {
                 if(currentActionType == ActionType.VinByDiagnosticCard)
                 {
@@ -306,6 +324,7 @@ namespace CheckAutoBot.Actors
                         CurrentActionType = ActionType.PolicyNumber,
                         TargetActionType = targetActionType
                     });
+
                     Self.Tell(new StartActionMessage
                     {
                         RequestId = requestId,
@@ -315,8 +334,10 @@ namespace CheckAutoBot.Actors
                     return;
                 }
                 SendErrorMessage(requestId, StaticResources.RequestFailedError);
-                _cacheItems.Remove(item);
+                _logger.Debug($"Из кэша повторных запросов будет удалена запись с ID запроса {item.RequestId}. CurrentActionType {item.CurrentActionType}. AttemptsCount {item.AttemptsCount}. Всего элементов {_cacheItems.Count}");
 
+                _cacheItems.Remove(item);
+                _logger.Debug($"В кэше повторных запросов {_cacheItems.Count} элементов");
                 return;
             }
 
@@ -340,8 +361,13 @@ namespace CheckAutoBot.Actors
                 Date = DateTime.Now
             };
             _captchaCacheItems.Add(getPolicyNumberCacheItem);
-        }
 
+            _logger.Debug($"В кэш каптчи добавлена запись с RequestId: {requestId}. CaptchaId {captchaId}. currentActionType {currentActionType}. TargetActionType {targetActionType}. SessionId {sessionId}");
+        }
+        private void RemoveCaptchaCacheItems(int requestId)
+        {
+            _captchaCacheItems.RemoveAll(x => x.RequestId == requestId);
+        }
         private void AddOrUpdateCacheItem(int requestId, ActionType currentActionType)
         {
             var item = _cacheItems.FirstOrDefault(x => x.RequestId == requestId && x.CurrentActionType == currentActionType);
@@ -352,10 +378,12 @@ namespace CheckAutoBot.Actors
                     RequestId = requestId,
                     CurrentActionType = currentActionType
                 });
+                _logger.Debug($"В кэш повторных запросов добавлена запись с RequestId {requestId}. CurrentActionType {currentActionType}");
             }
             else
             {
                 item.AttemptsCount++;
+                _logger.Debug($"В кэше повторных запросов обновлена запись с RequestId {requestId}. CurrentActionType {currentActionType}. AttemptsCount: {item.AttemptsCount}");
             }
         }
 
@@ -364,6 +392,7 @@ namespace CheckAutoBot.Actors
             var request = await _queryExecutor.GetUserRequest(requestId);
             var message = new SendToUserMessage(null, request.RequestObject.UserId, text, null);
             _senderActor.Tell(message, Self);
+            _logger.Debug($"Пользователю отправлено сообщение об ошибке");
         }
 
         private async Task<Keyboard> CreateKeyBoard(RequestObject requestObject)

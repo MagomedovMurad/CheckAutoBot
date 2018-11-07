@@ -11,7 +11,7 @@ namespace CheckAutoBot.Managers
 {
     public class Eaisto
     {
-        private const string url = "https://eaisto.info/";
+        private const string url = "https://eaisto.info1/";
         private const string captchaUrl = "https://eaisto.info/securimage_show.php ";
 
 

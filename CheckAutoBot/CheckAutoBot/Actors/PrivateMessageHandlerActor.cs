@@ -118,7 +118,6 @@ namespace CheckAutoBot.Actors
                 var value = ConvertToValidLicensePlate(match.Value);
                 return new KeyValuePair<InputDataType, string>(InputDataType.LicensePlate, value);
             }
-
             match = _vinCodeRegex.Match(inputStr);
             if (match.Success)
                 return new KeyValuePair<InputDataType, string>(InputDataType.Vin, match.Value);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using CheckAutoBot.Contracts;
 using CheckAutoBot.Enums;
 using CheckAutoBot.GbddModels;
 using CheckAutoBot.Managers;

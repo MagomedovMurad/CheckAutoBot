@@ -59,6 +59,6 @@ namespace CheckAutoBot.Enums
         /// <summary>
         /// Получить вин код по дигностической карте
         /// </summary>
-        VinByDiagnosticCard,
+        DiagnosticCardForVin,
     }
 }

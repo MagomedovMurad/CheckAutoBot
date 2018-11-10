@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using CheckAutoBot.Contracts;
 using CheckAutoBot.Enums;
 using CheckAutoBot.GbddModels;
 using CheckAutoBot.Managers;
@@ -23,7 +24,7 @@ namespace CheckAutoBot.Handlers
         {
             var auto = requestObject as Auto;
 
-            var wantedCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.Wanted);
+            var wantedCacheItem = cacheItems.First(x => x.ActionType == ActionType.Wanted);
             var wantedResponse = _gibddManager.GetWanted(auto.Vin, wantedCacheItem.CaptchaWord, wantedCacheItem.SessionId);
 
             return GenerateResponse(wantedResponse);

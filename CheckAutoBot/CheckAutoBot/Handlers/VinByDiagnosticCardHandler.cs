@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Akka.Actor;
+using CheckAutoBot.Contracts;
 using CheckAutoBot.Enums;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Messages;
@@ -12,19 +13,15 @@ using CheckAutoBot.Utils;
 
 namespace CheckAutoBot.Handlers
 {
-    public class VinByDiagnosticCardHandler : IHandler
+    public class VinByDiagnosticCardHandler : IHandlerVinFinder
     {
-        IActorRef _requestHandler;
-        private DbQueryExecutor _queryExecutor;
         private EaistoManager _eaistoManager { get; set; }
         private RucaptchaManager _rucaptchaManager { get; set; }
 
-        public ActionType SupportedActionType => ActionType.VinByDiagnosticCard;
+        public ActionType SupportedActionType => ActionType.DiagnosticCardForVin;
 
-        public VinByDiagnosticCardHandler(IActorRef requestHandler, DbQueryExecutor queryExecutor)
+        public VinByDiagnosticCardHandler()
         {
-            _requestHandler = requestHandler;
-            _queryExecutor = queryExecutor;
             _rucaptchaManager = new RucaptchaManager();
             _eaistoManager = new EaistoManager();
         }
@@ -37,52 +34,15 @@ namespace CheckAutoBot.Handlers
             return new PreGetResult(captchaRequest.Id, captchaResult.SessionId);
         }
 
-        public Dictionary<string, byte[]> Get(RequestObject requestObject, IEnumerable<CaptchaCacheItem> cacheItems)
+        public string Get(string licensePlate, IEnumerable<CaptchaCacheItem> cacheItems)
         {
-            var auto = requestObject as Auto;
-
-            var diagnosticCardCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.VinByDiagnosticCard);
-            int requestId = diagnosticCardCacheItem.RequestId;
-            var targetActionType = diagnosticCardCacheItem.TargetActionType;
-
-            var diagnosticCard = _eaistoManager.GetDiagnosticCard(diagnosticCardCacheItem.CaptchaWord, null, diagnosticCardCacheItem.SessionId, licensePlate: auto.LicensePlate);
-
-            List<StartActionMessage> messages = new List<StartActionMessage>();
+            var diagnosticCardCacheItem = cacheItems.First(x => x.ActionType == ActionType.DiagnosticCardForVin);
+            var diagnosticCard = _eaistoManager.GetDiagnosticCard(diagnosticCardCacheItem.CaptchaWord, null, diagnosticCardCacheItem.SessionId, licensePlate: licensePlate);
 
             if (diagnosticCard == null)
-            {
-                messages.Add(
-                    new StartActionMessage()
-                    {
-                        RequestId = requestId,
-                        CurrentActionType = ActionType.PolicyNumber,
-                        TargetActionType = targetActionType
-                    });
-                messages.Add(
-                    new StartActionMessage()
-                    {
-                        RequestId = requestId,
-                        CurrentActionType = ActionType.OsagoVechicle,
-                        TargetActionType = targetActionType
-                    });
-            }
-            else
-            {
-                messages.Add(
-                    new StartActionMessage()
-                    {
-                        RequestId = requestId,
-                        CurrentActionType = targetActionType,
-                        TargetActionType = targetActionType
-                    });
+                return null;
 
-                var request = _queryExecutor. GetUserRequest(requestId).Result;
-                _queryExecutor.UpdateVinCode(request.RequestObject.Id, diagnosticCard.Vin);
-            }
-
-            messages.ForEach(m => _requestHandler.Tell(m));
-
-            return null;
+            return diagnosticCard.Vin;
         }
 
 

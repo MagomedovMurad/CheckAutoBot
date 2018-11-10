@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Akka.Actor;
+using CheckAutoBot.Contracts;
 using CheckAutoBot.Enums;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Messages;

@@ -63,7 +63,6 @@ namespace CheckAutoBot.Actors
         {
             try
             {
-                var accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
                 var messageParams = new SendMessageParams()
                 {
                     Message = text,

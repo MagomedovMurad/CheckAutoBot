@@ -28,7 +28,7 @@ namespace CheckAutoBot.Handlers
         {
             var auto = requestObject as Auto;
 
-            var pledgeCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.Pledge);
+            var pledgeCacheItem = cacheItems.First(x => x.ActionType == ActionType.Pledge);
             var pledgeResponse = _fnpManager.GetPledges(auto.Vin, pledgeCacheItem.CaptchaWord, pledgeCacheItem.SessionId);
 
             return GenerateResponse(pledgeResponse);
@@ -37,7 +37,7 @@ namespace CheckAutoBot.Handlers
         public PreGetResult PreGet()
         {
             var captchaResult = _fnpManager.GetCaptcha();
-            var captchaRequest = _rucaptchaManager.SendImageCaptcha(captchaResult.ImageBase64);
+            var captchaRequest = _rucaptchaManager.SendImageCaptcha(captchaResult.ImageBase64, Rucaptcha.RequestPingbackUrl);
 
             return new PreGetResult(captchaRequest.Id, captchaResult.SessionId);
         }

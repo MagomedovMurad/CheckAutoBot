@@ -1,7 +1,9 @@
 ﻿using Akka.Actor;
 using CheckAutoBot.Messages;
 using CheckAutoBot.Storage;
+using CheckAutoBot.Utils;
 using CheckAutoBot.Vk.Api.MessagesModels;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,8 +13,18 @@ namespace CheckAutoBot.Actors
 {
     public class InputDataHandlerActor: ReceiveActor
     {
-        public InputDataHandlerActor()
+        private DbQueryExecutor _queryExecutor;
+        private ICanSelectActor _actorSelector;
+        private KeyboardBuilder _keyboardBuilder;
+        private ILogger _logger;
+
+        public InputDataHandlerActor(ILogger logger, DbQueryExecutor queryExecutor)
         {
+            _logger = logger;
+            _queryExecutor = queryExecutor;
+            _actorSelector = new ActorSelector();
+            _keyboardBuilder = new KeyboardBuilder();
+
             ReceiveAsync<UserInputDataMessage>(x => UserInputDataMessageHandler(x));
         }
 
@@ -42,14 +54,21 @@ namespace CheckAutoBot.Actors
 
                     #region LicensePlate
                     case InputDataType.LicensePlate:
-                        data = new Auto
                         {
-                            LicensePlate = message.Data,
-                            Date = message.Date,
-                            UserId = message.UserId,
-                            MessageId = message.MessageId
-                        };
-                        break;
+                            data = new Auto
+                            {
+                                LicensePlate = message.Data,
+                                Date = message.Date,
+                                UserId = message.UserId,
+                                MessageId = message.MessageId
+                            };
+                            await _queryExecutor.AddRequestObject(data);
+
+                            var msg = new StartVinSearchingMessage(data.Id);
+                            _actorSelector.ActorSelection(Context, ActorsPaths.LicensePlateHandlerActor.Path).Tell(msg, Self);
+
+                            break;
+                        }
 
                     #endregion LicensePlate
 
@@ -76,13 +95,13 @@ namespace CheckAutoBot.Actors
                         throw new InvalidOperationException($"Не найден обработчик для типа {message.Type}");
                 }
 
-                await _queryExecutor.AddRequestObject(data);
+                //await _queryExecutor.AddRequestObject(data);
 
-                var text = $"{message.Data}{Environment.NewLine}Выберите доступные действия...";
-                var keyboard = await CreateKeyBoard(data).ConfigureAwait(false);
-                var msg = new SendToUserMessage(keyboard, message.UserId, text, null);
+                //var text = $"{message.Data}{Environment.NewLine}Выберите доступные действия...";
+                //var keyboard = await CreateKeyBoard(data).ConfigureAwait(false);
+                //var msg = new SendToUserMessage(keyboard, message.UserId, text, null);
 
-                _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(msg, Self);
+                //_actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(msg, Self);
 
                 return true;
             }

@@ -23,7 +23,7 @@ namespace CheckAutoBot.Handlers
         public PreGetResult PreGet()
         {
             var captchaResult = _gibddManager.GetCaptcha();
-            var captchaRequest = _rucaptchaManager.SendImageCaptcha(captchaResult.ImageBase64);
+            var captchaRequest = _rucaptchaManager.SendImageCaptcha(captchaResult.ImageBase64, Rucaptcha.RequestPingbackUrl);
             return new PreGetResult(captchaRequest.Id, captchaResult.SessionId);
         }
     }

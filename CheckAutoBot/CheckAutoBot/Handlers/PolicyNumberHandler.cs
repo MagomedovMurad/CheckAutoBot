@@ -44,8 +44,8 @@ namespace CheckAutoBot.Handlers
         {
             var auto = requestObject as Auto;
 
-            var policyNumberCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.PolicyNumber);
-            var requestId = policyNumberCacheItem.RequestId;
+            var policyNumberCacheItem = cacheItems.First(x => x.ActionType == ActionType.PolicyNumber);
+            var requestId = policyNumberCacheItem.Id;
             var targetActionType = policyNumberCacheItem.TargetActionType;
 
             var policyResponse = _rsaManager.GetPolicy(policyNumberCacheItem.CaptchaWord, DateTime.Now, lp: auto.LicensePlate);
@@ -55,7 +55,7 @@ namespace CheckAutoBot.Handlers
             if (policyResponse != null)
             {
                 var policy = policyResponse.Policies.FirstOrDefault();
-                var policyInfoCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.OsagoVechicle);
+                var policyInfoCacheItem = cacheItems.First(x => x.ActionType == ActionType.OsagoVechicle);
 
                 vechicleResponse = _rsaManager.GetVechicleInfo(policy.Serial, policy.Number, DateTime.Now, policyInfoCacheItem.CaptchaWord);
             }

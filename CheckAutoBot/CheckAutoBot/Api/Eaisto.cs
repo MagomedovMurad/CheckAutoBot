@@ -4,6 +4,7 @@ using CheckAutoBot.Infrastructure;
 using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text;
 
@@ -11,7 +12,7 @@ namespace CheckAutoBot.Managers
 {
     public class Eaisto
     {
-        private const string url = "https://eaisto.info1/";
+        private const string url = "https://eaisto.info/";
         private const string captchaUrl = "https://eaisto.info/securimage_show.php ";
 
 
@@ -124,29 +125,53 @@ namespace CheckAutoBot.Managers
             if (!string.IsNullOrWhiteSpace(errorNode.InnerText))
                 errorMessage = errorNode.InnerText;
 
-            HtmlNode brandNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[1]/td[2]");
+            //HtmlNodeCollection diagnosticCardCells = doc.DocumentNode.SelectNodes(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr");
 
-            HtmlNode modelNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[2]/td[2]");
+            HtmlNodeCollection dcTables = doc.DocumentNode.SelectNodes(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody");
 
-            HtmlNode dateFromeNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[3]/td[2]");
+            if (dcTables == null)
+                return new DiagnosticCard();
 
-            HtmlNode dateToNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[4]/td[2]");
 
-            HtmlNode vinNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[5]/td[2]");
+            var lastDcTable = dcTables[0];
 
-            HtmlNode licensePlateNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[6]/td[2]");
+            var lines = (lastDcTable.ChildNodes as IEnumerable<HtmlNode>).Where(x => x.Name == "tr").ToList();
 
-            HtmlNode eaistoNumberNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[7]/td[2]");
+            var dictionary = lines.Select(l =>
+            {
+                var keyAndValue = l.ChildNodes.Where(chn => chn.Name == "td").ToList();
+                var key = keyAndValue[0].InnerText;
+                var value = keyAndValue[1].InnerText;
+
+                return new KeyValuePair<string, string>(key, value);
+            }).ToDictionary(k => k.Key, v => v.Value);
+
+            //HtmlNode brandNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[1]/td[2]");
+            //HtmlNode modelNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[2]/td[2]");
+            //HtmlNode dateFromeNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[3]/td[2]");
+            //HtmlNode dateToNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[4]/td[2]");
+            //HtmlNode vinNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[5]/td[2]");
+            //HtmlNode licensePlateNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[6]/td[2]");
+            //HtmlNode eaistoNumberNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[7]/td[2]");
+
+            dictionary.TryGetValue("Марка:", out string brand);
+            dictionary.TryGetValue("Модель:", out string model);
+            dictionary.TryGetValue("Дата с:", out string dateFrom);
+            dictionary.TryGetValue("Дата до:", out string dateTo);
+            dictionary.TryGetValue("VIN:", out string vin);
+            dictionary.TryGetValue("Регистрационный номер:", out string licensePlate);
+            dictionary.TryGetValue("Номер ЕАИСТО:", out string eaistoNumber);
+
 
             return new DiagnosticCard()
             {
-                Brand = brandNode?.InnerText,
-                Model = modelNode?.InnerText,
-                Vin = vinNode?.InnerText,
-                LicensePlate = vinNode?.InnerText,
-                EaistoNumber = eaistoNumberNode?.InnerText,
-                DateFrom = dateFromeNode?.InnerText,
-                DateTo = dateToNode?.InnerText,
+                Brand = brand,
+                Model = model,
+                Vin = vin,
+                LicensePlate = licensePlate,
+                EaistoNumber = eaistoNumber,
+                DateFrom = dateFrom,
+                DateTo = dateTo,
                 ErrorMessage = errorMessage
             };
         }

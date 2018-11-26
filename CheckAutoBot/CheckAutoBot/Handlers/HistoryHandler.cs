@@ -25,7 +25,7 @@ namespace CheckAutoBot.Handlers
         {
             var auto = requestObject as Auto;
 
-            var historyCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.History);
+            var historyCacheItem = cacheItems.First(x => x.ActionType == ActionType.History);
             var historyResult = _gibddManager.GetHistory(auto.Vin, historyCacheItem.CaptchaWord, historyCacheItem.SessionId);
             return GenerateResponse(historyResult);
         }

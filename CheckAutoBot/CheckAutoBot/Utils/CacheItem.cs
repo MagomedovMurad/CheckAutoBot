@@ -7,10 +7,12 @@ namespace CheckAutoBot.Utils
 {
     public class CacheItem
     {
-        public int RequestId { get; set; }
+        public int Id { get; set; }
 
-        public ActionType CurrentActionType { get; set; }
+        public ActionType ActionType { get; set; }
 
         public int AttemptsCount { get; set; }
+
+        public bool? DcGetFailed { get; set; }
     }
 }

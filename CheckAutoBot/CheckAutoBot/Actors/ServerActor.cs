@@ -35,7 +35,8 @@ namespace CheckAutoBot.Actors
         private async void Start()
         {
             _httpListener = new HttpListener();
-            _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/captha/");
+            _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/captcha/request/");
+            _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/captcha/lp/");
             _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/vk/");
             _httpListener.Prefixes.Add("http://192.168.0.103:26565/test/");
             _httpListener.Start();
@@ -46,11 +47,20 @@ namespace CheckAutoBot.Actors
                 HttpListenerContext context = await _httpListener.GetContextAsync();
                 HttpListenerRequest request = context.Request;
 
-                if (request.HttpMethod == "POST" && request.RawUrl == "/bot/captha/")
+                if (request.HttpMethod == "POST" && request.RawUrl == "/bot/captcha/request")
                 {
-                    _logger.Debug("Received from Rucaptcha");
+                    _logger.Debug($"Received from Rucaptcha to {request.Url}");
                     var requestData = GetStreamData(request.InputStream, request.ContentEncoding);
                     RucaptchaMessagesHandler(requestData);
+
+                    context.Response.StatusCode = 200;
+                    context.Response.Close();
+                }
+                else if (request.HttpMethod == "POST" && request.RawUrl == "/bot/captcha/lp")
+                {
+                    _logger.Debug($"Received from Rucaptcha to {request.Url}");
+                    var requestData = GetStreamData(request.InputStream, request.ContentEncoding);
+                    RucaptchaMessagesHandler2(requestData);
 
                     context.Response.StatusCode = 200;
                     context.Response.Close();
@@ -92,6 +102,19 @@ namespace CheckAutoBot.Actors
 
         private void RucaptchaMessagesHandler(string stringParams)
         {
+            var message = RucaptchaParamsToCRM(stringParams);
+            _actorSelector.ActorSelection(_context, ActorsPaths.UserRequestHandlerActor.Path).Tell(message, _self);
+
+            //_logger.Debug($"RucaptchaMessagesHandler. Sending message to UserRequestHandlerActor. Message: CaprchaId={message.CaptchaId} Code={message.Value}");
+        }
+        private void RucaptchaMessagesHandler2(string stringParams)
+        {
+            var message = RucaptchaParamsToCRM(stringParams);
+            _actorSelector.ActorSelection(_context, ActorsPaths.LicensePlateHandlerActor.Path).Tell(message, _self);
+        }
+
+        private CaptchaResponseMessage RucaptchaParamsToCRM(string stringParams)
+        {
             var requestParams = ParseRequestParams(stringParams);
 
             var message = new CaptchaResponseMessage()
@@ -99,9 +122,8 @@ namespace CheckAutoBot.Actors
                 CaptchaId = requestParams["id"],
                 Value = requestParams["code"]
             };
-            _actorSelector.ActorSelection(_context, ActorsPaths.UserRequestHandlerActor.Path).Tell(message, _self);
 
-            //_logger.Debug($"RucaptchaMessagesHandler. Sending message to UserRequestHandlerActor. Message: CaprchaId={message.CaptchaId} Code={message.Value}");
+            return message;
         }
 
         private string GetStreamData(Stream stream, Encoding encoding)

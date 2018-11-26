@@ -25,7 +25,7 @@ namespace CheckAutoBot.Handlers
         {
             var auto = requestObject as Auto;
 
-            var dtpCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.Dtp);
+            var dtpCacheItem = cacheItems.First(x => x.ActionType == ActionType.Dtp);
             var dtpResult = _gibddManager.GetDtp(auto.Vin, dtpCacheItem.CaptchaWord, dtpCacheItem.SessionId);
 
             return GenerateResponse(dtpResult);

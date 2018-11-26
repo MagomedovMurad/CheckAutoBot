@@ -31,9 +31,9 @@ namespace CheckAutoBot.Managers
             _rucaptcha = new Rucaptcha();
         }
 
-        public CaptchaRequest SendImageCaptcha(string base64)
+        public CaptchaRequest SendImageCaptcha(string base64, string pingback)
         {
-            var captchaRequest = _rucaptcha.SendImageCaptcha(base64);
+            var captchaRequest = _rucaptcha.SendImageCaptcha(base64, pingback);
 
             if (!captchaRequest.State)
             {
@@ -46,9 +46,9 @@ namespace CheckAutoBot.Managers
            return captchaRequest;
         }
 
-        public CaptchaRequest SendReCaptcha2(string dataSiteKey, string pageUrl)
+        public CaptchaRequest SendReCaptcha2(string dataSiteKey, string pageUrl, string pingback)
         {
-            var captchaRequest = _rucaptcha.SendReCaptcha2(dataSiteKey, pageUrl);
+            var captchaRequest = _rucaptcha.SendReCaptcha2(dataSiteKey, pageUrl, pingback);
 
             if (!captchaRequest.State)
             {

@@ -11,6 +11,5 @@ namespace CheckAutoBot.Messages
 
         public ActionType CurrentActionType { get; set; }
 
-        public ActionType TargetActionType { get; set; }
     }
 }

@@ -16,21 +16,22 @@ namespace CheckAutoBot
     public class Rucaptcha
     {
         private const string apiKey = "a57666df25735811384576da1a50bf36";
-        private const string pingbackUrl = "http://95.31.241.19/bot/captha/";
+        public const string LpPingbackUrl = "http://95.31.241.19/bot/captcha/lp";
+        public const string RequestPingbackUrl = "http://95.31.241.19/bot/captcha/request";
 
-        public CaptchaRequest SendReCaptcha2(string dataSiteKey, string pageUrl)
+        public CaptchaRequest SendReCaptcha2(string dataSiteKey, string pageUrl, string pingback)
         {
-            var url = $"http://rucaptcha.com/in.php?key={apiKey}&method=userrecaptcha&googlekey={dataSiteKey}&pageurl={pageUrl}&pingback={pingbackUrl}&json=1";
+            var url = $"http://rucaptcha.com/in.php?key={apiKey}&method=userrecaptcha&googlekey={dataSiteKey}&pageurl={pageUrl}&pingback={pingback}&json=1";
             var json = ExecuteRequest(url, "POST");
             var data = JsonConvert.DeserializeObject<CaptchaRequest>(json);
 
             return data;
         }
 
-        public CaptchaRequest SendImageCaptcha(string base64)
+        public CaptchaRequest SendImageCaptcha(string base64, string pingback)
         {
             string url = "http://rucaptcha.com/in.php";
-            string stringData = $"?key={apiKey}&body={base64.UrlEncode()}&method=base64&pingback={pingbackUrl}&json=1";
+            string stringData = $"?key={apiKey}&body={base64.UrlEncode()}&method=base64&pingback={pingback}&json=1";
 
             url += stringData;
 

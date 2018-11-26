@@ -80,6 +80,22 @@ namespace CheckAutoBot.Storage
             }
         }
 
+        public async Task<RequestObject> GetUserRequestObject(int id)
+        {
+            try
+            {
+                using (var rep = _repositoryFactory.CreateBotRepository())
+                {
+                    return await rep.GetUserRequestObject(id).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Ошибка в БД при получении объекта запроса пользователя({id})");
+                return null;
+            }
+        }
+
         /// <summary>
         /// Добавление объекта запроса  
         /// </summary>

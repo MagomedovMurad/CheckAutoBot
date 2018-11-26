@@ -24,7 +24,7 @@ namespace CheckAutoBot.Handlers
         {
             var auto = requestObject as Auto;
 
-            var restrictedCacheItem = cacheItems.First(x => x.CurrentActionType == ActionType.Restricted);
+            var restrictedCacheItem = cacheItems.First(x => x.ActionType == ActionType.Restricted);
             var restrictedResult = _gibddManager.GetRestrictions(auto.Vin, restrictedCacheItem.CaptchaWord, restrictedCacheItem.SessionId);
 
             return GenerateResponse(restrictedResult);

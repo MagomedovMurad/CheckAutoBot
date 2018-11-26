@@ -6,7 +6,7 @@ using System.Text;
 
 namespace CheckAutoBot.Contracts
 {
-    public interface IHandlerVinFinder
+    public interface IVinFinderHandler
     {
         ActionType SupportedActionType { get; }
 

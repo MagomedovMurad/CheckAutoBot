@@ -41,6 +41,9 @@ namespace CheckAutoBot
             var privateMessageHandlerActor = actorSystem.ActorOf(Props.Create(() => new PrivateMessageHandlerActor(logger)), ActorsPaths.PrivateMessageHandlerActor.Name);
             var privateMessageSenderActor = actorSystem.ActorOf(Props.Create(() => new PrivateMessageSenderActor(logger)), ActorsPaths.PrivateMessageSenderActor.Name);
             var userRequestHandlerActor = actorSystem.ActorOf(Props.Create(() => new UserRequestHandlerActor(logger, queryExecutor)), ActorsPaths.UserRequestHandlerActor.Name);
+            var inputDataHandlerActor = actorSystem.ActorOf(Props.Create(() => new InputDataHandlerActor(logger, queryExecutor)), ActorsPaths.InputDataHandlerActor.Name);
+            var licensePlateHandlerActor = actorSystem.ActorOf(Props.Create(() => new LicensePlateHandlerActor(queryExecutor)), ActorsPaths.LicensePlateHandlerActor.Name);
+
             server.Tell(new StartServerMessage());
             Console.ReadKey();
         }

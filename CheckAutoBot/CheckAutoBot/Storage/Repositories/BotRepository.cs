@@ -29,6 +29,12 @@ namespace CheckAutoBot.Storage
                                    .FirstOrDefaultAsync();
         }
 
+        public async Task<RequestObject> GetUserRequestObject(int id)
+        {
+            return await _dbContext.RequestObjects
+                                   .FirstOrDefaultAsync(x => x.Id == id);
+        }
+
         public async Task<Request> GetUserRequest(int requestId)
         {
             return await _dbContext.Requests

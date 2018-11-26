@@ -19,5 +19,6 @@ namespace CheckAutoBot.Utils
         public string SessionId { get; set; }
 
         public DateTime Date { get; set; }
+
     }
 }

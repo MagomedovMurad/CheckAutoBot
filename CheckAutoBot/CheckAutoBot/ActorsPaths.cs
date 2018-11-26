@@ -13,6 +13,8 @@ namespace CheckAutoBot
         public static readonly AkkaActorMetaData PrivateMessageSenderActor = new AkkaActorMetaData("PrivateMessageSender");
         public static readonly AkkaActorMetaData UserRequestHandlerActor = new AkkaActorMetaData("UserRequestHandler");
         public static readonly AkkaActorMetaData UserRequestObjectHandlerActor = new AkkaActorMetaData("UserRequestObjectHandler");
+        public static readonly AkkaActorMetaData LicensePlateHandlerActor = new AkkaActorMetaData("LicensePlateHandlerActor");
+        public static readonly AkkaActorMetaData InputDataHandlerActor = new AkkaActorMetaData("InputDataHandlerActor");
     }
 
     public interface ICanSelectActor

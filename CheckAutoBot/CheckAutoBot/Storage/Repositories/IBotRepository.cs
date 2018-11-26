@@ -9,6 +9,8 @@ namespace CheckAutoBot.Storage
     {
         Task<RequestObject> GetLastUserRequestObject(int userId);
 
+        Task<RequestObject> GetUserRequestObject(int id);
+
         Task AddRequestObject(RequestObject requestObject);
 
         Task<int> AddUserRequest(Request request);

@@ -16,5 +16,7 @@ namespace CheckAutoBot
 
         public static string VinNotFoundError = $"К сожалению не удалось найти информацию по гос. номеру.{Environment.NewLine}" +
                                            $" Попробуйте выполнить поиск по vin коду";
+
+       
     }
 }

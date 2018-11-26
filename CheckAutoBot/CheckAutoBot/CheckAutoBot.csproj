@@ -12,6 +12,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Handlers\OsagoVechicleHandler.cs" />
+    <Compile Remove="Handlers\PolicyNumberHandler.cs" />
+    <Compile Remove="Handlers\VinByDiagnosticCardHandler.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="NLog.config" />
   </ItemGroup>
 

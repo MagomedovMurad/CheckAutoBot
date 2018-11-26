@@ -75,7 +75,7 @@ namespace CheckAutoBot.Actors
                     };
 
                     _actorSelection
-                        .ActorSelection(Context, ActorsPaths.UserRequestHandlerActor.Path)
+                        .ActorSelection(Context, ActorsPaths.InputDataHandlerActor.Path)
                         .Tell(reqestObjectMessage, Self);
                 }
                 else

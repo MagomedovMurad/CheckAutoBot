@@ -67,6 +67,10 @@ namespace CheckAutoBot.Actors
                             var msg = new StartVinSearchingMessage(data.Id);
                             _actorSelector.ActorSelection(Context, ActorsPaths.LicensePlateHandlerActor.Path).Tell(msg, Self);
 
+                            var text = $"Выполняется проверка возможности получения информации по гос. номеру {message.Data}. Дождитесь ответа. Это займет не более 2-х минут";
+                            var sendToUsermsg = new SendToUserMessage(null, message.UserId, text, null);
+                            _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(msg, Self);
+
                             break;
                         }
 
@@ -97,11 +101,6 @@ namespace CheckAutoBot.Actors
 
                 //await _queryExecutor.AddRequestObject(data);
 
-                //var text = $"{message.Data}{Environment.NewLine}Выберите доступные действия...";
-                //var keyboard = await CreateKeyBoard(data).ConfigureAwait(false);
-                //var msg = new SendToUserMessage(keyboard, message.UserId, text, null);
-
-                //_actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(msg, Self);
 
                 return true;
             }

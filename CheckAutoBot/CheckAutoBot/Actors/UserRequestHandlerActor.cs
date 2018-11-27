@@ -63,7 +63,6 @@ namespace CheckAutoBot.Actors
             InitHandlers();
 
             ReceiveAsync<UserRequestMessage>(x => UserRequestHandler(x));
-            //ReceiveAsync<UserInputDataMessage>(x => UserInputDataMessageHandler(x));
             ReceiveAsync<CaptchaResponseMessage>(x => CaptchaResponseMessageHadler(x));
             ReceiveAsync<StartActionMessage>(x => StartActionMessageHandler(x));
         }

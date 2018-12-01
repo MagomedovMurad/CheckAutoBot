@@ -73,16 +73,16 @@ namespace CheckAutoBot.Actors
         {
             try
             {
-                _logger.Debug($"Запрос каптч для {actionType}. Идентификатор объекта запроса: {requestObjectId}.");
+                _logger.Debug($"Запрос каптчи для {actionType}. Идентификатор объекта запроса: {requestObjectId}.");
                 var handler = _handlers.First(x => x.SupportedActionType == actionType);
                 var pregetResult = handler.PreGet();
                 AddCaptchaCacheItem(requestObjectId, actionType, pregetResult.CaptchaId, pregetResult.SessionId);
             }
             catch (InvalidOperationException ex)
             {
-                _logger.Warn($"Ошибка при попытке выполнения повторного запроса. {Environment.NewLine}" +
-                             $"Идентификатор объекта запроса: {requestObjectId}. {Environment.NewLine}" +
-                             $"Ошибка: {ex}");
+                _logger.Warn(ex, $"Ошибка при попытке выполнения запроса каптчи. {Environment.NewLine}" +
+                                 $"Идентификатор объекта запроса: {requestObjectId}. {Environment.NewLine}");
+
                 var actionTypes = _captchaCacheItems.Where(x => x.Id == requestObjectId).Select(x => x.ActionType);
                 TryExecuteRequestAgain(requestObjectId, actionType, actionTypes);
             }
@@ -100,10 +100,9 @@ namespace CheckAutoBot.Actors
                 var msg = $"Идентификатор пользователя {requestObject.UserId}. Идентификатор объекта запроса:{requestObjectId}. Ошибка: {ex}";
                 SendMessageToUser(null, StaticResources.MyUserId, msg);
 
-                _logger.Error($"Непредвиденная ошибка при попытке выполнения повторного запроса. {Environment.NewLine}" +
+                _logger.Error(ex, $"Непредвиденная ошибка при попытке выполнения повторного запроса. {Environment.NewLine}" +
                               $"Идентификатор пользователя {requestObject.UserId}. {Environment.NewLine}" +
-                              $"Идентификатор объекта запроса: {requestObjectId}. {Environment.NewLine}" +
-                              $"Ошибка: {ex}");
+                              $"Идентификатор объекта запроса: {requestObjectId}. {Environment.NewLine}");
             }
         }
 
@@ -134,8 +133,10 @@ namespace CheckAutoBot.Actors
             catch (InvalidOperationException ex)
             {
                 if (ex is InvalidCaptchaException icEx)
-                    _logger.Error($"Неверно решена каптча. {Environment.NewLine}" +
-                                  $"Ответ: {icEx.CaptchaWord}");
+                    _logger.Warn(icEx, $"Неверно решена каптча. {Environment.NewLine}" +
+                                       $"Ответ: {icEx.CaptchaWord}");
+                else
+                    _logger.Error(ex, $"Идентификатор запроса: {captchaItem.Id}. Тип действия: {captchaItem.ActionType}");
 
                 var actionTypes = requestCptchaItems.Select(x => x.ActionType).ToList();
                 TryExecuteRequestAgain(captchaItem.Id, captchaItem.ActionType, actionTypes);
@@ -226,7 +227,7 @@ namespace CheckAutoBot.Actors
             else
             {
 
-                if (item.DcGetFailed == true)
+                if (item?.DcGetFailed == true)
                     SendMessageToUser(null, requestObject.UserId, StaticResources.RequestFailedError);
                 else
                     SendMessageToUser(null, requestObject.UserId, StaticResources.VinNotFoundError);

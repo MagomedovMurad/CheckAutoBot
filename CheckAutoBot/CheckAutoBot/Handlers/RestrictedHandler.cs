@@ -20,13 +20,12 @@ namespace CheckAutoBot.Handlers
 
         public ActionType SupportedActionType => ActionType.Restricted;
 
-        public Dictionary<string, byte[]> Get(RequestObject requestObject, IEnumerable<CaptchaCacheItem> cacheItems)
+        public Dictionary<string, byte[]> Get(RequestObject requestObject, CaptchaCacheItem cacheItem)
         {
             var auto = requestObject as Auto;
 
-            var restrictedCacheItem = cacheItems.First(x => x.ActionType == ActionType.Restricted);
-            var restrictedResult = _gibddManager.GetRestrictions(auto.Vin, restrictedCacheItem.CaptchaWord, restrictedCacheItem.SessionId);
-
+            //var restrictedCacheItem = cacheItems.First(x => x.ActionType == ActionType.Restricted);
+            var restrictedResult = _gibddManager.GetRestrictions(auto.Vin, cacheItem.CaptchaWord, cacheItem.SessionId);
             return GenerateResponse(restrictedResult);
         }
 

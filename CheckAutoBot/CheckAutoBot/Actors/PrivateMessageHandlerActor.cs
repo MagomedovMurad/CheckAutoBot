@@ -7,24 +7,28 @@ using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace CheckAutoBot.Actors
 {
-    public class PrivateMessageHandlerActor: ReceiveActor
+    public class PrivateMessageHandlerActor : ReceiveActor
     {
         private ActorSelector _actorSelection;
         private readonly ILogger _logger;
+        private DbQueryExecutor _queryExecutor;
 
         private Regex _regNumberRegex;
         private Regex _vinCodeRegex;
         private Regex _fioRegex;
 
-        public PrivateMessageHandlerActor(ILogger logger)
+        public PrivateMessageHandlerActor(DbQueryExecutor queryExecutor, ILogger logger)
         {
-            _actorSelection = new ActorSelector();
             _logger = logger;
+            _queryExecutor = queryExecutor;
+            _actorSelection = new ActorSelector();
 
             Receive<PrivateMessage>(x => MessageHandler(x));
         }
@@ -60,52 +64,56 @@ namespace CheckAutoBot.Actors
         {
             //Если сообщение НЕ содержит Payload. (Значит это данные об объекте(vin, гос.номер, ФИО))
             if (message.Payload == null)
-            {
-                var userInpuDataTypeWithValue = DefineInputDataType(message.Text);
-                //Если сообщение распознано (содержит vin, гос.номер, ФИО)
-                if (userInpuDataTypeWithValue.HasValue)
-                {
-                    var reqestObjectMessage = new UserInputDataMessage()
-                    {
-                        Data = userInpuDataTypeWithValue.Value.Value,
-                        Type = userInpuDataTypeWithValue.Value.Key,
-                        UserId = message.FromId,
-                        MessageId = message.Id,
-                        Date = DateTime.Now
-                    };
+                UserRequestObjectHandler(message);
 
-                    _actorSelection
-                        .ActorSelection(Context, ActorsPaths.InputDataHandlerActor.Path)
-                        .Tell(reqestObjectMessage, Self);
-                }
-                else
-                {
-                    var helpMsg = new HelpMessage() { UserId = message.FromId };
-                    _actorSelection
-                        .ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path)
-                        .Tell(helpMsg, Self);
-                }
-            }
             //Если сообщение содержит Payload
             else
+                UserRequestHandler(message);
+        }
+
+        private void UserRequestObjectHandler(PrivateMessage message)
+        {
+            var userInpuDataTypeWithValue = DefineInputDataType(message.Text);
+            if (!userInpuDataTypeWithValue.HasValue)
             {
-                var payloadEnvelop = JsonConvert.DeserializeObject<PayloadEnvelop>(message.Payload);
-                var payload = JsonConvert.DeserializeObject(payloadEnvelop.Payload, Type.GetType(payloadEnvelop.DotNetType));
+                //Если сообщение не распознано (не содержит vin, гос.номер, ФИО)
+                SendHelpMessage(message.FromId);
+                return;
+            }
 
-                if (payload is RequestPayload requestPayload)
+
+            var reqestObjectMessage = new UserInputDataMessage()
+            {
+                Data = userInpuDataTypeWithValue.Value.Value,
+                Type = userInpuDataTypeWithValue.Value.Key,
+                UserId = message.FromId,
+                MessageId = message.Id,
+                Date = DateTime.Now
+            };
+            _actorSelection
+                .ActorSelection(Context, ActorsPaths.InputDataHandlerActor.Path)
+                .Tell(reqestObjectMessage, Self);
+
+        }
+
+        private void UserRequestHandler(PrivateMessage message)
+        {
+            var payloadEnvelop = JsonConvert.DeserializeObject<PayloadEnvelop>(message.Payload);
+            var payload = JsonConvert.DeserializeObject(payloadEnvelop.Payload, Type.GetType(payloadEnvelop.DotNetType));
+
+            if (payload is RequestPayload requestPayload)
+            {
+                var msg = new UserRequestMessage()
                 {
-                    var msg = new UserRequestMessage()
-                    {
-                        MessageId = message.Id,
-                        UserId = message.FromId,
-                        RequestType = requestPayload.RequestType,
-                        Date = DateTime.Now
-                    };
+                    MessageId = message.Id,
+                    UserId = message.FromId,
+                    RequestType = requestPayload.RequestType,
+                    Date = DateTime.Now
+                };
 
-                    _actorSelection
-                        .ActorSelection(Context, ActorsPaths.UserRequestHandlerActor.Path)
-                        .Tell(msg, Self);
-                }
+                _actorSelection
+                    .ActorSelection(Context, ActorsPaths.UserRequestHandlerActor.Path)
+                    .Tell(msg, Self);
             }
         }
 
@@ -137,7 +145,7 @@ namespace CheckAutoBot.Actors
 
         private string ConvertToValidLicensePlate(string inputString)
         {
-            var upperCaseText= inputString.ToUpper();
+            var upperCaseText = inputString.ToUpper();
 
             foreach (var symbol in _latinToRussianSymbols)
             {
@@ -146,5 +154,24 @@ namespace CheckAutoBot.Actors
 
             return upperCaseText;
         }
+
+        private void SendHelpMessage(int userId)
+        {
+            var helpMessage = new SendToUserMessage() { UserId = userId, Text = StaticResources.HelpMessage };
+            _actorSelection
+                .ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path)
+                .Tell(helpMessage, Self);
+        }
+
+        //private async Task<bool> CheckUnpaidRequests(int userId)
+        //{
+        //    var lastRequestObject = await _queryExecutor.GetLastUserRequestObject(userId);
+        //    var executedRequestTypes = await _queryExecutor.GetExecutedRequestTypes(lastRequestObject.Id);
+
+        //    if (!executedRequestTypes.Any())
+        //        return true;
+
+
+        //}
     }
 }

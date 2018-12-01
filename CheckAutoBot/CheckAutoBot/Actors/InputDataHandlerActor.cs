@@ -69,7 +69,7 @@ namespace CheckAutoBot.Actors
 
                             var text = $"Выполняется проверка возможности получения информации по гос. номеру {message.Data}. Дождитесь ответа. Это займет не более 2-х минут";
                             var sendToUsermsg = new SendToUserMessage(null, message.UserId, text, null);
-                            _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(msg, Self);
+                            _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(sendToUsermsg, Self);
 
                             break;
                         }

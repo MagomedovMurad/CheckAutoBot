@@ -24,12 +24,12 @@ namespace CheckAutoBot.Handlers
 
         public ActionType SupportedActionType => ActionType.Pledge;
 
-        public Dictionary<string, byte[]> Get(RequestObject requestObject, IEnumerable<CaptchaCacheItem> cacheItems)
+        public Dictionary<string, byte[]> Get(RequestObject requestObject, CaptchaCacheItem cacheItem)
         {
             var auto = requestObject as Auto;
 
-            var pledgeCacheItem = cacheItems.First(x => x.ActionType == ActionType.Pledge);
-            var pledgeResponse = _fnpManager.GetPledges(auto.Vin, pledgeCacheItem.CaptchaWord, pledgeCacheItem.SessionId);
+            //var pledgeCacheItem = cacheItems.First(x => x.ActionType == ActionType.Pledge);
+            var pledgeResponse = _fnpManager.GetPledges(auto.Vin, cacheItem.CaptchaWord, cacheItem.SessionId);
 
             return GenerateResponse(pledgeResponse);
         }

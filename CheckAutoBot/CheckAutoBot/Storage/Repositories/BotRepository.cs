@@ -59,7 +59,7 @@ namespace CheckAutoBot.Storage
         public async Task<IEnumerable<RequestType>> GetExecutedRequestTypes(int requestObjectId)
         {
             return await _dbContext.Requests
-                                   .Where(x => x.RequestObjectId == requestObjectId && x.IsCompleted)
+                                   .Where(x => x.RequestObjectId == requestObjectId && x.IsCompleted == true)
                                    .Select(x => x.Type).ToListAsync();
         }
 

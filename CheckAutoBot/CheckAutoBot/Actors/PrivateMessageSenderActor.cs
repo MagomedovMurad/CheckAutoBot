@@ -24,7 +24,7 @@ namespace CheckAutoBot.Actors
         {
             _logger = logger;
 
-            Receive<HelpMessage>(x => SendHelpMessage(x));
+            //Receive<HelpMessage>(x => SendHelpMessage(x));
             Receive<SendToUserMessage>(x => SendToUserMessageHandler(x));
         }
 
@@ -47,17 +47,17 @@ namespace CheckAutoBot.Actors
             return $"photo{photo.OwnerId}_{photo.Id}";
         }
 
-        private void SendHelpMessage(HelpMessage msg)
-        {
-            string message = $"Не удалось распознать запрос!{Environment.NewLine}" +
-                $"Для получения информации введите гос.номер, вин код или ФИО.{Environment.NewLine}" +
-                $"Примеры:{Environment.NewLine}" +
-                $"XWB3K32EDCA235494{Environment.NewLine}" +
-                $"Р927УТ38{Environment.NewLine}" +
-                $"Иванов Иван Иванович{Environment.NewLine}";
+        //private void SendHelpMessage(HelpMessage msg)
+        //{
+        //    string message = $"Не удалось распознать запрос!{Environment.NewLine}" +
+        //        $"Для получения информации введите гос.номер, вин код или ФИО.{Environment.NewLine}" +
+        //        $"Примеры:{Environment.NewLine}" +
+        //        $"XWB3K32EDCA235494{Environment.NewLine}" +
+        //        $"Р927УТ38{Environment.NewLine}" +
+        //        $"Иванов Иван Иванович{Environment.NewLine}";
 
-            SendMessage(msg.UserId, message);
-        }
+        //    SendMessage(msg.UserId, message);
+        //}
 
         private void SendMessage(int userId, string text, Keyboard keyboard = null, string attachments = null)
         {

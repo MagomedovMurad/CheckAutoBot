@@ -14,6 +14,6 @@ namespace CheckAutoBot.Contracts
 
         PreGetResult PreGet();
 
-        Dictionary<string, byte[]> Get(RequestObject auto, IEnumerable<CaptchaCacheItem> cacheItems);
+        Dictionary<string, byte[]> Get(RequestObject auto, CaptchaCacheItem cacheItem);
     }
 }

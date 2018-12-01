@@ -20,13 +20,12 @@ namespace CheckAutoBot.Handlers
 
         public ActionType SupportedActionType => ActionType.Wanted;
 
-        public Dictionary<string, byte[]> Get(RequestObject requestObject, IEnumerable<CaptchaCacheItem> cacheItems)
+        public Dictionary<string, byte[]> Get(RequestObject requestObject, CaptchaCacheItem cacheItem)
         {
             var auto = requestObject as Auto;
 
-            var wantedCacheItem = cacheItems.First(x => x.ActionType == ActionType.Wanted);
-            var wantedResponse = _gibddManager.GetWanted(auto.Vin, wantedCacheItem.CaptchaWord, wantedCacheItem.SessionId);
-
+            //var wantedCacheItem = cacheItems.First(x => x.ActionType == ActionType.Wanted);
+            var wantedResponse = _gibddManager.GetWanted(auto.Vin, cacheItem.CaptchaWord, cacheItem.SessionId);
             return GenerateResponse(wantedResponse);
 
         }

@@ -21,12 +21,12 @@ namespace CheckAutoBot.Handlers
         {
         }
 
-        public Dictionary<string, byte[]> Get(RequestObject requestObject, IEnumerable<CaptchaCacheItem> cacheItems)
+        public Dictionary<string, byte[]> Get(RequestObject requestObject, CaptchaCacheItem cacheItem)
         {
             var auto = requestObject as Auto;
 
-            var dtpCacheItem = cacheItems.First(x => x.ActionType == ActionType.Dtp);
-            var dtpResult = _gibddManager.GetDtp(auto.Vin, dtpCacheItem.CaptchaWord, dtpCacheItem.SessionId);
+            //var dtpCacheItem = cacheItems.First(x => x.ActionType == ActionType.Dtp);
+            var dtpResult = _gibddManager.GetDtp(auto.Vin, cacheItem.CaptchaWord, cacheItem.SessionId);
 
             return GenerateResponse(dtpResult);
         }

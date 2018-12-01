@@ -9,7 +9,7 @@ namespace CheckAutoBot.Messages
     {
         public int RequestId { get; set; }
 
-        public ActionType CurrentActionType { get; set; }
+        public ActionType ActionType { get; set; }
 
     }
 }

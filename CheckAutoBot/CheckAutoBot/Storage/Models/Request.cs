@@ -14,7 +14,7 @@ namespace CheckAutoBot.Storage
 
         public virtual RequestObject RequestObject { get; set; }
 
-        public bool IsCompleted { get; set; }
+        public bool? IsCompleted { get; set; }
              
     }
 }

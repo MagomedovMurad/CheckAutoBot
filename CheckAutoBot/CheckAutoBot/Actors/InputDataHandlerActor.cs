@@ -1,4 +1,5 @@
 ﻿using Akka.Actor;
+using CheckAutoBot.Api;
 using CheckAutoBot.Messages;
 using CheckAutoBot.Storage;
 using CheckAutoBot.Utils;
@@ -6,6 +7,7 @@ using CheckAutoBot.Vk.Api.MessagesModels;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -32,6 +34,9 @@ namespace CheckAutoBot.Actors
         {
             try
             {
+                if (!await Test(message.UserId))
+                    return true;
+
                 RequestObject data;
 
                 switch (message.Type)
@@ -68,8 +73,7 @@ namespace CheckAutoBot.Actors
                             _actorSelector.ActorSelection(Context, ActorsPaths.LicensePlateHandlerActor.Path).Tell(msg, Self);
 
                             var text = $"Выполняется проверка возможности получения информации по гос. номеру {message.Data}. Дождитесь ответа. Это займет не более 2-х минут";
-                            var sendToUsermsg = new SendToUserMessage(null, message.UserId, text, null);
-                            _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(sendToUsermsg, Self);
+                            SendMessageToUser(null, message.UserId, text);
 
                             break;
                         }
@@ -115,5 +119,44 @@ namespace CheckAutoBot.Actors
             var requestTypes = await _queryExecutor.GetExecutedRequestTypes(requestObject.Id).ConfigureAwait(false);
             return _keyboardBuilder.CreateKeyboard(requestTypes, requestObject.GetType());
         }
+
+        private async Task<bool> Test(int userId)
+        {
+            var lastRequestObject = await _queryExecutor.GetLastUserRequestObject(userId);
+            if (lastRequestObject == null)
+                return true;
+            var existRequestsInProcess = await _queryExecutor.ExistRequestsInProcess(lastRequestObject.Id);
+            if (existRequestsInProcess)
+            {
+                var text = "Дождитесь завершения выполнения запроса";
+                SendMessageToUser(null, userId, text);
+                return false;
+            }
+
+            var succesfullComletedRequests = await _queryExecutor.GetExecutedRequestTypes(lastRequestObject.Id);
+
+            if (succesfullComletedRequests.Any() && !lastRequestObject.IsPaid)
+            {
+                var auto = lastRequestObject as Auto;
+                var data = auto.LicensePlate != null ? $"гос. номеру {auto.LicensePlate}" : $"VIN коду {auto.LicensePlate}";
+                var paylink = YandexMoney.GenerateQuickpayUrl(auto.LicensePlate, "49", auto.Id.ToString());
+                var text = $"Оплатите предыдущий запрос по {data}. {Environment.NewLine}" +
+                           $"Для оплаты перейдите по ссылке:{Environment.NewLine}" +
+                           $"{paylink}{Environment.NewLine}" +
+                           $"Или выберите доступное действие.";
+                var keyboard = _keyboardBuilder.CreateKeyboard(succesfullComletedRequests, typeof(Auto));
+                SendMessageToUser(keyboard, userId, text);
+                return false;
+            }
+
+            return true;
+        }
+
+        private void SendMessageToUser(Keyboard keyboard, int userId, string text)
+        {
+            var msg = new SendToUserMessage(keyboard, userId, text, null);
+            _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(msg, Self);
+        }
+
     }
 }

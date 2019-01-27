@@ -209,7 +209,8 @@ namespace CheckAutoBot.Actors
             var handler = _handlers.FirstOrDefault(x => x.SupportedActionType == currentCaptchaItem.ActionType);
             var data = handler.Get(request.RequestObject, requestCaptchaItem);
 
-            await _queryExecutor.MarkRequestCompleted(currentCaptchaItem.Id);
+            //await _queryExecutor.MarkRequestCompleted(currentCaptchaItem.Id);
+            await _queryExecutor.ChangeRequestStatus(currentCaptchaItem.Id, true);
 
             if (data == null)           //Если нет данных для отправки пользователю
                 return;

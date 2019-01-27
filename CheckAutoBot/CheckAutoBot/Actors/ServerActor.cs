@@ -58,7 +58,6 @@ namespace CheckAutoBot.Actors
                 }
                 else if (request.HttpMethod == "POST" && request.RawUrl == "/bot/captcha/lp")
                 {
-                    _logger.Debug($"Received from Rucaptcha to {request.Url}");
                     var requestData = GetStreamData(request.InputStream, request.ContentEncoding);
                     RucaptchaMessagesHandler2(requestData);
 

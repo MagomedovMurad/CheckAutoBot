@@ -163,15 +163,6 @@ namespace CheckAutoBot.Actors
                 .Tell(helpMessage, Self);
         }
 
-        //private async Task<bool> CheckUnpaidRequests(int userId)
-        //{
-        //    var lastRequestObject = await _queryExecutor.GetLastUserRequestObject(userId);
-        //    var executedRequestTypes = await _queryExecutor.GetExecutedRequestTypes(lastRequestObject.Id);
-
-        //    if (!executedRequestTypes.Any())
-        //        return true;
-
-
-        //}
+        
     }
 }

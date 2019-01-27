@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CheckAutoBot.Storage
 {
-    public class BotRepository: IBotRepository
+    public class BotRepository : IBotRepository
     {
         private readonly BotDbContext _dbContext;
 
@@ -70,11 +70,17 @@ namespace CheckAutoBot.Storage
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task MarkRequestCompleted(int requestId)
+        public async Task ChangeRequestStatus(int requestId, bool? state)
         {
             var request = _dbContext.Requests.FirstOrDefault(x => x.Id == requestId);
-            request.IsCompleted = true;
+            request.IsCompleted = state;
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<bool> ExistRequestsInProcess(int requestObjectId)
+        {
+            return await _dbContext.Requests
+                       .AnyAsync(x => x.RequestObjectId == requestObjectId && x.IsCompleted == null);
         }
 
     }

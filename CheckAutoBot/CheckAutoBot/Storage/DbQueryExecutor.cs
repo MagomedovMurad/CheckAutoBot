@@ -139,23 +139,19 @@ namespace CheckAutoBot.Storage
             }
         }
 
-        /// <summary>
-        /// Отметить запрос выполненным
-        /// </summary>
-        /// <param name="requestId"></param>
-        /// <returns></returns>
-        public async Task MarkRequestCompleted(int requestId)
+
+        public async Task ChangeRequestStatus(int requestId, bool? state)
         {
             try
             {
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
-                    await rep.MarkRequestCompleted(requestId).ConfigureAwait(false);
+                    await rep.ChangeRequestStatus(requestId, state).ConfigureAwait(false);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                _logger.Error(ex, $"Ошибка в БД при установке IsCompleted = true для запроса с идентификатором {requestId}");
+                _logger.Error(ex, $"Ошибка в БД при изменении статуса запроса с идентификатором {requestId}");
             }
         }
 
@@ -177,6 +173,48 @@ namespace CheckAutoBot.Storage
             {
                 _logger.Error(ex, $"Ошибка в БД при получении типов выполненных запросов для RequestObject с id: {requestObjectId}");
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Проверить наличие выполняемых запросов
+        /// </summary>
+        /// <param name="requestObjectId"></param>
+        /// <returns></returns>
+        public async Task<bool> ExistRequestsInProcess(int requestObjectId)
+        {
+            try
+            {
+                using (var rep = _repositoryFactory.CreateBotRepository())
+                {
+                    return await rep.ExistRequestsInProcess(requestObjectId).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Ошибка в БД при получении типов выполненных запросов для RequestObject с id: {requestObjectId}");
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Проверить наличие неоплаченных запросов
+        /// </summary>
+        /// <param name="requestObjectId"></param>
+        /// <returns></returns>
+        public async Task<bool> Exist(int requestObjectId)
+        {
+            try
+            {
+                using (var rep = _repositoryFactory.CreateBotRepository())
+                {
+                    return await rep.ExistRequestsInProcess(requestObjectId).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Ошибка в БД при получении типов выполненных запросов для RequestObject с id: {requestObjectId}");
+                return true;
             }
         }
     }

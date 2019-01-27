@@ -22,6 +22,11 @@ namespace CheckAutoBot.Storage
         public int MessageId { get; set; }
 
         /// <summary>
+        /// Значение показывающее оплачен ли заказ
+        /// </summary>
+        public bool IsPaid { get; set; }
+
+        /// <summary>
         /// Дата добавления
         /// </summary>
         public DateTime Date { get; set; }

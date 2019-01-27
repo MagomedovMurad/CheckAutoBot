@@ -21,7 +21,9 @@ namespace CheckAutoBot.Storage
 
         Task UpdateVinCode(int requestObjectId, string vin);
 
-        Task MarkRequestCompleted(int requestId);
+        Task ChangeRequestStatus(int requestId, bool? state);
+
+        Task<bool> ExistRequestsInProcess(int requestObjectId);
 
     }
 }

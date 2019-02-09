@@ -13,11 +13,7 @@ namespace CheckAutoBot.Managers
     {
         private readonly Gibdd _gibdd;
 
-        private readonly string _invalidCaptchaError = "Цифры с картинки введены неверно";
-        private readonly string _captchaTimeOutError = "Прошло слишком много времени с момента загрузки картинки, или Ваш брузер не поддеживает cookie";
-        private readonly string _genericError = "Generic error:Cannot save soap";
-        private readonly string _emptyResponseError = "Server returned empty response";
-        private readonly string _engineeringWorks = "soap:Server:Подсистема сейчас недоступна. Ведутся технические работы.";
+        private readonly string _invalidCaptchaError = "Проверка с помощью Google reCaptcha v3 не была пройдена, повторите попытку.";
 
         public GibddManager()
         {
@@ -27,34 +23,29 @@ namespace CheckAutoBot.Managers
         public HistoryResult GetHistory(string vin, string captcha, string sessionId)
         {
             var response = _gibdd.GetHistory(vin, captcha, sessionId);
+
+            if(response == null)
+                throw new InvalidOperationException("History response is null");
+
             if (response.Status == (int)HttpStatusCode.OK)
                 return response.RequestResult;
 
-            else if (response.Status == (int)HttpStatusCode.NotFound)
+            else if (response?.Status == (int)HttpStatusCode.NotFound)
                 return null;
 
-            else if (response.Status == (int)HttpStatusCode.Created)
-            {
-                if (response.Message.Equals(_invalidCaptchaError))
-                    throw new InvalidCaptchaException(captcha);
-                else if (response.Message.Equals(_captchaTimeOutError))
-                    throw new InvalidOperationException(_captchaTimeOutError);
-            }
+            if (response.Message.Equals(_invalidCaptchaError))
+                throw new InvalidCaptchaException(captcha);
 
-            else if (response.Status == (int)HttpStatusCode.ServiceUnavailable)
-                throw new InvalidOperationException();
-            else if (response.Status == 0)
-                throw new InvalidOperationException(_emptyResponseError);
-            else if (response?.Message == _genericError)
-                throw new InvalidOperationException(_genericError);
-            else if (response?.Message == _engineeringWorks)
-                throw new InvalidOperationException(_engineeringWorks);
-            throw new Exception(response.Message);
+            throw new InvalidOperationException(response?.Message);
         }
 
         public DtpResult GetDtp(string vin, string captcha, string sessionId)
         {
             var response = _gibdd.GetDtp(vin, captcha, sessionId);
+
+            if(response == null)
+                throw new InvalidOperationException("Dtp response is null");
+
             if (response.Status == (int)HttpStatusCode.OK)
             {
                 if (response.RequestResult.Accidents.Any())
@@ -62,28 +53,23 @@ namespace CheckAutoBot.Managers
                 else
                     return null;
             }
-            else if (response.Status == (int)HttpStatusCode.Created)
-            {
-                if (response.Message.Equals(_invalidCaptchaError))
-                    throw new InvalidCaptchaException(captcha);
-                else if (response.Message.Equals(_captchaTimeOutError))
-                    throw new InvalidOperationException(_captchaTimeOutError);
-            }
-            else if (response.Status == (int)HttpStatusCode.ServiceUnavailable)
-                throw new InvalidOperationException("ServiceUnavailable");
-            else if (response.Status == 0)
-                throw new InvalidOperationException(_emptyResponseError);
-            else if (response?.Message == _genericError)
-                throw new InvalidOperationException(_genericError);
-            else if (response?.Message == _engineeringWorks)
-                throw new InvalidOperationException(_engineeringWorks);
 
-            throw new Exception(response.Message);
+            if(response?.Message?.Equals(_invalidCaptchaError) == true)
+                throw new InvalidCaptchaException(captcha);
+
+            throw new InvalidOperationException(response?.Message);
         }
 
         public WantedResult GetWanted(string vin, string captcha, string sessionId)
         {
             var response = _gibdd.GetWanted(vin, captcha, sessionId);
+
+            if (response == null)
+                throw new InvalidOperationException("Wanted response is null");
+
+            if (response.RequestResult.Wanteds.Any())
+                return response.RequestResult;
+
             if (response.Status == (int)HttpStatusCode.OK)
             {
                 if (response.RequestResult.Wanteds.Any())
@@ -91,57 +77,27 @@ namespace CheckAutoBot.Managers
                 else
                     return null;
             }
-            else if (response.Status == (int)HttpStatusCode.Created)
-            {
-                if (response.Message.Equals(_invalidCaptchaError))
-                    throw new InvalidCaptchaException(captcha);
-                else if (response.Message.Equals(_captchaTimeOutError))
-                    throw new InvalidOperationException(_captchaTimeOutError);
-            }
 
-            else if (response.Status == (int)HttpStatusCode.ServiceUnavailable)
-                throw new InvalidOperationException();
+            if (response.Message.Equals(_invalidCaptchaError))
+                throw new InvalidCaptchaException(captcha);
 
-            else if (response.Status == 0)
-                throw new InvalidOperationException(_emptyResponseError);
-            else if (response?.Message == _genericError)
-                throw new InvalidOperationException(_genericError);
-            else if (response?.Message == _engineeringWorks)
-                throw new InvalidOperationException(_engineeringWorks);
-
-            throw new Exception(response.Message);
+            throw new InvalidOperationException(response.Message);
         }
 
         public RestrictedResult GetRestrictions(string vin, string captcha, string sessionId)
         {
             var response = _gibdd.GetRestriction(vin, captcha, sessionId);
-            if (response.Status == (int)HttpStatusCode.OK)
-            {
-                if (response.RequestResult.Restricteds.Any())
-                    return response.RequestResult;
-                else
-                    return null;
-            }
-            else if (response.Status == (int)HttpStatusCode.Created)
-            {
-                if (response.Message.Equals(_invalidCaptchaError))
-                    throw new InvalidCaptchaException(captcha);
-                else if (response.Message.Equals(_captchaTimeOutError))
-                    throw new InvalidOperationException(_captchaTimeOutError);
-            }
 
-            else if (response.Status == (int)HttpStatusCode.ServiceUnavailable)
-                throw new InvalidOperationException();
-            else if (response.Status == 0)
-                throw new InvalidOperationException(_emptyResponseError);
+            if (response == null)
+                throw new InvalidOperationException("Restrictions response is null");
 
-            else if (response?.Message == _genericError)
-                throw new InvalidOperationException(_genericError);
-            else if (response?.Message == _engineeringWorks)
-                throw new InvalidOperationException(_engineeringWorks);
+            if (response.RequestResult.Restricteds.Any())
+                return response.RequestResult;
 
+            if (response.Message.Equals(_invalidCaptchaError) == true)
+                throw new InvalidCaptchaException(captcha);
 
-            throw new Exception(response.Message);
+            throw new InvalidOperationException(response.Message);
         }
 
         public byte[] GetIncidentImage(string[] damagePoints)

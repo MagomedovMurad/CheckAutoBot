@@ -20,6 +20,9 @@ namespace CheckAutoBot.Managers
         {
             var response = _rsa.GetPolicy(captcha, date, lp, vin, bodyNumber, chassisNumber);
 
+            if (response == null)
+                throw new InvalidOperationException("Policy response is null");
+
             if (!response.ValidCaptcha)
                 throw new InvalidCaptchaException(captcha);
 
@@ -29,12 +32,16 @@ namespace CheckAutoBot.Managers
             else if (response.ErrorId == 7002 || response.ErrorId == 7005)
                 return null;
 
-            throw new Exception(response.ErrorMessage);
+            throw new InvalidOperationException(response.ErrorMessage);
         }
 
         public VechicleResponse GetVechicleInfo(string serial, string number, DateTime date, string captcha)
         {
             var response = _rsa.GetVechicleInfo(serial, number, date, captcha);
+
+            if (response == null)
+                throw new InvalidOperationException("Vechicle info response is null");
+
             if (!response.ValidCaptcha)
                 throw new InvalidCaptchaException(captcha);
 

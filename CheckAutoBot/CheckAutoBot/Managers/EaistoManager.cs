@@ -11,8 +11,8 @@ namespace CheckAutoBot.Managers
         private readonly Eaisto _eaisto;
 
         private const string _invalidCaptchaError = "Пожалуйста введите код, указанный на картинке";
-        private const string _serverErrorWithSorry = "Извините. Во время поиска произошла ошибка. Попробуйте, пожалуйста, позже.";
-        private const string _serverError = "Во время поиска произошел сбой. Пожалуйста повторите попытку позже.";
+        //private const string _serverErrorWithSorry = "Извините. Во время поиска произошла ошибка. Попробуйте, пожалуйста, позже.";
+        //private const string _serverError = "Во время поиска произошел сбой. Пожалуйста повторите попытку позже.";
         private const string _notFoundError = "По Вашему запросу ничего не найдено";
 
         public EaistoManager()
@@ -31,16 +31,17 @@ namespace CheckAutoBot.Managers
         {
             var diagnosticCard = _eaisto.GetDiagnosticCard(captcha, sessionId, vin, licensePlate, bodyNumber, chassis, eaisto);
 
-            if (string.IsNullOrWhiteSpace(diagnosticCard.ErrorMessage))
+            if (string.IsNullOrWhiteSpace(diagnosticCard.ErrorMessage) &&
+                !string.IsNullOrWhiteSpace(diagnosticCard.Vin))
                 return diagnosticCard;
+
             else if (diagnosticCard.ErrorMessage == _notFoundError)
                 return null;
+
             else if (diagnosticCard.ErrorMessage == _invalidCaptchaError)
                 throw new InvalidCaptchaException(captcha);
-            else if (diagnosticCard.ErrorMessage == _serverErrorWithSorry || diagnosticCard.ErrorMessage == _serverError)
-                throw new InvalidOperationException(diagnosticCard.ErrorMessage);
 
-            throw new Exception(diagnosticCard.ErrorMessage);
+            throw new InvalidOperationException(diagnosticCard.ErrorMessage);
         }
 
         public CaptchaResult GetCaptcha()

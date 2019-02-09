@@ -17,11 +17,11 @@ namespace CheckAutoBot.Managers
 
 
         public DiagnosticCard GetDiagnosticCard(string captcha,
-                                      string sessionId, 
+                                      string sessionId,
                                       string vin = null,
                                       string licensePlate = null,
-                                      string bodyNumber = null, 
-                                      string chassis = null, 
+                                      string bodyNumber = null,
+                                      string chassis = null,
                                       string eaisto = null)
         {
             var response = ExecuteRequest(captcha, sessionId, vin, licensePlate, bodyNumber, chassis, eaisto);
@@ -115,65 +115,60 @@ namespace CheckAutoBot.Managers
 
         private DiagnosticCard ParseHtml(string html)
         {
-            string errorMessage = null;
-
-            HtmlDocument doc = new HtmlDocument();
-            doc.LoadHtml(html);
-
-            HtmlNode errorNode = doc.DocumentNode.SelectSingleNode(".//div[@id='card_alert']");
-
-            if (!string.IsNullOrWhiteSpace(errorNode.InnerText))
-                errorMessage = errorNode.InnerText;
-
-            //HtmlNodeCollection diagnosticCardCells = doc.DocumentNode.SelectNodes(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr");
-
-            HtmlNodeCollection dcTables = doc.DocumentNode.SelectNodes(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody");
-
-            if (dcTables == null)
-                return new DiagnosticCard();
-
-
-            var lastDcTable = dcTables[0];
-
-            var lines = (lastDcTable.ChildNodes as IEnumerable<HtmlNode>).Where(x => x.Name == "tr").ToList();
-
-            var dictionary = lines.Select(l =>
+            try
             {
-                var keyAndValue = l.ChildNodes.Where(chn => chn.Name == "td").ToList();
-                var key = keyAndValue[0].InnerText;
-                var value = keyAndValue[1].InnerText;
+                string errorMessage = null;
 
-                return new KeyValuePair<string, string>(key, value);
-            }).ToDictionary(k => k.Key, v => v.Value);
+                HtmlDocument doc = new HtmlDocument();
+                doc.LoadHtml(html);
 
-            //HtmlNode brandNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[1]/td[2]");
-            //HtmlNode modelNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[2]/td[2]");
-            //HtmlNode dateFromeNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[3]/td[2]");
-            //HtmlNode dateToNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[4]/td[2]");
-            //HtmlNode vinNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[5]/td[2]");
-            //HtmlNode licensePlateNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[6]/td[2]");
-            //HtmlNode eaistoNumberNode = doc.DocumentNode.SelectSingleNode(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody/tr[7]/td[2]");
+                HtmlNode errorNode = doc.DocumentNode.SelectSingleNode(".//div[@id='card_alert']");
 
-            dictionary.TryGetValue("Марка:", out string brand);
-            dictionary.TryGetValue("Модель:", out string model);
-            dictionary.TryGetValue("Дата с:", out string dateFrom);
-            dictionary.TryGetValue("Дата до:", out string dateTo);
-            dictionary.TryGetValue("VIN:", out string vin);
-            dictionary.TryGetValue("Регистрационный номер:", out string licensePlate);
-            dictionary.TryGetValue("Номер ЕАИСТО:", out string eaistoNumber);
+                if (!string.IsNullOrWhiteSpace(errorNode?.InnerText))
+                    errorMessage = errorNode.InnerText;
 
+                HtmlNodeCollection dcTables = doc.DocumentNode.SelectNodes(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody");
 
-            return new DiagnosticCard()
+                if (dcTables != null)
+                    return new DiagnosticCard() { ErrorMessage = errorMessage };
+
+                var lastDcTable = dcTables[0];
+
+                var lines = (lastDcTable.ChildNodes as IEnumerable<HtmlNode>).Where(x => x.Name == "tr").ToList();
+
+                var dictionary = lines.Select(l =>
+                {
+                    var keyAndValue = l.ChildNodes.Where(chn => chn.Name == "td").ToList();
+                    var key = keyAndValue[0].InnerText;
+                    var value = keyAndValue[1].InnerText;
+
+                    return new KeyValuePair<string, string>(key, value);
+                }).ToDictionary(k => k.Key, v => v.Value);
+
+                dictionary.TryGetValue("Марка:", out string brand);
+                dictionary.TryGetValue("Модель:", out string model);
+                dictionary.TryGetValue("Дата с:", out string dateFrom);
+                dictionary.TryGetValue("Дата до:", out string dateTo);
+                dictionary.TryGetValue("VIN:", out string vin);
+                dictionary.TryGetValue("Регистрационный номер:", out string licensePlate);
+                dictionary.TryGetValue("Номер ЕАИСТО:", out string eaistoNumber);
+
+                return new DiagnosticCard()
+                {
+                    Brand = brand,
+                    Model = model,
+                    Vin = vin,
+                    LicensePlate = licensePlate,
+                    EaistoNumber = eaistoNumber,
+                    DateFrom = dateFrom,
+                    DateTo = dateTo,
+                    ErrorMessage = errorMessage
+                };
+            }
+            catch (Exception ex)
             {
-                Brand = brand,
-                Model = model,
-                Vin = vin,
-                LicensePlate = licensePlate,
-                EaistoNumber = eaistoNumber,
-                DateFrom = dateFrom,
-                DateTo = dateTo,
-                ErrorMessage = errorMessage
-            };
+                throw new Exception("Eaisto HTML parsing exception", ex);
+            }
         }
     }
 }

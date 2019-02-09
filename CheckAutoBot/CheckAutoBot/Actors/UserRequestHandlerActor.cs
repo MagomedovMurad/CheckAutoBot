@@ -1,4 +1,5 @@
 ﻿using Akka.Actor;
+using CheckAutoBot.Api;
 using CheckAutoBot.Contracts;
 using CheckAutoBot.Enums;
 using CheckAutoBot.Exceptions;
@@ -103,13 +104,14 @@ namespace CheckAutoBot.Actors
                 _logger.Warn(ex, $"Ошибка при попытке выполнения запроса каптчи. {Environment.NewLine}" +
                                 $"Идентификатор запроса: {message.RequestId}. {Environment.NewLine}");
 
-                TryExecuteRequestAgain(message.RequestId, message.ActionType);
+                await TryExecuteRequestAgain(message.RequestId, message.ActionType);
             }
             catch (Exception ex)
             {
                 //Очистка кэша
                 RemoveCaptchaCacheItems(message.RequestId);
                 RemoveRepeatedRequestsCacheItems(message.RequestId);
+                await _queryExecutor.ChangeRequestStatus(message.RequestId, false);
 
                 //Отправка пользователю сообщения о непредвиденной ошибке
                 SendErrorMessage(message.RequestId, StaticResources.UnexpectedError);
@@ -184,12 +186,13 @@ namespace CheckAutoBot.Actors
                     _logger.Error(ex, $"Идентификатор запроса: {captchaItem.Id}. Тип действия: {captchaItem.ActionType}");
 
                 _logger.Warn(ex);
-                TryExecuteRequestAgain(captchaItem.Id, captchaItem.ActionType);
+                await TryExecuteRequestAgain(captchaItem.Id, captchaItem.ActionType);
             }
             catch (Exception ex)
             {
                 RemoveCaptchaCacheItems(requestId);
                 RemoveRepeatedRequestsCacheItems(requestId);
+                await _queryExecutor.ChangeRequestStatus(requestId, false);
 
                 _logger.Error(ex, "Непредвиденная ошибка");
                 SendErrorMessage(captchaItem.Id, StaticResources.UnexpectedError);
@@ -216,10 +219,22 @@ namespace CheckAutoBot.Actors
                 return;
 
             var keyboard = await CreateKeyBoard(request.RequestObject).ConfigureAwait(false);
-
             foreach (var item in data)
             {
-                var msg = new SendToUserMessage(keyboard, request.RequestObject.UserId, item.Key, item.Value);
+                var msg = new SendToUserMessage(request.RequestObject.UserId, item.Key, item.Value, keyboard);
+                _senderActor.Tell(msg, Self);
+            }
+
+            if (keyboard.Buttons.Count() == 0)
+            {
+                var auto = request.RequestObject as Auto;
+                var autoData = auto.LicensePlate != null ? auto.LicensePlate : auto.Vin;
+                var dataWithType = auto.LicensePlate != null ? $"гос. номеру {autoData}" : $"VIN коду {autoData}";
+                var paylink = YandexMoney.GenerateQuickpayUrl(autoData, auto.Id.ToString());
+                var text = $"Оплатите запрос по {dataWithType} для выполнения следующего.{Environment.NewLine}" +
+                           $"Для оплаты перейдите по ссылке:{Environment.NewLine} " +
+                           $"{paylink}";
+                var msg = new SendToUserMessage(request.RequestObject.UserId, text);
                 _senderActor.Tell(msg, Self);
             }
         }
@@ -227,7 +242,7 @@ namespace CheckAutoBot.Actors
         #endregion Handlers
 
         #region Helpers
-        private void TryExecuteRequestAgain(int requestId, ActionType currentActionType)
+        private async Task TryExecuteRequestAgain(int requestId, ActionType currentActionType)
         {
             _logger.Debug($"Попытка повторного выполнения запроса с ID: {requestId}. CurrentActionType: {currentActionType}");
 
@@ -258,6 +273,7 @@ namespace CheckAutoBot.Actors
 
                 _repeatedRequestsCache.Remove(item);
                 _logger.Debug($"В кэше повторных запросов {_repeatedRequestsCache.Count} элементов");
+                await _queryExecutor.ChangeRequestStatus(requestId, false);
                 return;
             }
 
@@ -318,13 +334,13 @@ namespace CheckAutoBot.Actors
 
             var keyboard = await CreateKeyBoard(request.RequestObject);
 
-            var message = new SendToUserMessage(keyboard, request.RequestObject.UserId, text, null);
+            var message = new SendToUserMessage(request.RequestObject.UserId, text, keyboard: keyboard);
             _senderActor.Tell(message, Self);
         }
 
         private void SendErrorMe(string text)
         {
-            var message = new SendToUserMessage(null, StaticResources.MyUserId, text, null);
+            var message = new SendToUserMessage(StaticResources.MyUserId, text);
             _senderActor.Tell(message, Self);
         }
 

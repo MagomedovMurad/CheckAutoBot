@@ -197,6 +197,22 @@ namespace CheckAutoBot.Storage
             }
         }
 
+        public async Task<bool> MarkAsPaid(int requestObjectId)
+        {
+            try
+            {
+                using (var rep = _repositoryFactory.CreateBotRepository())
+                {
+                    return await rep.MarkAsPaid(requestObjectId).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Ошибка в БД при сохранении данных об оплате. RequestObject id: {requestObjectId}");
+                return true;
+            }
+        }
+
         /// <summary>
         /// Проверить наличие неоплаченных запросов
         /// </summary>

@@ -14,11 +14,18 @@ namespace CheckAutoBot.Handlers
 {
     public class HistoryHandler : GibddHandler, IHandler
     {
+
         public ActionType SupportedActionType => ActionType.History;
 
         public HistoryHandler(GibddManager gibddManager, 
                               RucaptchaManager rucaptchaManager) : base(gibddManager, rucaptchaManager)
         {
+        }
+
+        public PreGetResult PreGet()
+        {
+            var captchaRequest = _rucaptchaManager.SendReCaptcha3(Gibdd.dataSiteKey, Gibdd.url, Rucaptcha.RequestPingbackUrl, 3, "check_auto_history");
+            return new PreGetResult(captchaRequest.Id, null);
         }
 
         public Dictionary<string, byte[]> Get(RequestObject requestObject, CaptchaCacheItem cacheItem)

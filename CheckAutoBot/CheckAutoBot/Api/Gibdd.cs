@@ -15,6 +15,9 @@ namespace CheckAutoBot.Managers
 {
     public class Gibdd
     {
+        public const string url = "https://xn--b1afk4ade.xn--90adear.xn--p1ai/proxy/check/auto/history";
+        public const string dataSiteKey = "6Lc66nwUAAAAANZvAnT-OK4f4D_xkdzw5MLtAYFL";
+
         public GibddResponse<HistoryResult> GetHistory(string vin, string captcha, string jsessionId)
         {
             var response = ExecuteRequest(vin, captcha, jsessionId, "history", "history");
@@ -58,10 +61,10 @@ namespace CheckAutoBot.Managers
             return $"http://check.gibdd.ru/proxy/check/auto/images/cache/{strDamagePoints}.png";
         }
 
-        private string ExecuteRequest(string vin, string captcha, string jsessionId, string path, string checkType)
+        private string ExecuteRequest(string vin, string reCaptchaToken, string jsessionId, string path, string checkType)
         {
             string url = $"https://xn--b1afk4ade.xn--90adear.xn--p1ai/proxy/check/auto/{path}";
-            string stringData = $"vin={vin}&captchaWord={captcha}&checkType={checkType}";
+            string stringData = $"vin={vin}&captchaWord={null}&checkType={checkType}&reCaptchaToken={reCaptchaToken}";
             byte[] data = Encoding.ASCII.GetBytes(stringData);
 
             #region Headers
@@ -100,6 +103,13 @@ namespace CheckAutoBot.Managers
             return json;
          }
 
+        public CaptchaResult GetCaptchaNew()
+        {
+            
+
+            return null;
+        }
+
         public CaptchaResult GetCaptcha()
         {
             var date = DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
@@ -129,7 +139,6 @@ namespace CheckAutoBot.Managers
 
             return new CaptchaResult() { SessionId = jsessionId, ImageBase64 = base64 };
         }
-
     }
 
     public class CaptchaResult

@@ -19,18 +19,17 @@ namespace CheckAutoBot.Actors
 
         private const string accessToken = "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2";
 
-
         public PrivateMessageSenderActor(ILogger logger)
         {
             _logger = logger;
 
             //Receive<HelpMessage>(x => SendHelpMessage(x));
-            Receive<SendToUserMessage>(x => SendToUserMessageHandler(x));
+            ReceiveAsync<SendToUserMessage>(x => SendToUserMessageHandler(x));
         }
 
-        private async void SendToUserMessageHandler(SendToUserMessage message)
+        private async Task SendToUserMessageHandler(SendToUserMessage message)
         {
-            IEnumerable<RequestType> requestTypes = new List<RequestType>();
+            var requestTypes = new List<RequestType>();
 
             var attachments = PhotoToAttachment(message.UserId, message.Photo);
             SendMessage(message.UserId, message.Text, message.Keyboard, attachments);

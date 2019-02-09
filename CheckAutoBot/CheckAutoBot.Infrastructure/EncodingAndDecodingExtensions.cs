@@ -11,6 +11,10 @@ namespace CheckAutoBot.Infrastructure
         {
             return WebUtility.UrlEncode(data);
         }
-        
+
+        public static string UrlDecode(this string data)
+        {
+            return WebUtility.UrlDecode(data);
+        }
     }
 }

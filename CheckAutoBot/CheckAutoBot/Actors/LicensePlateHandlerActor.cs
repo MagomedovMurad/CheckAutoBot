@@ -167,7 +167,7 @@ namespace CheckAutoBot.Actors
             bool? dcGetFailed = null;
             var item = _repeatedRequestsCache.FirstOrDefault(x => x.Id == requestObjectId && x.ActionType == actionType);
 
-            if (item?.AttemptsCount >= 1)
+            if (item?.AttemptsCount >= 2)
             {
                 RemoveRepeatedRequestsCacheItems(requestObjectId);
                 if (actionType == ActionType.DiagnosticCard)
@@ -277,13 +277,13 @@ namespace CheckAutoBot.Actors
 
         private async Task<Keyboard> CreateKeyBoard(RequestObject requestObject)
         {
-            var requestTypes = await _queryExecutor.GetExecutedRequestTypes(requestObject.Id).ConfigureAwait(false);
-            return _keyboardBuilder.CreateKeyboard(requestTypes, requestObject.GetType());
+            //var requestTypes = await _queryExecutor.GetExecutedRequestTypes(requestObject.Id).ConfigureAwait(false);
+            return _keyboardBuilder.CreateKeyboard(new List<RequestType>(), requestObject.GetType());
         }
 
         private void SendMessageToUser(Keyboard keyboard, int userId, string text)
         {
-            var msg = new SendToUserMessage(keyboard, userId, text, null); 
+            var msg = new SendToUserMessage(userId, text, keyboard: keyboard); 
             _messageSenderActor.Tell(msg, Self);
         }
     }

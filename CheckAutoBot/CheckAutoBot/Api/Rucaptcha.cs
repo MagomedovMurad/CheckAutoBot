@@ -15,13 +15,39 @@ namespace CheckAutoBot
 {
     public class Rucaptcha
     {
-        private const string apiKey = "a57666df25735811384576da1a50bf36";
+        private const string apiKey = "3c0d64865e369b523fae883355223479";
         public const string LpPingbackUrl = "http://95.31.241.19/bot/captcha/lp";
         public const string RequestPingbackUrl = "http://95.31.241.19/bot/captcha/request";
 
         public CaptchaRequest SendReCaptcha2(string dataSiteKey, string pageUrl, string pingback)
         {
-            var url = $"http://rucaptcha.com/in.php?key={apiKey}&method=userrecaptcha&googlekey={dataSiteKey}&pageurl={pageUrl}&pingback={pingback}&json=1";
+            var url = $"http://rucaptcha.com/in.php?" +
+                                    $"key={apiKey}" +
+                                    $"&method=userrecaptcha" +
+                                    $"&googlekey={dataSiteKey}" +
+                                    $"&pageurl={pageUrl}" +
+                                    $"&pingback={pingback}" +
+                                    $"&json=1";
+
+            var json = ExecuteRequest(url, "POST");
+            var data = JsonConvert.DeserializeObject<CaptchaRequest>(json);
+
+            return data;
+        }
+
+        public CaptchaRequest SendReCaptcha3(string dataSiteKey, string pageUrl, string pingback, int version, string action)
+        {
+            var url = $"http://rucaptcha.com/in.php?" +
+                                        $"key={apiKey}" +
+                                        $"&method=userrecaptcha" +
+                                        $"&googlekey={dataSiteKey}" +
+                                        $"&pageurl={pageUrl}" +
+                                        $"&pingback={pingback}" +
+                                        $"&version=v{version}" +
+                                        $"&action={action}" +
+                                        $"&min_score=0.1" +
+                                        $"&json=1";
+
             var json = ExecuteRequest(url, "POST");
             var data = JsonConvert.DeserializeObject<CaptchaRequest>(json);
 

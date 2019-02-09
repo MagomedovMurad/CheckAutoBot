@@ -18,11 +18,10 @@ namespace CheckAutoBot
                                            $" Попробуйте выполнить поиск по vin коду";
 
         public static string HelpMessage = $"Не удалось распознать запрос!{Environment.NewLine}" +
-                $"Для получения информации введите гос.номер, вин код или ФИО.{Environment.NewLine}" +
+                $"Для получения информации введите гос.номер или VIN код.{Environment.NewLine}" +
                 $"Примеры:{Environment.NewLine}" +
                 $"XWB3K32EDCA235494{Environment.NewLine}" +
-                $"Р927УТ38{Environment.NewLine}" +
-                $"Иванов Иван Иванович{Environment.NewLine}";
+                $"Р927УТ38{Environment.NewLine}";
 
         public static int MyUserId = 192287910;
 

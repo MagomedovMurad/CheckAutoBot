@@ -17,6 +17,7 @@ namespace CheckAutoBot.Managers
         private readonly string _captchaTimeOutError = "Прошло слишком много времени с момента загрузки картинки, или Ваш брузер не поддеживает cookie";
         private readonly string _genericError = "Generic error:Cannot save soap";
         private readonly string _emptyResponseError = "Server returned empty response";
+        private readonly string _engineeringWorks = "soap:Server:Подсистема сейчас недоступна. Ведутся технические работы.";
 
         public GibddManager()
         {
@@ -46,6 +47,8 @@ namespace CheckAutoBot.Managers
                 throw new InvalidOperationException(_emptyResponseError);
             else if (response?.Message == _genericError)
                 throw new InvalidOperationException(_genericError);
+            else if (response?.Message == _engineeringWorks)
+                throw new InvalidOperationException(_engineeringWorks);
             throw new Exception(response.Message);
         }
 
@@ -72,6 +75,8 @@ namespace CheckAutoBot.Managers
                 throw new InvalidOperationException(_emptyResponseError);
             else if (response?.Message == _genericError)
                 throw new InvalidOperationException(_genericError);
+            else if (response?.Message == _engineeringWorks)
+                throw new InvalidOperationException(_engineeringWorks);
 
             throw new Exception(response.Message);
         }
@@ -101,6 +106,8 @@ namespace CheckAutoBot.Managers
                 throw new InvalidOperationException(_emptyResponseError);
             else if (response?.Message == _genericError)
                 throw new InvalidOperationException(_genericError);
+            else if (response?.Message == _engineeringWorks)
+                throw new InvalidOperationException(_engineeringWorks);
 
             throw new Exception(response.Message);
         }
@@ -130,6 +137,8 @@ namespace CheckAutoBot.Managers
 
             else if (response?.Message == _genericError)
                 throw new InvalidOperationException(_genericError);
+            else if (response?.Message == _engineeringWorks)
+                throw new InvalidOperationException(_engineeringWorks);
 
 
             throw new Exception(response.Message);

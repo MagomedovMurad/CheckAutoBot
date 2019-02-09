@@ -12,7 +12,7 @@ namespace CheckAutoBot.Messages
 
         }
 
-        public SendToUserMessage(Keyboard keyboard, int userId, string text, byte[] photo)
+        public SendToUserMessage(int userId, string text, byte[] photo = null, Keyboard keyboard = null)
         {
             Keyboard = keyboard;
             UserId = userId;

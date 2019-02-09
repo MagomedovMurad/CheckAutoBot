@@ -52,7 +52,12 @@ namespace CheckAutoBot.Actors
                                 MessageId = message.MessageId
                             };
 
-                            
+                            await _queryExecutor.AddRequestObject(data);
+                            //Send buttons to user
+                            var keyboard = await CreateKeyBoard(data);
+                            var text = $"VIN код: {(data as Auto).Vin}. {Environment.NewLine}" +
+                                       $"Выберите доступное действие.";
+                            SendMessageToUser(keyboard, data.UserId, text);
                         }
                         break;
                     #endregion VIN
@@ -116,8 +121,8 @@ namespace CheckAutoBot.Actors
 
         private async Task<Keyboard> CreateKeyBoard(RequestObject requestObject)
         {
-            var requestTypes = await _queryExecutor.GetExecutedRequestTypes(requestObject.Id).ConfigureAwait(false);
-            return _keyboardBuilder.CreateKeyboard(requestTypes, requestObject.GetType());
+            //var requestTypes = await _queryExecutor.GetExecutedRequestTypes(requestObject.Id).ConfigureAwait(false);
+            return _keyboardBuilder.CreateKeyboard(new List<RequestType>(), requestObject.GetType());
         }
 
         private async Task<bool> Test(int userId)
@@ -138,12 +143,15 @@ namespace CheckAutoBot.Actors
             if (succesfullComletedRequests.Any() && !lastRequestObject.IsPaid)
             {
                 var auto = lastRequestObject as Auto;
-                var data = auto.LicensePlate != null ? $"гос. номеру {auto.LicensePlate}" : $"VIN коду {auto.LicensePlate}";
-                var paylink = YandexMoney.GenerateQuickpayUrl(auto.LicensePlate, "49", auto.Id.ToString());
+                var autoData = auto.LicensePlate != null ? auto.LicensePlate : auto.Vin;
+
+                var data = auto.LicensePlate != null ? $"гос. номеру {autoData}" : $"VIN коду {autoData}";
+                var paylink = YandexMoney.GenerateQuickpayUrl(autoData, auto.Id.ToString());
                 var text = $"Оплатите предыдущий запрос по {data}. {Environment.NewLine}" +
                            $"Для оплаты перейдите по ссылке:{Environment.NewLine}" +
-                           $"{paylink}{Environment.NewLine}" +
-                           $"Или выберите доступное действие.";
+                           $"{paylink}{Environment.NewLine}";
+                if(succesfullComletedRequests.Count() < 5)
+                    text = text + $"Или выберите доступное действие для {autoData}.";
                 var keyboard = _keyboardBuilder.CreateKeyboard(succesfullComletedRequests, typeof(Auto));
                 SendMessageToUser(keyboard, userId, text);
                 return false;
@@ -154,7 +162,7 @@ namespace CheckAutoBot.Actors
 
         private void SendMessageToUser(Keyboard keyboard, int userId, string text)
         {
-            var msg = new SendToUserMessage(keyboard, userId, text, null);
+            var msg = new SendToUserMessage(userId, text, keyboard: keyboard);
             _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(msg, Self);
         }
 

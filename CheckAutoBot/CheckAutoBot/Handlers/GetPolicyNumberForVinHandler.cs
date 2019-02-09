@@ -43,7 +43,6 @@ namespace CheckAutoBot.Handlers
         {
             var captchaRequestPN = _rucaptchaManager.SendReCaptcha2(Rsa.dataSiteKey, Rsa.policyUrl, Rucaptcha.LpPingbackUrl);
             return new PreGetResult(captchaRequestPN.Id, null);
-            
         }
     }
 }

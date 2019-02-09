@@ -83,5 +83,16 @@ namespace CheckAutoBot.Storage
                        .AnyAsync(x => x.RequestObjectId == requestObjectId && x.IsCompleted == null);
         }
 
+        public async Task<bool> MarkAsPaid(int requestObjectId)
+        {
+            var requestObject = _dbContext.RequestObjects.SingleOrDefault( x=> x.Id == requestObjectId);
+            if (requestObject == null)
+                return false;
+
+            requestObject.IsPaid = true;
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
     }
 }

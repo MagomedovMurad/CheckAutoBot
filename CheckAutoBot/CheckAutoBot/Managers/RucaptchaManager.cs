@@ -61,6 +61,21 @@ namespace CheckAutoBot.Managers
             return captchaRequest;
         }
 
+        public CaptchaRequest SendReCaptcha3(string dataSiteKey, string pageUrl, string pingback, int version, string action)
+        {
+            var captchaRequest = _rucaptcha.SendReCaptcha3(dataSiteKey, pageUrl, pingback, version, action);
+
+            if (!captchaRequest.State)
+            {
+                if (_inWarnings.Contains(captchaRequest.Id))
+                    throw new InvalidOperationException(captchaRequest.Id);
+                else
+                    throw new Exception(captchaRequest.Id);
+            }
+
+            return captchaRequest;
+        }
+
         /// <summary>
         /// Выбрасывает исключение, если value это текст ошибки
         /// </summary>

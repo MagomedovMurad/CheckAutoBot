@@ -20,6 +20,12 @@ namespace CheckAutoBot.Handlers
 
         public ActionType SupportedActionType => ActionType.Wanted;
 
+        public PreGetResult PreGet()
+        {
+            var captchaRequest = _rucaptchaManager.SendReCaptcha3(Gibdd.dataSiteKey, Gibdd.url, Rucaptcha.RequestPingbackUrl, 3, "check_auto_wanted");
+            return new PreGetResult(captchaRequest.Id, null);
+        }
+
         public Dictionary<string, byte[]> Get(RequestObject requestObject, CaptchaCacheItem cacheItem)
         {
             var auto = requestObject as Auto;

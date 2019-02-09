@@ -1,6 +1,9 @@
 ﻿using Akka.Actor;
+using CheckAutoBot.Api;
+using CheckAutoBot.Infrastructure;
 using CheckAutoBot.Messages;
 using CheckAutoBot.Vk.Api.MessagesModels;
+using CheckAutoBot.YandexMoneyModels;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
@@ -10,6 +13,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace CheckAutoBot.Actors
 {
@@ -35,6 +39,7 @@ namespace CheckAutoBot.Actors
         private async void Start()
         {
             _httpListener = new HttpListener();
+            _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/yandexmoney/");
             _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/captcha/request/");
             _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/captcha/lp/");
             _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/vk/");
@@ -53,25 +58,35 @@ namespace CheckAutoBot.Actors
                     var requestData = GetStreamData(request.InputStream, request.ContentEncoding);
                     RucaptchaMessagesHandler(requestData);
 
-                    context.Response.StatusCode = 200;
+                    context.Response.StatusCode = (int)HttpStatusCode.OK; //200
                     context.Response.Close();
                 }
                 else if (request.HttpMethod == "POST" && request.RawUrl == "/bot/captcha/lp")
                 {
                     var requestData = GetStreamData(request.InputStream, request.ContentEncoding);
-                    RucaptchaMessagesHandler2(requestData);
+                    RucaptchaMessagesForLPHandler(requestData);
 
-                    context.Response.StatusCode = 200;
+                    context.Response.StatusCode = (int)HttpStatusCode.OK; //200
                     context.Response.Close();
                 }
                 else if (request.HttpMethod == "POST" && request.RawUrl == "/bot/vk")
                 {
                     var requestData = GetStreamData(request.InputStream, request.ContentEncoding);
-                    context.Response.StatusCode = 200;
+                    context.Response.StatusCode = (int)HttpStatusCode.OK; //200
                     byte[] buffer = Encoding.UTF8.GetBytes("ok");
                     context.Response.Close(buffer, false);
 
                     VKMessagesHandler(requestData);
+                }
+                else if (request.HttpMethod == "POST" && request.RawUrl == "/bot/yandexmoney")
+                {
+                    var requestData = GetStreamData(request.InputStream, request.ContentEncoding);
+                    if(YandexMoneyRequestHandler(requestData))
+                        context.Response.StatusCode = (int)HttpStatusCode.OK; //200                                                         
+                    else
+                        context.Response.StatusCode = (int)HttpStatusCode.BadRequest; //400
+
+                    context.Response.Close();
                 }
                 else if (request.HttpMethod == "GET" && request.RawUrl == "/test")
                 {
@@ -80,7 +95,7 @@ namespace CheckAutoBot.Actors
                 }
                 else
                 {
-                    context.Response.StatusCode = 501;
+                    context.Response.StatusCode = (int)HttpStatusCode.NotImplemented; //501;
                     context.Response.Close();
                     _logger.Debug("Received from Unknow");
                 }
@@ -106,11 +121,24 @@ namespace CheckAutoBot.Actors
 
             //_logger.Debug($"RucaptchaMessagesHandler. Sending message to UserRequestHandlerActor. Message: CaprchaId={message.CaptchaId} Code={message.Value}");
         }
-        private void RucaptchaMessagesHandler2(string stringParams)
+        private void RucaptchaMessagesForLPHandler(string stringParams)
         {
             var message = RucaptchaParamsToCRM(stringParams);
             _actorSelector.ActorSelection(_context, ActorsPaths.LicensePlateHandlerActor.Path).Tell(message, _self);
         }
+
+        private bool YandexMoneyRequestHandler(string parameters)
+        {
+            var payment = YandexMoney.ConvertToPayment(parameters);
+            var isValid = payment.IsValid(YandexMoney.Secret);
+
+            var request = new PaymentRequest() { Payment = payment, IsValid = isValid};
+            _actorSelector.ActorSelection(_context, ActorsPaths.YandexMoneyRequestHandlerActor.Path).Tell(request, _self);
+
+            return isValid;
+        }
+
+       
 
         private CaptchaResponseMessage RucaptchaParamsToCRM(string stringParams)
         {

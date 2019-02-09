@@ -22,7 +22,7 @@ namespace CheckAutoBot.Actors
 
         private Regex _regNumberRegex;
         private Regex _vinCodeRegex;
-        private Regex _fioRegex;
+        //private Regex _fioRegex;
 
         public PrivateMessageHandlerActor(DbQueryExecutor queryExecutor, ILogger logger)
         {
@@ -53,11 +53,11 @@ namespace CheckAutoBot.Actors
         {
             var regNumberPattern = @"[ABEKMHOPCTYXabekmhopctyxАВЕКМНОРСТУХавекмнорстух][\d]{3}[ABEKMHOPCTYXabekmhopctyxАВЕКМНОРСТУХавекмнорстух]{2}[\d]{2,3}";
             var vinCodePattern = @"[0123456789ABCDEFGHJKLMNPRSTUVWXYZabcdefghjklmnprstuvwxyz]{17}";
-            var fioPattern = @"([\s]?[А-ЯЁа-яё\-]+[\s][А-ЯЁа-яё\-]+[\s][А-ЯЁа-яё\-]+[\s]?[А-ЯЁа-яё]+)";
+            //var fioPattern = @"([\s]?[А-ЯЁа-яё\-]+[\s][А-ЯЁа-яё\-]+[\s][А-ЯЁа-яё\-]+[\s]?[А-ЯЁа-яё]+)";
 
             _regNumberRegex = new Regex(regNumberPattern);
             _vinCodeRegex = new Regex(vinCodePattern);
-            _fioRegex = new Regex(fioPattern);
+            //_fioRegex = new Regex(fioPattern);
         }
 
         public void MessageHandler(PrivateMessage message)
@@ -130,9 +130,9 @@ namespace CheckAutoBot.Actors
             if (match.Success)
                 return new KeyValuePair<InputDataType, string>(InputDataType.Vin, match.Value);
 
-            match = _fioRegex.Match(inputStr);
-            if (match.Success)
-                return new KeyValuePair<InputDataType, string>(InputDataType.FullName, match.Value);
+           // match = _fioRegex.Match(inputStr);
+            //if (match.Success)
+            //    return new KeyValuePair<InputDataType, string>(InputDataType.FullName, match.Value);
 
             return null;
         }

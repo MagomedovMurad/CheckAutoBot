@@ -129,7 +129,7 @@ namespace CheckAutoBot.Managers
 
                 HtmlNodeCollection dcTables = doc.DocumentNode.SelectNodes(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody");
 
-                if (dcTables != null)
+                if (dcTables == null)
                     return new DiagnosticCard() { ErrorMessage = errorMessage };
 
                 var lastDcTable = dcTables[0];

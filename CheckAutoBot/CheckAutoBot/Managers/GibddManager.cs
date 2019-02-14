@@ -93,8 +93,10 @@ namespace CheckAutoBot.Managers
 
             if (response.RequestResult.Restricteds.Any())
                 return response.RequestResult;
+            else
+                return null;
 
-            if (response.Message.Equals(_invalidCaptchaError) == true)
+            if (response.Message?.Equals(_invalidCaptchaError) == true)
                 throw new InvalidCaptchaException(captcha);
 
             throw new InvalidOperationException(response.Message);

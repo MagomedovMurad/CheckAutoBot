@@ -6,9 +6,8 @@ namespace CheckAutoBot
 {
     public class StaticResources
     {
-        public static string RequestFailedError = $"При выполнении запроса произошла ошибка.{Environment.NewLine}" +
-                                                  $"Источник данных недоступен.{Environment.NewLine}" +
-                                                  $"Попробуйте выполнить запрос позднее";
+        public static string RequestFailedError = $"Извините, в данный момент источник данных недоступен.{Environment.NewLine}" +
+                                                  $"Пожалуйста, повторите Ваш запрос позднее.{Environment.NewLine}";
 
         public static string UnexpectedError = $"Извините, в процессе выполнения запроса произошла непредвиденная ошибка.{Environment.NewLine}" +
                                                $"Информация об ошибке передана разработчикам.{Environment.NewLine}" +

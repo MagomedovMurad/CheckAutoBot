@@ -48,10 +48,11 @@ namespace CheckAutoBot.Handlers
             }
             else
             {
-                foreach (var accident in result.Accidents)
+                for (int i = 0; i < result.Accidents?.Count; i++)
                 {
+                    var accident = result.Accidents.ElementAt(i);
                     byte[] incidentImage = null;
-                    var text = AccidentToMessageText(accident);
+                    var text = AccidentToMessageText(accident, i+1);
 
                     try
                     {
@@ -63,17 +64,36 @@ namespace CheckAutoBot.Handlers
                         var accidentImageUrl = _gibddManager.GetAccidentImageLink(accident.DamagePoints);
                         text += Environment.NewLine + Environment.NewLine + accidentImageUrl;
                     }
-                    
+
                     messages.Add(text, incidentImage);
                 }
+
+                //foreach (var accident in result.Accidents)
+                //{
+                //    byte[] incidentImage = null;
+                //    var text = AccidentToMessageText(accident);
+
+                //    try
+                //    {
+                //        if (accident.DamagePoints.Any())
+                //            incidentImage = _gibddManager.GetIncidentImage(accident.DamagePoints);
+                //    }
+                //    catch (WebException ex)
+                //    {
+                //        var accidentImageUrl = _gibddManager.GetAccidentImageLink(accident.DamagePoints);
+                //        text += Environment.NewLine + Environment.NewLine + accidentImageUrl;
+                //    }
+
+                //    messages.Add(text, incidentImage);
+                //}
             }
 
             return messages;
         }
 
-        private string AccidentToMessageText(Accident accident)
+        private string AccidentToMessageText(Accident accident, int number)
         {
-            return $"Информация о происшествии №{accident.AccidentNumber} {Environment.NewLine}" +
+            return $"{number}. Информация о происшествии №{accident.AccidentNumber} {Environment.NewLine}" +
                     $"Дата и время происшествия: {accident.AccidentDateTime} {Environment.NewLine}" +
                     $"Тип происшествия: {accident.AccidentType} {Environment.NewLine}" +
                     $"Регион происшествия: {accident.RegionName} {Environment.NewLine}" +

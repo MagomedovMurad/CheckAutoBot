@@ -47,9 +47,9 @@ namespace CheckAutoBot.Handlers
             }
             else
             {
-                foreach (var wanted in result.Wanteds)
+                for (int i = 0; i < result.Wanteds?.Count; i++)
                 {
-                    var text = WantedToMessageText(wanted);
+                    var text = WantedToMessageText(result.Wanteds[i], i+1);
                     messages.Add(text, null);
                 }
             }
@@ -57,9 +57,9 @@ namespace CheckAutoBot.Handlers
             return messages;
         }
 
-        private string WantedToMessageText(Wanted wanted)
+        private string WantedToMessageText(Wanted wanted, int number)
         {
-            return $"Информация о постановке в розыск{Environment.NewLine}" +
+            return $"{number}. Информация о постановке в розыск{Environment.NewLine}" +
                    $"Марка, модель: {wanted.VechicleModel}{Environment.NewLine}" +
                    $"Год выпуска: {wanted.VechicleYear}{Environment.NewLine}" +
                    $"Дата объявления в розыск: {wanted.Date}{Environment.NewLine}" +

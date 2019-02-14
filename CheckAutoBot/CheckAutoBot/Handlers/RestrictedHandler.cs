@@ -46,9 +46,9 @@ namespace CheckAutoBot.Handlers
             }
             else
             {
-                foreach (var restricted in result.Restricteds)
+                for (int i = 0; i < result.Restricteds?.Count; i++)
                 {
-                    var text = RestrictedToMessageText(restricted);
+                    var text = RestrictedToMessageText(result.Restricteds[i], i+1);
                     messages.Add(text, null);
                 }
             }
@@ -56,9 +56,9 @@ namespace CheckAutoBot.Handlers
             return messages;
         }
 
-        private string RestrictedToMessageText(Restricted restricted)
+        private string RestrictedToMessageText(Restricted restricted, int number)
         {
-            return $"Информация о наложении ограничения{Environment.NewLine}" +
+            return $"{number}. Информация о наложении ограничения{Environment.NewLine}" +
                    $"Марка, модель ТС: {restricted.TsModel}{Environment.NewLine}" +
                    $"Год выпуска ТС: {restricted.VechicleYear}{Environment.NewLine}" +
                    $"Дата наложения ограничения: {restricted.RestrictedDate}{Environment.NewLine}" +

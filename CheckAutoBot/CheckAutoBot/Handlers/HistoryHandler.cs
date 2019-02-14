@@ -51,30 +51,47 @@ namespace CheckAutoBot.Handlers
 
         private string HistoryToMessageText(HistoryResult history)
         {
-            var text = $"Марка, модель:  {history.Vehicle.Model}{Environment.NewLine}" +
-            $"Год выпуска: {history.Vehicle.Year}{Environment.NewLine}" +
-            $"VIN:  {history.Vehicle.Vin}{Environment.NewLine}" +
-            $"Кузов:  {history.Vehicle.BodyNumber}{Environment.NewLine}" +
-            $"Цвет: {history.Vehicle.Color}{Environment.NewLine}" +
-            $"Рабочий объем(см3):  {history.Vehicle.EngineVolume}{Environment.NewLine}" +
-            $"Мощность(кВт/л.с.):  {history.Vehicle.PowerKwt ?? "н.д."}/{history.Vehicle.PowerHp}{Environment.NewLine}" +
-            $"Тип:  {history.Vehicle.TypeName}{Environment.NewLine}" +
-            $"Категория: {history.Vehicle.Category}";
+            var periods = history.OwnershipPeriodsEnvelop?.OwnershipPeriods;
+            var text = $"Марка, модель:  {history.Vehicle?.Model}{Environment.NewLine}" +
+            $"Год выпуска: {history.Vehicle?.Year}{Environment.NewLine}" +
+            $"VIN:  {history.Vehicle?.Vin}{Environment.NewLine}" +
+            $"Кузов:  {history.Vehicle?.BodyNumber}{Environment.NewLine}" +
+            $"Цвет: {history.Vehicle?.Color}{Environment.NewLine}" +
+            $"Рабочий объем(см3):  {history.Vehicle?.EngineVolume}{Environment.NewLine}" +
+            $"Мощность(кВт/л.с.):  {history.Vehicle?.PowerKwt ?? "н.д."}/{history.Vehicle?.PowerHp}{Environment.NewLine}" +
+            $"Тип:  {history.Vehicle?.TypeName}{Environment.NewLine}" +
+            $"Категория: {history.Vehicle?.Category}{Environment.NewLine}" +
+            $"Количество владельцев: {periods?.Count}";
 
-            var periods = history.OwnershipPeriodsEnvelop.OwnershipPeriods;
-            foreach (var period in periods)
+
+            for (int i = 0; i < periods?.Count; i++)
             {
+                var period = periods.ElementAt(i);
                 var ownerType = period.OwnerType == OwnerType.Natural ? "Физическое лицо" : "Юридическое лицо";
                 var stringDateTo = period.To.ToString("dd.MM.yyyy");
                 var dateTo = stringDateTo == "01.01.0001" ? "настоящее время" : stringDateTo;
 
                 string ownerPeriod = $"{Environment.NewLine}" +
-                    $"{Environment.NewLine}{ownerType}{Environment.NewLine}" +
+                    $"{Environment.NewLine}{i+1}. {ownerType}{Environment.NewLine}" +
                                      $"c: {period.From.ToString("dd.MM.yyyy")}{Environment.NewLine}" +
                                      $"по: {dateTo}{Environment.NewLine}" +
                                      $"Последняя операция: {period.LastOperation}";
                 text += ownerPeriod;
             }
+
+            //foreach (var period in periods)
+            //{
+            //    var ownerType = period.OwnerType == OwnerType.Natural ? "Физическое лицо" : "Юридическое лицо";
+            //    var stringDateTo = period.To.ToString("dd.MM.yyyy");
+            //    var dateTo = stringDateTo == "01.01.0001" ? "настоящее время" : stringDateTo;
+
+            //    string ownerPeriod = $"{Environment.NewLine}" +
+            //        $"{Environment.NewLine}{ownerType}{Environment.NewLine}" +
+            //                         $"c: {period.From.ToString("dd.MM.yyyy")}{Environment.NewLine}" +
+            //                         $"по: {dateTo}{Environment.NewLine}" +
+            //                         $"Последняя операция: {period.LastOperation}";
+            //    text += ownerPeriod;
+            //}
 
             return text;
 

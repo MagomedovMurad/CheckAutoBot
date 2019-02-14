@@ -119,8 +119,9 @@ namespace CheckAutoBot.Actors
 
         private KeyValuePair<InputDataType, string>? DefineInputDataType(string inputStr)
         {
+            var stringWithOutWiteSpace = inputStr.Replace(" ", "");
             Match match;
-            match = _regNumberRegex.Match(inputStr);
+            match = _regNumberRegex.Match(stringWithOutWiteSpace);
             if (match.Success)
             {
                 var value = ConvertToValidLicensePlate(match.Value);

@@ -13,6 +13,6 @@ namespace CheckAutoBot.Utils
 
         public int AttemptsCount { get; set; }
 
-        public bool? DcGetFailed { get; set; }
+        public bool? EaistoNotAvailable { get; set; }
     }
 }

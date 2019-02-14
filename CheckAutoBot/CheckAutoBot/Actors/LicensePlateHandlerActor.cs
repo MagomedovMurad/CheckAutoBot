@@ -164,7 +164,7 @@ namespace CheckAutoBot.Actors
         private async void TryExecuteRequestAgain(int requestObjectId, ActionType actionType, IEnumerable<ActionType> actionTypes)
         {
             RemoveCaptchaCacheItems(requestObjectId);
-            bool? dcGetFailed = null;
+            bool? eaistoNotAvailable = null;
             var item = _repeatedRequestsCache.FirstOrDefault(x => x.Id == requestObjectId && x.ActionType == actionType);
 
             if (item?.AttemptsCount >= 2)
@@ -174,7 +174,7 @@ namespace CheckAutoBot.Actors
                 {
                     StartPreGet(requestObjectId, ActionType.PolicyNumber);
                     StartPreGet(requestObjectId, ActionType.OsagoVechicle);
-                    dcGetFailed = true;
+                    eaistoNotAvailable = true;
                 }
                 else
                 {
@@ -189,7 +189,7 @@ namespace CheckAutoBot.Actors
             }
 
             foreach (var type in actionTypes)
-                AddOrUpdateCacheItem(requestObjectId, type, dcGetFailed);
+                AddOrUpdateCacheItem(requestObjectId, type, eaistoNotAvailable);
         }
 
         private async Task ExecuteGet(CaptchaCacheItem cacheItem, IEnumerable<CaptchaCacheItem> requestCaptchaItems)
@@ -227,14 +227,14 @@ namespace CheckAutoBot.Actors
             else
             {
 
-                if (item?.DcGetFailed == true)
+                if (item?.EaistoNotAvailable == true)
                     SendMessageToUser(null, requestObject.UserId, StaticResources.RequestFailedError);
                 else
                     SendMessageToUser(null, requestObject.UserId, StaticResources.VinNotFoundError);
             }
         }
 
-        private void AddOrUpdateCacheItem(int requestObjectId, ActionType actionType, bool? dcGetFailed)
+        private void AddOrUpdateCacheItem(int requestObjectId, ActionType actionType, bool? eaistoNotAvailable)
         {
             var item = _repeatedRequestsCache.FirstOrDefault(x => x.Id == requestObjectId && x.ActionType == actionType);
             if (item == null)
@@ -243,7 +243,8 @@ namespace CheckAutoBot.Actors
                 {
                     Id = requestObjectId,
                     ActionType = actionType,
-                    DcGetFailed = dcGetFailed
+                    EaistoNotAvailable = eaistoNotAvailable,
+                    AttemptsCount = 1
                 });
             }
             else

@@ -8,17 +8,23 @@ using CheckAutoBot.Enums;
 using CheckAutoBot.GbddModels;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Storage;
+using CheckAutoBot.Svg;
+using CheckAutoBot.SVG;
 using CheckAutoBot.Utils;
 
 namespace CheckAutoBot.Handlers
 {
     public class DtpHandler : GibddHandler, IHandler
     {
+        private readonly SvgBuilder _svgBuilder;
+
+
         public ActionType SupportedActionType => ActionType.Dtp;
 
         public DtpHandler(GibddManager gibddManager,
                           RucaptchaManager rucaptchaManager) : base(gibddManager, rucaptchaManager)
         {
+            _svgBuilder = new SvgBuilder();
         }
 
         public PreGetResult PreGet()
@@ -57,7 +63,7 @@ namespace CheckAutoBot.Handlers
                     try
                     {
                         if (accident.DamagePoints.Any())
-                            incidentImage = _gibddManager.GetIncidentImage(accident.DamagePoints);
+                            incidentImage = GetAccidentImage(accident.DamagePoints);//_gibddManager.GetIncidentImage(accident.DamagePoints);
                     }
                     catch (WebException ex)
                     {
@@ -67,25 +73,6 @@ namespace CheckAutoBot.Handlers
 
                     messages.Add(text, incidentImage);
                 }
-
-                //foreach (var accident in result.Accidents)
-                //{
-                //    byte[] incidentImage = null;
-                //    var text = AccidentToMessageText(accident);
-
-                //    try
-                //    {
-                //        if (accident.DamagePoints.Any())
-                //            incidentImage = _gibddManager.GetIncidentImage(accident.DamagePoints);
-                //    }
-                //    catch (WebException ex)
-                //    {
-                //        var accidentImageUrl = _gibddManager.GetAccidentImageLink(accident.DamagePoints);
-                //        text += Environment.NewLine + Environment.NewLine + accidentImageUrl;
-                //    }
-
-                //    messages.Add(text, incidentImage);
-                //}
             }
 
             return messages;
@@ -102,13 +89,47 @@ namespace CheckAutoBot.Handlers
                     $"Год выпуска ТС: {accident.VehicleYear}";
         }
 
-        private byte[] GetAccidentImage(Accident accident)
+        public byte[] GetAccidentImage(string[] damagePoints)
         {
-            byte[] incidentImage = null;
-            if (accident.DamagePoints.Any())
-                incidentImage = _gibddManager.GetIncidentImage(accident.DamagePoints);
-            return incidentImage;
+            DamagePointsType type = DamagePointsType.New;
+
+            if (damagePoints[0].Length == 2)
+                type = DamagePointsType.Old;
+            else if (damagePoints[0].Length == 3)
+                type = DamagePointsType.New;
+
+            var pointsForImage = new List<string>();
+
+            foreach (var point in damagePoints)
+            {
+                string substr = point;
+                if (type == DamagePointsType.New)
+                    substr = point.Substring(1, 2);
+                int.TryParse(substr, out int pointInt);
+                if (ForImages(type, pointInt))
+                    pointsForImage.Add(point);
+            }
+
+            var svg = _svgBuilder.GenerateDamagePointsSvg(pointsForImage.ToArray(), type);
+            return SvgToPngConverter.Convert(svg);
         }
+
+        private bool ForImages(DamagePointsType type, int pointId)
+        {
+            if (type == DamagePointsType.New)
+                return Enumerable.Range(10, 11).Contains(pointId);
+            else
+                return Enumerable.Range(1, 7).Contains(pointId);
+        }
+
+
+        //private byte[] GetAccidentImage(Accident accident)
+        //{
+        //    byte[] incidentImage = null;
+        //    if (accident.DamagePoints.Any())
+        //        incidentImage = _gibddManager.GetIncidentImage(accident.DamagePoints);
+        //    return incidentImage;
+        //}
 
 
 

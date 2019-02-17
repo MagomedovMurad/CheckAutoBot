@@ -45,4 +45,13 @@
     <ProjectReference Include="..\CheckAutoBot.Vk.Api\CheckAutoBot.Vk.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="SvgTemplates\AutoTemplateV2Svg.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SvgTemplates\AutoTemplateV1Svg.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

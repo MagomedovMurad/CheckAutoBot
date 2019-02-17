@@ -1,6 +1,7 @@
 ﻿using CheckAutoBot.Contracts;
 using CheckAutoBot.Exceptions;
 using CheckAutoBot.GbddModels;
+using CheckAutoBot.Svg;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,6 @@ namespace CheckAutoBot.Managers
     public class GibddManager
     {
         private readonly Gibdd _gibdd;
-
         private readonly string _invalidCaptchaError = "Проверка с помощью Google reCaptcha v3 не была пройдена, повторите попытку.";
 
         public GibddManager()
@@ -91,13 +91,13 @@ namespace CheckAutoBot.Managers
             if (response == null)
                 throw new InvalidOperationException("Restrictions response is null");
 
-            if (response.RequestResult.Restricteds.Any())
-                return response.RequestResult;
-            else
-                return null;
-
             if (response.Message?.Equals(_invalidCaptchaError) == true)
                 throw new InvalidCaptchaException(captcha);
+
+            if (response.RequestResult?.Restricteds?.Any() == true)
+                return response.RequestResult;
+            else if(response.RequestResult?.Restricteds?.Any() == false)
+                return null;
 
             throw new InvalidOperationException(response.Message);
         }
@@ -107,6 +107,7 @@ namespace CheckAutoBot.Managers
             return _gibdd.GetIncidentImage(damagePoints);
         }
 
+        
         public string GetAccidentImageLink(string[] damagePoints)
         {
             return _gibdd.GetAccidentImageLink(damagePoints);

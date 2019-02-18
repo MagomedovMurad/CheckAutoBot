@@ -1,6 +1,7 @@
 ﻿using Akka.Actor;
 using CheckAutoBot.Messages;
 using CheckAutoBot.Storage;
+using CheckAutoBot.Vk.Api.GroupModels;
 using CheckAutoBot.Vk.Api.MessagesModels;
 using Newtonsoft.Json;
 using NLog;
@@ -33,6 +34,14 @@ namespace CheckAutoBot.Actors
                     var privateMessage = message.JsonObject.ToObject<PrivateMessage>();
                     PrivateMessageHandler(privateMessage); 
                     break;
+                case Enums.VkEventType.AllowMessage:
+                    var messagesAllowedEvent = message.JsonObject.ToObject<MessagesAllowedEvent>();
+                    MessageAllowEventHandler(messagesAllowedEvent);
+                    break;
+                case Enums.VkEventType.DenyMessage:
+                    var userId = message.JsonObject.ToObject<int>();
+                    MessageDenyEventHandler(userId);
+                    break;
                 default:
                     _logger.Error($"Не найден обработчик для типа \"{message.EventType}\"");
                     break;
@@ -44,5 +53,17 @@ namespace CheckAutoBot.Actors
             _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageHandlerActor.Path).Tell(message, Self);
             _logger.Debug($"PrivateMessageHandler. Send message to PrivateMessageHandlerActor. PrivateMessage.Text={message.Text}");
         }
+
+        private void MessageAllowEventHandler(MessagesAllowedEvent messagesAllowedEvent)
+        {
+
+        }
+
+        private void MessageDenyEventHandler(int userId)
+        {
+
+        }
+
+
     }
 }

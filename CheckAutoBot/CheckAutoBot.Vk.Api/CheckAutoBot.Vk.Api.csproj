@@ -12,4 +12,8 @@
     <ProjectReference Include="..\CheckAutoBot.Infrastructure\CheckAutoBot.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="GroupModels\" />
+  </ItemGroup>
+
 </Project>

@@ -3,6 +3,7 @@ using CheckAutoBot.Api;
 using CheckAutoBot.Messages;
 using CheckAutoBot.Storage;
 using CheckAutoBot.Utils;
+using CheckAutoBot.Vk.Api;
 using CheckAutoBot.Vk.Api.MessagesModels;
 using NLog;
 using System;
@@ -34,6 +35,14 @@ namespace CheckAutoBot.Actors
         {
             try
             {
+                var isSubscriber = Groups.IsMember("checkautobot", message.UserId.ToString(), "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2");
+                if (!isSubscriber)
+                {
+                    var text = $"Только подписчики сообщества могут выполнять запросы";
+                    SendMessageToUser(null, message.UserId, text);
+                    return true;
+                }
+
                 if (!await Test(message.UserId))
                     return true;
 

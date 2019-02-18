@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CheckAutoBot.Vk.Api.PhotosModels
+namespace CheckAutoBot.Vk.Api
 {
     public class ResponseEnvelope<T>
     {

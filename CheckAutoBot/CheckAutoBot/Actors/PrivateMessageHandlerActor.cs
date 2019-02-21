@@ -33,7 +33,7 @@ namespace CheckAutoBot.Actors
             Receive<PrivateMessage>(x => MessageHandler(x));
         }
 
-        private Dictionary<string, string> _latinToRussianSymbols = new Dictionary<string, string>()
+        private Dictionary<string, string> _latinToCyrillicSymbols = new Dictionary<string, string>()
         {
             { "A", "А"},
             { "B", "В" },
@@ -124,12 +124,15 @@ namespace CheckAutoBot.Actors
             match = _regNumberRegex.Match(stringWithOutWiteSpace);
             if (match.Success)
             {
-                var value = ConvertToValidLicensePlate(match.Value);
+                var value = ReplaceLatinToCyrillic(match.Value);
                 return new KeyValuePair<InputDataType, string>(InputDataType.LicensePlate, value);
             }
             match = _vinCodeRegex.Match(inputStr);
             if (match.Success)
+            {
+                var value = ReplaceCyrillicToLatin(match.Value);
                 return new KeyValuePair<InputDataType, string>(InputDataType.Vin, match.Value);
+            }
 
            // match = _fioRegex.Match(inputStr);
             //if (match.Success)
@@ -144,17 +147,40 @@ namespace CheckAutoBot.Actors
             return payload.RequestType;
         }
 
-        private string ConvertToValidLicensePlate(string inputString)
+        private string ReplaceCyrillicToLatin(string inputString)
         {
             var upperCaseText = inputString.ToUpper();
 
-            foreach (var symbol in _latinToRussianSymbols)
+            foreach (var symbol in _latinToCyrillicSymbols)
+            {
+                upperCaseText = upperCaseText.Replace(symbol.Value, symbol.Key);
+            }
+
+            return upperCaseText;
+        }
+
+        private string ReplaceLatinToCyrillic(string inputString)
+        {
+            var upperCaseText = inputString.ToUpper();
+
+            foreach (var symbol in _latinToCyrillicSymbols)
             {
                 upperCaseText = upperCaseText.Replace(symbol.Key, symbol.Value);
             }
 
             return upperCaseText;
         }
+        //private string ConvertToValidLicensePlate(string inputString)
+        //{
+        //    var upperCaseText = inputString.ToUpper();
+
+        //    foreach (var symbol in _latinToCyrillicSymbols)
+        //    {
+        //        upperCaseText = upperCaseText.Replace(symbol.Key, symbol.Value);
+        //    }
+
+        //    return upperCaseText;
+        //}
 
         private void SendHelpMessage(int userId)
         {

@@ -33,7 +33,7 @@ namespace CheckAutoBot.Managers
             else if (response?.Status == (int)HttpStatusCode.NotFound)
                 return null;
 
-            if (response.Message.Equals(_invalidCaptchaError))
+            if (response.Message?.Equals(_invalidCaptchaError) == true)
                 throw new InvalidCaptchaException(captcha);
 
             throw new InvalidOperationException(response?.Message);

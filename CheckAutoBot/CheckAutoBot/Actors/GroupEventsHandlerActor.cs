@@ -54,14 +54,16 @@ namespace CheckAutoBot.Actors
             _logger.Debug($"PrivateMessageHandler. Send message to PrivateMessageHandlerActor. PrivateMessage.Text={message.Text}");
         }
 
-        private void MessageAllowEventHandler(MessagesAllowedEvent messagesAllowedEvent)
+        private void MessageAllowEventHandler(MessagesAllowedEvent @event)
         {
-
+            var message = new MessagesAllowedEventMessage(@event.UserId);
+            _actorSelector.ActorSelection(Context, ActorsPaths.SubscribersActionsHandlerActor.Path).Tell(message, Self);
+            _logger.Debug($"Пользователь с идентификатором {@event.UserId} разрешил отправку личных сообщений");
         }
 
         private void MessageDenyEventHandler(int userId)
         {
-
+            _logger.Warn($"Пользователь с идентификатором {userId} запретил отправку личных сообщений");
         }
 
 

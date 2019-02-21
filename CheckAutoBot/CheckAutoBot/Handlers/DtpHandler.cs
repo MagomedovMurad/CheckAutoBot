@@ -119,7 +119,7 @@ namespace CheckAutoBot.Handlers
             if (type == DamagePointsType.New)
                 return Enumerable.Range(10, 11).Contains(pointId);
             else
-                return Enumerable.Range(1, 7).Contains(pointId);
+                return Enumerable.Range(1, 9).Contains(pointId);
         }
 
 

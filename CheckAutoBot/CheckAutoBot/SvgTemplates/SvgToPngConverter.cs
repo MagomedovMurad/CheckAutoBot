@@ -24,7 +24,7 @@ namespace CheckAutoBot.SVG
             Process inkscape = Process.Start(inkscapeProcessInfo);
             inkscape.WaitForExit(5000);
 
-            if (File.Exists(pngFilePath))
+            if (!File.Exists(pngFilePath))
                 return null;
 
             return File.ReadAllBytes(pngFilePath);

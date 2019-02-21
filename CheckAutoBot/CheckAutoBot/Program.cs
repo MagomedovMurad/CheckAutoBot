@@ -44,6 +44,7 @@ namespace CheckAutoBot
             var inputDataHandlerActor = actorSystem.ActorOf(Props.Create(() => new InputDataHandlerActor(logger, queryExecutor)), ActorsPaths.InputDataHandlerActor.Name);
             var licensePlateHandlerActor = actorSystem.ActorOf(Props.Create(() => new LicensePlateHandlerActor(queryExecutor, logger)), ActorsPaths.LicensePlateHandlerActor.Name);
             var yandexMoneyRequestHandlerActor = actorSystem.ActorOf(Props.Create(() => new YandexMoneyRequestHandlerActor(queryExecutor)), ActorsPaths.YandexMoneyRequestHandlerActor.Name);
+            var subscribersActionsHandlerActor = actorSystem.ActorOf(Props.Create(() => new SubscribersActionsHandlerActor()), ActorsPaths.SubscribersActionsHandlerActor.Name);
             
             server.Tell(new StartServerMessage());
             Console.ReadKey();

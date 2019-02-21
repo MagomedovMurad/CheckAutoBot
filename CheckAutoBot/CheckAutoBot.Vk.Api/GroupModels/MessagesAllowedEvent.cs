@@ -10,7 +10,7 @@ namespace CheckAutoBot.Vk.Api.GroupModels
         /// <summary>
         /// Идентификатор пользователя
         /// </summary>
-        [JsonProperty("user_id ")]
+        [JsonProperty("user_id")]
         public int UserId { get; set; }
 
         /// <summary>

@@ -16,7 +16,7 @@ namespace CheckAutoBot.Api
 
         public static string GenerateQuickpayUrl(string target, string id)
         {
-            string sum = "49";
+            string sum = "38";
             return Url + "?" + $"receiver={Receiver.UrlEncode()}" +
                                $"&quickpay-form={"shop"}" +
                                $"&targets={target.UrlEncode()}" +

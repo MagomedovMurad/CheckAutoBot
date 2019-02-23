@@ -9,12 +9,12 @@ namespace CheckAutoBot.Vk.Api
 {
     public class Groups
     {
-        public static bool IsMember(string groupId, string userId, string accessToken)
+        public static bool IsMember(string groupId, int userId, string accessToken)
         {
             string url = $"https://api.vk.com/method/groups.isMember";
 
             string stringData = $"group_id={groupId.UrlEncode()}" +
-                                $"&user_id={userId.UrlEncode()}" +
+                                $"&user_id={userId.ToString().UrlEncode()}" +
                                 $"&access_token={accessToken.UrlEncode()}" +
                                 $"&v=5.92";
 

@@ -16,18 +16,19 @@ namespace CheckAutoBot.Actors
 {
     public class InputDataHandlerActor: ReceiveActor
     {
-        private DbQueryExecutor _queryExecutor;
-        private ICanSelectActor _actorSelector;
-        private KeyboardBuilder _keyboardBuilder;
-        private ILogger _logger;
+        private readonly DbQueryExecutor _queryExecutor;
+        private readonly ICanSelectActor _actorSelector;
+        private readonly KeyboardBuilder _keyboardBuilder;
+        private readonly ILogger _logger;
+        private readonly VkApiManager _vkApi;
 
-        public InputDataHandlerActor(ILogger logger, DbQueryExecutor queryExecutor)
+        public InputDataHandlerActor(ILogger logger, DbQueryExecutor queryExecutor, VkApiManager vkApi)
         {
             _logger = logger;
             _queryExecutor = queryExecutor;
             _actorSelector = new ActorSelector();
             _keyboardBuilder = new KeyboardBuilder();
-
+            _vkApi = vkApi;
             ReceiveAsync<UserInputDataMessage>(x => UserInputDataMessageHandler(x));
         }
 
@@ -35,7 +36,9 @@ namespace CheckAutoBot.Actors
         {
             try
             {
-                var isSubscriber = Groups.IsMember("checkautobot", message.UserId.ToString(), "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2");
+                // var isSubscriber = Groups.IsMember("checkautobot", message.UserId.ToString(), "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2");
+                var isSubscriber = _vkApi.UserIsMember("checkautobot", message.UserId);
+
                 if (!isSubscriber)
                 {
                     var text = $"Только подписчики сообщества могут выполнять запросы";
@@ -86,7 +89,10 @@ namespace CheckAutoBot.Actors
                             var msg = new StartVinSearchingMessage(data.Id);
                             _actorSelector.ActorSelection(Context, ActorsPaths.LicensePlateHandlerActor.Path).Tell(msg, Self);
 
-                            var text = $"Выполняется проверка возможности получения информации по гос. номеру {message.Data}. Дождитесь ответа. Это займет не более 2-х минут";
+                            var text = $"⌛ Выполняется проверка возможности получения информации по гос. номеру {message.Data}.{Environment.NewLine}" +
+                                       $"Дождитесь ответа.{Environment.NewLine}" +
+                                       $"Это займет не более 2-х минут";
+
                             SendMessageToUser(null, message.UserId, text);
 
                             break;

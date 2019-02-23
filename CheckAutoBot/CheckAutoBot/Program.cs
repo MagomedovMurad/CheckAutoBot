@@ -5,6 +5,7 @@ using CheckAutoBot.Infrastructure;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Messages;
 using CheckAutoBot.Storage;
+using CheckAutoBot.Utils;
 using CheckAutoBot.Vk.Api;
 using CheckAutoBot.Vk.Api.MessagesModels;
 using CheckAutoBot.Vk.Api.PhotosModels;
@@ -34,14 +35,15 @@ namespace CheckAutoBot
 
             IRepositoryFactory repositoryFactory = new RepositoryFactory(); 
             DbQueryExecutor queryExecutor = new DbQueryExecutor(repositoryFactory, logger);
+            VkApiManager vkApi = new VkApiManager("374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2");
 
             ActorSystem actorSystem = ActorSystem.Create("TestSystem");
             var server = actorSystem.ActorOf(Props.Create(() => new ServerActor(logger)), ActorsPaths.ServerActor.Name);
             var groupEventsHandlerActor = actorSystem.ActorOf(Props.Create(() => new GroupEventsHandlerActor(logger)), ActorsPaths.GroupEventsHandlerActor.Name);
             var privateMessageHandlerActor = actorSystem.ActorOf(Props.Create(() => new PrivateMessageHandlerActor(queryExecutor, logger)), ActorsPaths.PrivateMessageHandlerActor.Name);
-            var privateMessageSenderActor = actorSystem.ActorOf(Props.Create(() => new PrivateMessageSenderActor(logger)), ActorsPaths.PrivateMessageSenderActor.Name);
+            var privateMessageSenderActor = actorSystem.ActorOf(Props.Create(() => new PrivateMessageSenderActor(logger, vkApi)), ActorsPaths.PrivateMessageSenderActor.Name);
             var userRequestHandlerActor = actorSystem.ActorOf(Props.Create(() => new UserRequestHandlerActor(logger, queryExecutor)), ActorsPaths.UserRequestHandlerActor.Name);
-            var inputDataHandlerActor = actorSystem.ActorOf(Props.Create(() => new InputDataHandlerActor(logger, queryExecutor)), ActorsPaths.InputDataHandlerActor.Name);
+            var inputDataHandlerActor = actorSystem.ActorOf(Props.Create(() => new InputDataHandlerActor(logger, queryExecutor, vkApi)), ActorsPaths.InputDataHandlerActor.Name);
             var licensePlateHandlerActor = actorSystem.ActorOf(Props.Create(() => new LicensePlateHandlerActor(queryExecutor, logger)), ActorsPaths.LicensePlateHandlerActor.Name);
             var yandexMoneyRequestHandlerActor = actorSystem.ActorOf(Props.Create(() => new YandexMoneyRequestHandlerActor(queryExecutor)), ActorsPaths.YandexMoneyRequestHandlerActor.Name);
             var subscribersActionsHandlerActor = actorSystem.ActorOf(Props.Create(() => new SubscribersActionsHandlerActor()), ActorsPaths.SubscribersActionsHandlerActor.Name);

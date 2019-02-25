@@ -17,6 +17,7 @@ namespace CheckAutoBot
     {
         private const string apiKey = "3c0d64865e369b523fae883355223479";
         public const string LpPingbackUrl = "http://95.31.241.19/bot/captcha/lp";
+        public const string VinPingbackUrl = "http://95.31.241.19/bot/captcha/vin";
         public const string RequestPingbackUrl = "http://95.31.241.19/bot/captcha/request";
 
         public CaptchaRequest SendReCaptcha2(string dataSiteKey, string pageUrl, string pingback)

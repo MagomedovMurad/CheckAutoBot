@@ -42,6 +42,7 @@ namespace CheckAutoBot.Actors
             _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/yandexmoney/");
             _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/captcha/request/");
             _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/captcha/lp/");
+            _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/captcha/vin/");
             _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/vk/");
             _httpListener.Prefixes.Add("http://192.168.0.103:26565/test/");
             _httpListener.Start();
@@ -69,6 +70,16 @@ namespace CheckAutoBot.Actors
                     context.Response.StatusCode = (int)HttpStatusCode.OK; //200
                     context.Response.Close();
                 }
+
+                else if (request.HttpMethod == "POST" && request.RawUrl == "/bot/captcha/vin")
+                {
+                    var requestData = GetStreamData(request.InputStream, request.ContentEncoding);
+                    RucaptchaMessagesForVinHandler(requestData);
+
+                    context.Response.StatusCode = (int)HttpStatusCode.OK; //200
+                    context.Response.Close();
+                }
+
                 else if (request.HttpMethod == "POST" && request.RawUrl == "/bot/vk")
                 {
                     var requestData = GetStreamData(request.InputStream, request.ContentEncoding);
@@ -127,6 +138,12 @@ namespace CheckAutoBot.Actors
             _actorSelector.ActorSelection(_context, ActorsPaths.LicensePlateHandlerActor.Path).Tell(message, _self);
         }
 
+        private void RucaptchaMessagesForVinHandler(string stringParams)
+        {
+            var message = RucaptchaParamsToCRM(stringParams);
+            _actorSelector.ActorSelection(_context, ActorsPaths.VinCodeHandlerActor.Path).Tell(message, _self);
+        }
+
         private bool YandexMoneyRequestHandler(string parameters)
         {
             var payment = YandexMoney.ConvertToPayment(parameters);
@@ -137,8 +154,6 @@ namespace CheckAutoBot.Actors
 
             return isValid;
         }
-
-       
 
         private CaptchaResponseMessage RucaptchaParamsToCRM(string stringParams)
         {

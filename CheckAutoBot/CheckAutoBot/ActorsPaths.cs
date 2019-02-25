@@ -17,6 +17,7 @@ namespace CheckAutoBot
         public static readonly AkkaActorMetaData InputDataHandlerActor = new AkkaActorMetaData("InputDataHandlerActor");
         public static readonly AkkaActorMetaData YandexMoneyRequestHandlerActor = new AkkaActorMetaData("YandexMoneyRequestHandlerActor");
         public static readonly AkkaActorMetaData SubscribersActionsHandlerActor = new AkkaActorMetaData("SubscribersActionsHandlerActor");
+        public static readonly AkkaActorMetaData VinCodeHandlerActor = new AkkaActorMetaData("VinCodeHandlerActor");
     }
 
     public interface ICanSelectActor

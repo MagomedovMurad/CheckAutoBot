@@ -24,7 +24,7 @@ namespace CheckAutoBot.Handlers
 
         public PreGetResult PreGet()
         {
-            var captchaRequest = _rucaptchaManager.SendReCaptcha3(Gibdd.dataSiteKey, Gibdd.url, Rucaptcha.RequestPingbackUrl, 3, "check_auto_history");
+            var captchaRequest = _rucaptchaManager.SendReCaptcha3(Gibdd.dataSiteKey, Gibdd.url, Rucaptcha.VinPingbackUrl, 3, "check_auto_history");
             return new PreGetResult(captchaRequest.Id, null);
         }
 

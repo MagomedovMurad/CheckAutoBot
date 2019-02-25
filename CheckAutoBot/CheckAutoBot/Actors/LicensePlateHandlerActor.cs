@@ -23,6 +23,7 @@ namespace CheckAutoBot.Actors
         private List<CacheItem> _repeatedRequestsCache;
         private DbQueryExecutor _queryExecutor;
         private ILogger _logger;
+        private ActorSelector _actorSelector;
 
         private RsaManager _rsaManager;
         private RucaptchaManager _rucaptchaManager;
@@ -37,6 +38,7 @@ namespace CheckAutoBot.Actors
         {
             _queryExecutor = queryExecutor;
             _logger = logger;
+            _actorSelector = new ActorSelector();
 
             _keyboardBuilder = new KeyboardBuilder();
             _eaistoManager = new EaistoManager();
@@ -66,6 +68,7 @@ namespace CheckAutoBot.Actors
         {
             _logger.Debug($"Запущен поиск вин кода. {Environment.NewLine}" +
                           $"Идентификатор объекта запроса: {message?.RequestObjectId}");
+
             StartPreGet(message.RequestObjectId, ActionType.DiagnosticCard);
         }
 
@@ -74,6 +77,7 @@ namespace CheckAutoBot.Actors
             try
             {
                 _logger.Debug($"Запрос каптчи для {actionType}. Идентификатор объекта запроса: {requestObjectId}.");
+
                 var handler = _handlers.First(x => x.SupportedActionType == actionType);
                 var pregetResult = handler.PreGet();
                 AddCaptchaCacheItem(requestObjectId, actionType, pregetResult.CaptchaId, pregetResult.SessionId);
@@ -210,11 +214,18 @@ namespace CheckAutoBot.Actors
             {
                 await _queryExecutor.UpdateVinCode(requestObject.Id, vin);
 
+                var msg = new StartGeneralInfoSearchMessage()
+                {
+                    RequestObjectId = requestObject.Id,
+                    Vin = vin
+                };
+                _actorSelector.ActorSelection(Context, ActorsPaths.VinCodeHandlerActor.Path).Tell(msg, Self);
+
                 //Send buttons to user
-                var keyboard = await CreateKeyBoard(requestObject);
-                var text = $"Гос. номер: {requestObject.LicensePlate}. {Environment.NewLine}" +
-                           $"Выберите доступное действие.";
-                SendMessageToUser(keyboard, requestObject.UserId, text);
+                //var keyboard = await CreateKeyBoard(requestObject);
+                //var text = $"Гос. номер: {requestObject.LicensePlate}. {Environment.NewLine}" +
+                //           $"Выберите доступное действие.";
+                //SendMessageToUser(keyboard, requestObject.UserId, text);
 
                 return;
             }

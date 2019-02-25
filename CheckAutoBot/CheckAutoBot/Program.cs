@@ -47,18 +47,10 @@ namespace CheckAutoBot
             var licensePlateHandlerActor = actorSystem.ActorOf(Props.Create(() => new LicensePlateHandlerActor(queryExecutor, logger)), ActorsPaths.LicensePlateHandlerActor.Name);
             var yandexMoneyRequestHandlerActor = actorSystem.ActorOf(Props.Create(() => new YandexMoneyRequestHandlerActor(queryExecutor)), ActorsPaths.YandexMoneyRequestHandlerActor.Name);
             var subscribersActionsHandlerActor = actorSystem.ActorOf(Props.Create(() => new SubscribersActionsHandlerActor()), ActorsPaths.SubscribersActionsHandlerActor.Name);
-            
+            var vinCodeHandlerActor = actorSystem.ActorOf(Props.Create(() => new VinCodeHandlerActor(logger, queryExecutor)), ActorsPaths.VinCodeHandlerActor.Name);
+
             server.Tell(new StartServerMessage());
             Console.ReadKey();
-        }
-
-        private static CaptchaAnswer Test(long id, Rucaptcha rucaptcha)
-        {
-            var captcha = rucaptcha.GetCapthaResult(id);
-            if (!captcha.State)
-                return Test(id, rucaptcha);
-            else
-                return captcha;
         }
     }
 }

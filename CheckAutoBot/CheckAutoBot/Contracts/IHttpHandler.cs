@@ -8,12 +8,12 @@ using System.Text;
 
 namespace CheckAutoBot.Contracts
 {
-    public interface IHandler
+    public interface IHttpHandler
     {
         ActionType SupportedActionType { get; }
 
         PreGetResult PreGet();
 
-        Dictionary<string, byte[]> Get(RequestObject auto, CaptchaCacheItem cacheItem);
+        Dictionary<string, byte[]> Get(RequestObject auto, string captchaWord, string sessionId);
     }
 }

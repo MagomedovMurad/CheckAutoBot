@@ -26,5 +26,9 @@ namespace CheckAutoBot.Storage
         Task<bool> ExistRequestsInProcess(int requestObjectId);
 
         Task<bool> MarkAsPaid(int requestObjectId);
+
+        Task AddRequestObjectCacheItem(RequestObjectCache item);
+
+        Task<RequestObjectCache> GetRequestObjectCacheItem(int requestObjectId);
     }
 }

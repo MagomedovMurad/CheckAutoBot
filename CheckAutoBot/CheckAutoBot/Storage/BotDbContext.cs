@@ -17,6 +17,8 @@ namespace CheckAutoBot.Storage
 
         public DbSet<Request> Requests { get; set; }
 
+        public DbSet<RequestObjectCache> RequestObjectCache { get; set; }
+
         public BotDbContext()
         {
             Database.EnsureCreated();
@@ -24,7 +26,7 @@ namespace CheckAutoBot.Storage
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Filename = TestBd.sqlite");
+            optionsBuilder.UseSqlite("Filename = CheckAutoBot.sqlite");
         }
     }
 }

@@ -233,5 +233,36 @@ namespace CheckAutoBot.Storage
                 return true;
             }
         }
+
+        public async Task AddRequestObjectCacheItem(RequestObjectCache item)
+        {
+            try
+            {
+                using (var rep = _repositoryFactory.CreateBotRepository())
+                {
+                    await rep.AddRequestObjectCacheItem(item);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Ошибка в БД при сохранении элемента кэша объекта запросов. RequestObjectId: {item.RequestObjectId}");
+            }
+        }
+
+        public async Task<RequestObjectCache> GetRequestObjectCacheItem(int requestObjectId)
+        {
+            try
+            {
+                using (var rep = _repositoryFactory.CreateBotRepository())
+                {
+                    return await rep.GetRequestObjectCacheItem(requestObjectId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Ошибка в БД при получении элемента кэша объекта запросов. RequestObjectId: {requestObjectId}");
+                return null;
+            }
+        }
     }
 }

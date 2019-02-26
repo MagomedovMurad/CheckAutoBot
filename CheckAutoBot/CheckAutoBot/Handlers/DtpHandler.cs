@@ -14,7 +14,7 @@ using CheckAutoBot.Utils;
 
 namespace CheckAutoBot.Handlers
 {
-    public class DtpHandler : GibddHandler, IHandler
+    public class DtpHandler : GibddHandler, IHttpHandler
     {
         private readonly SvgBuilder _svgBuilder;
 
@@ -33,12 +33,12 @@ namespace CheckAutoBot.Handlers
             return new PreGetResult(captchaRequest.Id, null);
         }
 
-        public Dictionary<string, byte[]> Get(RequestObject requestObject, CaptchaCacheItem cacheItem)
+        public Dictionary<string, byte[]> Get(RequestObject requestObject, string captchaWord, string sessionId)
         {
             var auto = requestObject as Auto;
 
             //var dtpCacheItem = cacheItems.First(x => x.ActionType == ActionType.Dtp);
-            var dtpResult = _gibddManager.GetDtp(auto.Vin, cacheItem.CaptchaWord, cacheItem.SessionId);
+            var dtpResult = _gibddManager.GetDtp(auto.Vin, captchaWord, sessionId);
 
             return GenerateResponse(dtpResult);
         }

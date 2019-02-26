@@ -23,7 +23,8 @@ namespace CheckAutoBot.Actors
         private DbQueryExecutor _queryExecutor;
         private Random _random;
         private readonly ILogger _logger;
-        private IEnumerable<IHandler> _handlers;
+        private IEnumerable<IHttpHandler> _httpHandlers;
+        private IEnumerable<IDbHandler> _dbHandlers;
 
         private RsaManager _rsaManager;
         private GibddManager _gibddManager;
@@ -72,13 +73,19 @@ namespace CheckAutoBot.Actors
 
         private void InitHandlers()
         {
-            _handlers = new List<IHandler>()
+            _httpHandlers = new List<IHttpHandler>()
             {
-                new HistoryHandler(_gibddManager, _rucaptchaManager),
+                //new HistoryHandler(_gibddManager, _rucaptchaManager),
                 new DtpHandler(_gibddManager, _rucaptchaManager),
                 new RestrictedHandler(_gibddManager, _rucaptchaManager),
                 new WantedHandler(_gibddManager, _rucaptchaManager),
                 new PledgeHandler(_fnpManager, _rucaptchaManager)
+            };
+
+            _dbHandlers = new List<IDbHandler>()
+            {
+                new VechiclePassportDataHandler(_queryExecutor),
+                new OwnershipPeriodsHandler(_queryExecutor)
             };
         }
 
@@ -92,7 +99,7 @@ namespace CheckAutoBot.Actors
             {
                 _logger.Debug($"Запрос каптчи для {message.ActionType}. Идентификатор запроса: {message.RequestId}.");
 
-                var handler = _handlers.FirstOrDefault(x => x.SupportedActionType == message.ActionType);
+                var handler = _httpHandlers.FirstOrDefault(x => x.SupportedActionType == message.ActionType);
                 var preGetResults = handler.PreGet();
                 AddCaptchaCacheItem(message.RequestId,
                                      preGetResults.CaptchaId,
@@ -144,19 +151,34 @@ namespace CheckAutoBot.Actors
 
             if (lastRequestObject is Auto auto)
             {
-                var targetActionType = _requestTypeToActionType[message.RequestType];
-                var currentActionType = targetActionType;
-                if (auto.Vin == null)
-                    currentActionType = ActionType.DiagnosticCard;
+                var actionType = _requestTypeToActionType[message.RequestType];
 
-                Self.Tell(new StartActionMessage()
-                {
-                    RequestId = requestId.Value,
-                    ActionType = currentActionType,
-                });
+                var dataSourceType = GetDataSourceType(actionType);
+
+                if (dataSourceType == DataSourceType.Http)
+                    Self.Tell(new StartActionMessage()
+                    {
+                        RequestId = requestId.Value,
+                        ActionType = actionType,
+                    });
+                else if (dataSourceType == DataSourceType.Db)
+                    await StartProcessRequest(actionType, auto);
+
             }
 
             return true;
+        }
+
+        private DataSourceType GetDataSourceType(ActionType actionType)
+        {
+            switch (actionType)
+            {
+                case ActionType.VechiclePasportData:
+                case ActionType.OwnershipPeriods:
+                    return DataSourceType.Db;
+                default:
+                    return DataSourceType.Http;
+            }
         }
 
         private async Task<bool> CaptchaResponseMessageHadler(CaptchaResponseMessage message)
@@ -164,7 +186,10 @@ namespace CheckAutoBot.Actors
             var captchaItem = _captchaCacheItems.FirstOrDefault(x => x.CaptchaId == message.CaptchaId);
 
             if (captchaItem == null)
+            {
+                _logger.Error($"Не надена запись в кэше с идентификатором каптчи {message?.CaptchaId}. Ответ: {message?.Value}");
                 return true;
+            }
 
             captchaItem.CaptchaWord = message.Value;
             int requestId = captchaItem.Id;
@@ -172,7 +197,7 @@ namespace CheckAutoBot.Actors
             try
             {
                 RucaptchaManager.CheckCaptchaWord(message.Value); // Выбросит исключение, если от Rucaptcha вернулась ошибка вместо ответа на каптчу
-                await ExecuteGet(captchaItem, captchaItem);
+                await ExecuteGet(captchaItem);
 
                 RemoveCaptchaCacheItems(requestId);
                 RemoveRepeatedRequestsCacheItems(requestId);
@@ -206,35 +231,47 @@ namespace CheckAutoBot.Actors
             return true;
         }
 
-        private async Task ExecuteGet(CaptchaCacheItem currentCaptchaItem, CaptchaCacheItem requestCaptchaItem)
+        private async Task ExecuteGet(CaptchaCacheItem сaptchaItem)
         {
-            var request = await _queryExecutor.GetUserRequest(currentCaptchaItem.Id);
-            var handler = _handlers.FirstOrDefault(x => x.SupportedActionType == currentCaptchaItem.ActionType);
-            var data = handler.Get(request.RequestObject, requestCaptchaItem);
+            var request = await _queryExecutor.GetUserRequest(сaptchaItem.Id);
+            var handler = _httpHandlers.FirstOrDefault(x => x.SupportedActionType == сaptchaItem.ActionType);
+            var data = handler.Get(request.RequestObject, сaptchaItem.CaptchaWord, сaptchaItem.SessionId);
 
-            //await _queryExecutor.MarkRequestCompleted(currentCaptchaItem.Id);
-            await _queryExecutor.ChangeRequestStatus(currentCaptchaItem.Id, true);
+            await _queryExecutor.ChangeRequestStatus(сaptchaItem.Id, true);
 
+            await SendDataToUser(data, request.RequestObject);
+        }
+
+        private async Task StartProcessRequest(ActionType actionType, RequestObject requestObject)
+        {
+            var handler = _dbHandlers.FirstOrDefault(x => x.SupportedActionType == actionType);
+            var data = await handler.Get(requestObject);
+
+            await SendDataToUser(data, requestObject);
+        }
+
+        private async Task SendDataToUser(Dictionary<string, byte[]> data, RequestObject requestObject)
+        {
             if (data == null)           //Если нет данных для отправки пользователю
                 return;
 
-            var keyboard = await CreateKeyBoard(request.RequestObject).ConfigureAwait(false);
+            var keyboard = await CreateKeyBoard(requestObject).ConfigureAwait(false);
             foreach (var item in data)
             {
-                var msg = new SendToUserMessage(request.RequestObject.UserId, item.Key, item.Value, keyboard);
+                var msg = new SendToUserMessage(requestObject.UserId, item.Key, item.Value, keyboard);
                 _senderActor.Tell(msg, Self);
             }
 
             if (keyboard.Buttons.Count() == 0)
             {
-                var auto = request.RequestObject as Auto;
+                var auto = requestObject as Auto;
                 var autoData = auto.LicensePlate != null ? auto.LicensePlate : auto.Vin;
                 var dataWithType = auto.LicensePlate != null ? $"гос. номеру {autoData}" : $"VIN коду {autoData}";
                 var paylink = YandexMoney.GenerateQuickpayUrl(autoData, auto.Id.ToString());
                 var text = $"Оплатите запрос по {dataWithType} для выполнения следующего.{Environment.NewLine}" +
                            $"Для оплаты перейдите по ссылке:{Environment.NewLine} " +
                            $"{paylink}";
-                var msg = new SendToUserMessage(request.RequestObject.UserId, text);
+                var msg = new SendToUserMessage(requestObject.UserId, text);
                 _senderActor.Tell(msg, Self);
             }
         }
@@ -242,32 +279,17 @@ namespace CheckAutoBot.Actors
         #endregion Handlers
 
         #region Helpers
-        private async Task TryExecuteRequestAgain(int requestId, ActionType currentActionType)
+        private async Task TryExecuteRequestAgain(int requestId, ActionType actionType)
         {
-            _logger.Debug($"Попытка повторного выполнения запроса с ID: {requestId}. CurrentActionType: {currentActionType}");
+            _logger.Debug($"Попытка повторного выполнения запроса с ID: {requestId}. CurrentActionType: {actionType}");
 
-            AddOrUpdateCacheItem(requestId, currentActionType);
-            var item = _repeatedRequestsCache.FirstOrDefault(x => x.Id == requestId && x.ActionType == currentActionType);
+            AddOrUpdateCacheItem(requestId, actionType);
+            var item = _repeatedRequestsCache.FirstOrDefault(x => x.Id == requestId && x.ActionType == actionType);
 
             _logger.Debug($"В кэше повторных запросов найдена запись с ID запроса: {item.Id}. CurrentActionType: {item.ActionType}. Попыток: {item.AttemptsCount}. Всего записей: {_repeatedRequestsCache.Count}");
 
-            if (item.AttemptsCount >= 2 )
+            if (item.AttemptsCount >= 2)
             {
-                if(currentActionType == ActionType.DiagnosticCard)
-                {
-                    Self.Tell(new StartActionMessage
-                    {
-                        RequestId = requestId,
-                        ActionType = ActionType.PolicyNumber,
-                    });
-
-                    Self.Tell(new StartActionMessage
-                    {
-                        RequestId = requestId,
-                        ActionType = ActionType.OsagoVechicle,
-                    });
-                    return;
-                }
                 SendErrorMessage(requestId, StaticResources.RequestFailedError);
                 _logger.Debug($"Из кэша повторных запросов будет удалена запись с ID запроса {item.Id}. CurrentActionType {item.ActionType}. AttemptsCount {item.AttemptsCount}. Всего элементов {_repeatedRequestsCache.Count}");
 
@@ -280,7 +302,7 @@ namespace CheckAutoBot.Actors
             Self.Tell(new StartActionMessage()
             {
                 RequestId = requestId,
-                ActionType = currentActionType,
+                ActionType = actionType,
             });
         }
 
@@ -349,7 +371,6 @@ namespace CheckAutoBot.Actors
             var requestTypes = await _queryExecutor.GetExecutedRequestTypes(requestObject.Id).ConfigureAwait(false);
             return _keyboardBuilder.CreateKeyboard(requestTypes, requestObject.GetType());
         }
-
 
         #endregion Helpers
 

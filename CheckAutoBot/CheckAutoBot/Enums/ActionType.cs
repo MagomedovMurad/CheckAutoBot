@@ -56,5 +56,15 @@ namespace CheckAutoBot.Enums
         /// </summary>
         DiagnosticCard,
 
+        /// <summary>
+        /// Получить данные по ПТС
+        /// </summary>
+        VechiclePasportData,
+
+        /// <summary>
+        /// Получить периоды владения
+        /// </summary>
+        OwnershipPeriods
+
     }
 }

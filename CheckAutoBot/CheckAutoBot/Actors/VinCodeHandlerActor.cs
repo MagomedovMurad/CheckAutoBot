@@ -2,12 +2,14 @@
 using CheckAutoBot.Contracts;
 using CheckAutoBot.Enums;
 using CheckAutoBot.Exceptions;
+using CheckAutoBot.GbddModels;
 using CheckAutoBot.Handlers;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Messages;
 using CheckAutoBot.Storage;
 using CheckAutoBot.Utils;
 using CheckAutoBot.Vk.Api.MessagesModels;
+using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -20,7 +22,7 @@ namespace CheckAutoBot.Actors
     public class VinCodeHandlerActor : ReceiveActor
     {
         private readonly ILogger _logger;
-        private readonly IHandler _historyHandler;
+        private readonly HistoryHandler _historyHandler;
         ICanTell _senderActor;
         private ICanSelectActor _actorSelector;
         private DbQueryExecutor _queryExecutor;
@@ -49,6 +51,7 @@ namespace CheckAutoBot.Actors
                 _logger.Debug($"Запрос каптчи для {ActionType.History}. Идентификатор объекта запроса: {message.RequestObjectId}.");
 
                 var preGetResults = _historyHandler.PreGet();
+
                 AddCaptchaCacheItem(message.RequestObjectId,
                                      preGetResults.CaptchaId,
                                      ActionType.History,
@@ -129,19 +132,35 @@ namespace CheckAutoBot.Actors
         private async Task ExecuteGet(CaptchaCacheItem сaptchaItem)
         {
             var requestObject = await _queryExecutor.GetUserRequestObject(сaptchaItem.Id);
-            var data = _historyHandler.Get(requestObject, сaptchaItem);
+            var result = _historyHandler.Get(requestObject, сaptchaItem.CaptchaWord, сaptchaItem.SessionId);
 
-            if (data == null)
+            var auto = requestObject as Auto;
+            var autoData = auto.LicensePlate != null ? auto.LicensePlate : auto.Vin;
+            string data;
+            if (result == null)
             {
-                //К сожалению не удалось найти информацию по гос.номеру/вин коду
+                data = auto.LicensePlate != null ? $"гос. номеру {autoData}" : $"VIN коду {autoData}";
+                SendErrorMessage(requestObject.Id, $"К сожалению не удалось найти информацию по {data}");
+                return;
             }
+
+            var resultJson = JsonConvert.SerializeObject(result);
+            var objectCache = new RequestObjectCache()
+            {
+                RequestObjectId = requestObject.Id,
+                Data = resultJson
+            };
+
+            await _queryExecutor.AddRequestObjectCacheItem(objectCache);
 
             var keyboard = await CreateKeyBoard(requestObject).ConfigureAwait(false);
-            foreach (var item in data)
-            {
-                var msg = new SendToUserMessage(requestObject.UserId, item.Key, item.Value, keyboard);
-                _senderActor.Tell(msg, Self);
-            }
+            data = auto.LicensePlate != null ? $"гос. номер: {autoData}" : $"VIN код: {autoData}";
+            var text = $"✏ {data}{Environment.NewLine}" +
+                       $"🚗 {result.Vehicle.Model}, {result.Vehicle.Year}г." +
+                       $"⬇ Выберите доступное действие.";
+
+            var msg = new SendToUserMessage(requestObject.UserId, text, keyboard: keyboard);
+            _senderActor.Tell(msg, Self);
         }
 
         private async Task TryExecuteRequestAgain(int requestObjectId)

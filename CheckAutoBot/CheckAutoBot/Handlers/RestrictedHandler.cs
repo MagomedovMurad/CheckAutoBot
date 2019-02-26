@@ -11,7 +11,7 @@ using CheckAutoBot.Utils;
 
 namespace CheckAutoBot.Handlers
 {
-    public class RestrictedHandler : GibddHandler, IHandler
+    public class RestrictedHandler : GibddHandler, IHttpHandler
     {
         public RestrictedHandler(GibddManager gibddManager,
                                  RucaptchaManager rucaptchaManager) : base(gibddManager, rucaptchaManager)
@@ -26,12 +26,12 @@ namespace CheckAutoBot.Handlers
             return new PreGetResult(captchaRequest.Id, null);
         }
 
-        public Dictionary<string, byte[]> Get(RequestObject requestObject, CaptchaCacheItem cacheItem)
+        public Dictionary<string, byte[]> Get(RequestObject requestObject, string captchaWord, string sessionId)
         {
             var auto = requestObject as Auto;
 
             //var restrictedCacheItem = cacheItems.First(x => x.ActionType == ActionType.Restricted);
-            var restrictedResult = _gibddManager.GetRestrictions(auto.Vin, cacheItem.CaptchaWord, cacheItem.SessionId);
+            var restrictedResult = _gibddManager.GetRestrictions(auto.Vin, captchaWord, sessionId);
             return GenerateResponse(restrictedResult);
         }
 

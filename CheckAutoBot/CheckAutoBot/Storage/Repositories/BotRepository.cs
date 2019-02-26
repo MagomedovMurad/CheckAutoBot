@@ -70,6 +70,17 @@ namespace CheckAutoBot.Storage
             await _dbContext.SaveChangesAsync();
         }
 
+        public async Task AddRequestObjectCacheItem(RequestObjectCache item)
+        {
+            await _dbContext.AddAsync(item);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<RequestObjectCache> GetRequestObjectCacheItem(int requestObjectId)
+        {
+            return await _dbContext.RequestObjectCache.SingleOrDefaultAsync(x => x.RequestObjectId == requestObjectId);
+        }
+
         public async Task ChangeRequestStatus(int requestId, bool? state)
         {
             var request = _dbContext.Requests.FirstOrDefault(x => x.Id == requestId);

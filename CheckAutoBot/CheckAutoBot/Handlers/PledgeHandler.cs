@@ -11,7 +11,7 @@ using CheckAutoBot.Utils;
 
 namespace CheckAutoBot.Handlers
 {
-    public class PledgeHandler : IHandler
+    public class PledgeHandler : IHttpHandler
     {
         private FnpManager _fnpManager;
         private RucaptchaManager _rucaptchaManager;
@@ -24,12 +24,12 @@ namespace CheckAutoBot.Handlers
 
         public ActionType SupportedActionType => ActionType.Pledge;
 
-        public Dictionary<string, byte[]> Get(RequestObject requestObject, CaptchaCacheItem cacheItem)
+        public Dictionary<string, byte[]> Get(RequestObject requestObject, string captchaWord, string sessionId)
         {
             var auto = requestObject as Auto;
 
             //var pledgeCacheItem = cacheItems.First(x => x.ActionType == ActionType.Pledge);
-            var pledgeResponse = _fnpManager.GetPledges(auto.Vin, cacheItem.CaptchaWord, cacheItem.SessionId);
+            var pledgeResponse = _fnpManager.GetPledges(auto.Vin, captchaWord, sessionId);
 
             return GenerateResponse(pledgeResponse);
         }

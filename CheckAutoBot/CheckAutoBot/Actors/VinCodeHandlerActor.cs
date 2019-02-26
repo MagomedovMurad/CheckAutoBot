@@ -92,7 +92,7 @@ namespace CheckAutoBot.Actors
             try
             {
                 RucaptchaManager.CheckCaptchaWord(message.Value); // Выбросит исключение, если от Rucaptcha вернулась ошибка вместо ответа на каптчу
-                await ExecuteGet(captchaItem, captchaItem);
+                await ExecuteGet(captchaItem);
 
                 RemoveCaptchaCacheItems(requestId);
                 RemoveRepeatedRequestsCacheItems(requestId);
@@ -126,15 +126,15 @@ namespace CheckAutoBot.Actors
             return true;
         }
 
-        private async Task ExecuteGet(CaptchaCacheItem currentCaptchaItem, CaptchaCacheItem requestCaptchaItem)
+        private async Task ExecuteGet(CaptchaCacheItem сaptchaItem)
         {
-            var requestObject = await _queryExecutor.GetUserRequestObject(currentCaptchaItem.Id);
-            var data = _historyHandler.Get(requestObject, requestCaptchaItem);
+            var requestObject = await _queryExecutor.GetUserRequestObject(сaptchaItem.Id);
+            var data = _historyHandler.Get(requestObject, сaptchaItem);
 
-            //await _queryExecutor.ChangeRequestStatus(currentCaptchaItem.Id, true);
-
-            if (data == null)           //Если нет данных для отправки пользователю
-                return;
+            if (data == null)
+            {
+                //К сожалению не удалось найти информацию по гос.номеру/вин коду
+            }
 
             var keyboard = await CreateKeyBoard(requestObject).ConfigureAwait(false);
             foreach (var item in data)

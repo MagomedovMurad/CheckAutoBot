@@ -140,7 +140,7 @@ namespace CheckAutoBot.Actors
             if (result == null)
             {
                 data = auto.LicensePlate != null ? $"гос. номеру {autoData}" : $"VIN коду {autoData}";
-                SendErrorMessage(requestObject.Id, $"К сожалению не удалось найти информацию по {data}");
+                SendErrorMessage(requestObject.Id, $"😕 К сожалению не удалось найти информацию по {data}");
                 return;
             }
 
@@ -154,9 +154,9 @@ namespace CheckAutoBot.Actors
             await _queryExecutor.AddRequestObjectCacheItem(objectCache);
 
             var keyboard = await CreateKeyBoard(requestObject).ConfigureAwait(false);
-            data = auto.LicensePlate != null ? $"гос. номер: {autoData}" : $"VIN код: {autoData}";
+            data = auto.LicensePlate != null ? $"Гос. номер: {autoData}" : $"VIN код: {autoData}";
             var text = $"✏ {data}{Environment.NewLine}" +
-                       $"🚗 {result.Vehicle.Model}, {result.Vehicle.Year}г." +
+                       $"🚗 {result.Vehicle.Model}, {result.Vehicle.Year}г.{Environment.NewLine}" +
                        $"⬇ Выберите доступное действие.";
 
             var msg = new SendToUserMessage(requestObject.UserId, text, keyboard: keyboard);

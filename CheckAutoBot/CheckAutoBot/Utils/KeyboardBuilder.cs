@@ -15,6 +15,8 @@ namespace CheckAutoBot.Utils
         private Button _wantedButton { get; set; }
         private Button _pledgeButton { get; set; }
         private Button _personPledgeButton { get; set; }
+        private Button _vechiclePassportDataButton { get; set; }
+        private Button _ownershipPeriodsButton { get; set; }
 
         private Dictionary<RequestType, Button> _carRequestTypeWithButton { get; set; }
         private Dictionary<RequestType, Button> _personRequestTypeWithButton { get; set; }
@@ -28,10 +30,14 @@ namespace CheckAutoBot.Utils
             _wantedButton = CreateWantedButton();
             _pledgeButton = CreatePledgeButton();
             _personPledgeButton = CreatePersonPledgeButton();
+            _vechiclePassportDataButton = CreateVechiclePassportDataButton();
+            _ownershipPeriodsButton = CreateOwnershipPeriodsButton();
 
             _carRequestTypeWithButton = new Dictionary<RequestType, Button>()
             {
-                { RequestType.History, _historyButton },
+                //{ RequestType.History, _historyButton },
+                { RequestType.VechiclePassportData, _vechiclePassportDataButton },
+                { RequestType.OwnershipPeriods, _ownershipPeriodsButton},
                 { RequestType.Dtp, _dtpButton },
                 { RequestType.Restricted, _restrictedButton },
                 { RequestType.Wanted, _wantedButton },
@@ -233,6 +239,64 @@ namespace CheckAutoBot.Utils
 
             return dtpButton;
 
+        }
+
+        private Button CreateVechiclePassportDataButton()
+        {
+            var payload = new RequestPayload()
+            {
+                RequestType = RequestType.VechiclePassportData
+            };
+
+            var envelop = new PayloadEnvelop()
+            {
+                DotNetType = payload.GetType().ToString(),
+                Payload = payload.ToString()
+            };
+
+            var action = new ButtonAction()
+            {
+                Lable = "Данные по ПТС",
+                Type = ButtonActionType.Text,
+                Payload = envelop.ToString()
+            };
+
+            var vechiclePassportDataButton = new Button()
+            {
+                Action = action,
+                Color = ButtonColor.Primary
+            };
+
+            return vechiclePassportDataButton;
+        }
+
+        private Button CreateOwnershipPeriodsButton()
+        {
+            var payload = new RequestPayload()
+            {
+                RequestType = RequestType.OwnershipPeriods
+            };
+
+            var envelop = new PayloadEnvelop()
+            {
+                DotNetType = payload.GetType().ToString(),
+                Payload = payload.ToString()
+            };
+
+            var action = new ButtonAction()
+            {
+                Lable = "История регистрации в ГИБДД",
+                Type = ButtonActionType.Text,
+                Payload = envelop.ToString()
+            };
+
+            var ownershipPeriodsButton = new Button()
+            {
+                Action = action,
+                Color = ButtonColor.Primary
+            };
+
+            return ownershipPeriodsButton;
         }
     }
 }

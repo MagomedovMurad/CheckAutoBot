@@ -41,8 +41,7 @@ namespace CheckAutoBot.Actors
 
                 if (!isSubscriber)
                 {
-                    var text = $"Только подписчики сообщества могут выполнять запросы";
-                    SendMessageToUser(null, message.UserId, text);
+                    SendMessageToUser(null, message.UserId, StaticResources.OnlySubscribers);
                     return true;
                 }
 
@@ -65,11 +64,19 @@ namespace CheckAutoBot.Actors
                             };
 
                             await _queryExecutor.AddRequestObject(data);
+
+                            var msg = new StartGeneralInfoSearchMessage()
+                            {
+                                RequestObjectId = data.Id,
+                                Vin = message.Data
+                            };
+                            _actorSelector.ActorSelection(Context, ActorsPaths.VinCodeHandlerActor.Path).Tell(msg, Self);
+
                             //Send buttons to user
-                            var keyboard = await CreateKeyBoard(data);
-                            var text = $"VIN код: {(data as Auto).Vin}. {Environment.NewLine}" +
-                                       $"Выберите доступное действие.";
-                            SendMessageToUser(keyboard, data.UserId, text);
+                            //var keyboard = await CreateKeyBoard(data);
+                            //var text = $"VIN код: {(data as Auto).Vin}. {Environment.NewLine}" +
+                            //           $"Выберите доступное действие.";
+                            //SendMessageToUser(keyboard, data.UserId, text);
                         }
                         break;
                     #endregion VIN
@@ -162,7 +169,7 @@ namespace CheckAutoBot.Actors
 
                 var data = auto.LicensePlate != null ? $"гос. номеру {autoData}" : $"VIN коду {autoData}";
                 var paylink = YandexMoney.GenerateQuickpayUrl(autoData, auto.Id.ToString());
-                var text = $"Оплатите предыдущий запрос по {data}. {Environment.NewLine}" +
+                var text = $"💵 Оплатите предыдущий запрос по {data}. {Environment.NewLine}" +
                            $"Для оплаты перейдите по ссылке:{Environment.NewLine}" +
                            $"{paylink}{Environment.NewLine}";
                 if(succesfullComletedRequests.Count() < 5)

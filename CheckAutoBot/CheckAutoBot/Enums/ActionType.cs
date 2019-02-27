@@ -59,7 +59,7 @@ namespace CheckAutoBot.Enums
         /// <summary>
         /// Получить данные по ПТС
         /// </summary>
-        VechiclePasportData,
+        VechiclePassportData,
 
         /// <summary>
         /// Получить периоды владения

@@ -49,7 +49,7 @@ namespace CheckAutoBot.Handlers
 
             if (result == null)
             {
-                var text = "В базе ГИБДД не найдены сведения о дорожно-транспортных происшествиях";
+                var text = "✅ В базе ГИБДД не найдены сведения о дорожно-транспортных происшествиях";
                 messages.Add(text, null);
             }
             else
@@ -80,7 +80,7 @@ namespace CheckAutoBot.Handlers
 
         private string AccidentToMessageText(Accident accident, int number)
         {
-            return $"{number}. Информация о происшествии №{accident.AccidentNumber} {Environment.NewLine}" +
+            return $"💥 {number}. Информация о происшествии №{accident.AccidentNumber} {Environment.NewLine}" +
                     $"Дата и время происшествия: {accident.AccidentDateTime} {Environment.NewLine}" +
                     $"Тип происшествия: {accident.AccidentType} {Environment.NewLine}" +
                     $"Регион происшествия: {accident.RegionName} {Environment.NewLine}" +

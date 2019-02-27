@@ -38,11 +38,13 @@ namespace CheckAutoBot.Actors
 
         private Dictionary<RequestType, ActionType> _requestTypeToActionType = new Dictionary<RequestType, ActionType>()
         {
-            { RequestType.History, ActionType.History },
+            //{ RequestType.History, ActionType.History },
             { RequestType.Dtp, ActionType.Dtp },
             { RequestType.Restricted, ActionType.Restricted },
             { RequestType.Wanted, ActionType.Wanted },
-            { RequestType.Pledge, ActionType.Pledge }
+            { RequestType.Pledge, ActionType.Pledge },
+            { RequestType.VechiclePassportData, ActionType.VechiclePassportData},
+            { RequestType.OwnershipPeriods, ActionType.OwnershipPeriods}
         };
         ICanTell _senderActor;
 
@@ -162,7 +164,7 @@ namespace CheckAutoBot.Actors
                         ActionType = actionType,
                     });
                 else if (dataSourceType == DataSourceType.Db)
-                    await StartProcessRequest(actionType, auto);
+                    await StartProcessRequest(actionType, auto, requestId.Value);
 
             }
 
@@ -173,7 +175,7 @@ namespace CheckAutoBot.Actors
         {
             switch (actionType)
             {
-                case ActionType.VechiclePasportData:
+                case ActionType.VechiclePassportData:
                 case ActionType.OwnershipPeriods:
                     return DataSourceType.Db;
                 default:
@@ -242,10 +244,12 @@ namespace CheckAutoBot.Actors
             await SendDataToUser(data, request.RequestObject);
         }
 
-        private async Task StartProcessRequest(ActionType actionType, RequestObject requestObject)
+        private async Task StartProcessRequest(ActionType actionType, RequestObject requestObject, int requestId)
         {
             var handler = _dbHandlers.FirstOrDefault(x => x.SupportedActionType == actionType);
             var data = await handler.Get(requestObject);
+
+            await _queryExecutor.ChangeRequestStatus(requestId, true);
 
             await SendDataToUser(data, requestObject);
         }
@@ -268,7 +272,7 @@ namespace CheckAutoBot.Actors
                 var autoData = auto.LicensePlate != null ? auto.LicensePlate : auto.Vin;
                 var dataWithType = auto.LicensePlate != null ? $"гос. номеру {autoData}" : $"VIN коду {autoData}";
                 var paylink = YandexMoney.GenerateQuickpayUrl(autoData, auto.Id.ToString());
-                var text = $"Оплатите запрос по {dataWithType} для выполнения следующего.{Environment.NewLine}" +
+                var text = $"💵 Оплатите запрос по {dataWithType} для выполнения следующего.{Environment.NewLine}" +
                            $"Для оплаты перейдите по ссылке:{Environment.NewLine} " +
                            $"{paylink}";
                 var msg = new SendToUserMessage(requestObject.UserId, text);

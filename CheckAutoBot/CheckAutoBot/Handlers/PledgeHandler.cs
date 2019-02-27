@@ -48,7 +48,7 @@ namespace CheckAutoBot.Handlers
 
             if (result == null)
             {
-                var text = "В базе ФНП не найдены сведения о нахождении транспортного средства в залоге";
+                var text = "✅ В базе ФНП не найдены сведения о нахождении транспортного средства в залоге";
                 messages.Add(text, null);
             }
             else
@@ -65,7 +65,7 @@ namespace CheckAutoBot.Handlers
 
         private string PledgeToText(PledgeListItem pledge, int number)
         {
-            var text = $"{number}. Уведомление о возникновении залога №{pledge.ReferenceNumber} {Environment.NewLine}";
+            var text = $"📃 {number}. Уведомление о возникновении залога №{pledge.ReferenceNumber} {Environment.NewLine}";
             text += $"Дата регистрации: {pledge.RegisterDate}{Environment.NewLine}";
             text += $"Залогодатель: {string.Join(Environment.NewLine, pledge.Pledgors.Select(x => PledgorToText(x)))}";
             text += $"Залогодержатель: {string.Join(Environment.NewLine, pledge.Pledgees.Select(x => PledgeeToText(x)))}";

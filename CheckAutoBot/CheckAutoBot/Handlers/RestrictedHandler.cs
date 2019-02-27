@@ -41,7 +41,7 @@ namespace CheckAutoBot.Handlers
 
             if (result == null)
             {
-                var text = "В базе ГИБДД не найдены сведения о наложении ограничений";
+                var text = "✅ В базе ГИБДД не найдены сведения о наложении ограничений";
                 messages.Add(text, null);
             }
             else
@@ -58,7 +58,7 @@ namespace CheckAutoBot.Handlers
 
         private string RestrictedToMessageText(Restricted restricted, int number)
         {
-            return $"{number}. Информация о наложении ограничения{Environment.NewLine}" +
+            return $"🔒 {number}. Информация о наложении ограничения{Environment.NewLine}" +
                    $"Марка, модель ТС: {restricted.TsModel}{Environment.NewLine}" +
                    $"Год выпуска ТС: {restricted.VechicleYear}{Environment.NewLine}" +
                    $"Дата наложения ограничения: {restricted.RestrictedDate}{Environment.NewLine}" +

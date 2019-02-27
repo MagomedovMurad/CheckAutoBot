@@ -17,7 +17,7 @@ namespace CheckAutoBot.Handlers
         {
             _queryExecutor = queryExecutor;
         }
-        public ActionType SupportedActionType => ActionType.VechiclePasportData;
+        public ActionType SupportedActionType => ActionType.VechiclePassportData;
 
         public async Task<Dictionary<string, byte[]>> Get(RequestObject requestObject)
         {
@@ -36,7 +36,8 @@ namespace CheckAutoBot.Handlers
 
         private string HistoryToMessageText(HistoryResult history)
         {
-            var text = $"Марка, модель:  {history.Vehicle?.Model}{Environment.NewLine}" +
+            var text = $"📜 Данные по ПТС:{Environment.NewLine}" +
+                       $"Марка, модель:  {history.Vehicle?.Model}{Environment.NewLine}" +
                        $"Год выпуска: {history.Vehicle?.Year}{Environment.NewLine}" +
                        $"VIN:  {history.Vehicle?.Vin}{Environment.NewLine}" +
                        $"Кузов:  {history.Vehicle?.BodyNumber}{Environment.NewLine}" +
@@ -47,7 +48,7 @@ namespace CheckAutoBot.Handlers
                        $"Категория: {history.Vehicle?.Category}{Environment.NewLine}" +
                        $"Номер двигателя: {history.Vehicle?.EngineNumber}{Environment.NewLine}" +
                        $"Номер ПТС: {history.VehiclePassport?.Number}{Environment.NewLine}" +
-                       $"Производитель: {history.VehiclePassport?.CompanyName}";
+                       $"Название организации, выдавшей ПТС: {history.VehiclePassport?.CompanyName}";
 
             return text;
         }

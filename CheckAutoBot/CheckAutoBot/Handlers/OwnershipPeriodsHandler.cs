@@ -44,7 +44,7 @@ namespace CheckAutoBot.Handlers
             for (int i = 0; i < periods?.Count; i++)
             {
                 var period = periods.ElementAt(i);
-                var ownerType = period.OwnerType == OwnerType.Natural ? "Физическое лицо" : "Юридическое лицо";
+                var ownerType = period.OwnerType == OwnerType.Natural ? "🚶 Физическое лицо" : "🏢 Юридическое лицо";
                 var stringDateTo = period.To.ToString("dd.MM.yyyy");
                 var dateTo = stringDateTo == "01.01.0001" ? "настоящее время" : stringDateTo;
 

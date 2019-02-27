@@ -53,6 +53,18 @@ namespace CheckAutoBot.Storage
         /// Полис ОСАГО
         /// </summary>
         [EnumMember(Value = "Policy")]
-        Policy
+        Policy,
+
+        /// <summary>
+        /// Данные по ПТС
+        /// </summary>
+        [EnumMember(Value = "VechiclePassportData")]
+        VechiclePassportData,
+
+        /// <summary>
+        /// Периоды владения
+        /// </summary>
+        [EnumMember(Value = "OwnershipPeriods")]
+        OwnershipPeriods
     }
 }

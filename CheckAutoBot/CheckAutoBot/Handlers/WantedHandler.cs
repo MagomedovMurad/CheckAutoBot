@@ -42,7 +42,7 @@ namespace CheckAutoBot.Handlers
 
             if (result == null)
             {
-                var text = "В базе ГИБДД не найдены сведения о розыске транспортного средства";
+                var text = "✅ В базе ГИБДД не найдены сведения о розыске транспортного средства";
                 messages.Add(text, null);
             }
             else
@@ -59,7 +59,7 @@ namespace CheckAutoBot.Handlers
 
         private string WantedToMessageText(Wanted wanted, int number)
         {
-            return $"{number}. Информация о постановке в розыск{Environment.NewLine}" +
+            return $"🕵 {number}. Информация о постановке в розыск{Environment.NewLine}" +
                    $"Марка, модель: {wanted.VechicleModel}{Environment.NewLine}" +
                    $"Год выпуска: {wanted.VechicleYear}{Environment.NewLine}" +
                    $"Дата объявления в розыск: {wanted.Date}{Environment.NewLine}" +

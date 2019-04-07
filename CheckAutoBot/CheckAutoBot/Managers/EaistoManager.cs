@@ -2,6 +2,7 @@
 using CheckAutoBot.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace CheckAutoBot.Managers
@@ -20,7 +21,7 @@ namespace CheckAutoBot.Managers
             _eaisto = new Eaisto();
         }
 
-        public DiagnosticCard GetDiagnosticCard(string captcha,
+        public DiagnosticCard GetLastDiagnosticCard(string captcha,
                                       string phoneNumber,
                                       string sessionId,
                                       string vin = null,
@@ -29,19 +30,27 @@ namespace CheckAutoBot.Managers
                                       string chassis = null,
                                       string eaisto = null)
         {
-            var diagnosticCard = _eaisto.GetDiagnosticCard(captcha, sessionId, vin, licensePlate, bodyNumber, chassis, eaisto);
+            var eaistoResult = _eaisto.GetDiagnosticCard(captcha, sessionId, vin, licensePlate, bodyNumber, chassis, eaisto);
 
-            if (string.IsNullOrWhiteSpace(diagnosticCard.ErrorMessage) &&
-                !string.IsNullOrWhiteSpace(diagnosticCard.Vin))
-                return diagnosticCard;
+            if (!string.IsNullOrWhiteSpace(eaistoResult.ErrorMessage))
+            {
+                if (eaistoResult.ErrorMessage == _notFoundError)
+                    return null;
 
-            else if (diagnosticCard.ErrorMessage == _notFoundError)
-                return null;
+                if (eaistoResult.ErrorMessage == _invalidCaptchaError)
+                    throw new InvalidCaptchaException(captcha);
 
-            else if (diagnosticCard.ErrorMessage == _invalidCaptchaError)
-                throw new InvalidCaptchaException(captcha);
+                throw new InvalidOperationException(eaistoResult.ErrorMessage);
+            }
+            else
+            {
+                var lastDiagnosticCard = eaistoResult.DiagnosticCards.FirstOrDefault();
 
-            throw new InvalidOperationException(diagnosticCard.ErrorMessage);
+                if (lastDiagnosticCard == null || string.IsNullOrWhiteSpace(lastDiagnosticCard.Vin))
+                    return null;
+
+                return lastDiagnosticCard;
+            }
         }
 
         public CaptchaResult GetCaptcha()

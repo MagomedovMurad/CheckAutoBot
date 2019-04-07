@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CheckAutoBot.PledgeModels
 {
-    public class PledgeListItem
+    public class PledgeListItem1
     {
         [JsonProperty("index")]
         public string index { get; set; }
@@ -20,19 +20,19 @@ namespace CheckAutoBot.PledgeModels
         public string PropertiesRemained { get; set; }
 
         [JsonProperty("properties")]
-        public List<PledgeProperty> Properties { get; set; }
+        public List<PledgeProperty1> Properties { get; set; }
 
         /// <summary>
         /// Зологодатели
         /// </summary>
         [JsonProperty("pledgors")]
-        public List<Pledgor> Pledgors { get; set; }
+        public List<Pledgor1> Pledgors { get; set; }
 
         /// <summary>
         /// Залогодержатели
         /// </summary>
         [JsonProperty("pledgees")]
-        public List<Pledgee> Pledgees { get; set; }
+        public List<Pledgee1> Pledgees { get; set; }
 
         [JsonProperty("position")]
         public string Position { get; set; }

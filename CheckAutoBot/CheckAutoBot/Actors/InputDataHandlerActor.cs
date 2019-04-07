@@ -169,10 +169,10 @@ namespace CheckAutoBot.Actors
 
                 var data = auto.LicensePlate != null ? $"гос. номеру {autoData}" : $"VIN коду {autoData}";
                 var paylink = YandexMoney.GenerateQuickpayUrl(autoData, auto.Id.ToString());
-                var text = $"💵 Оплатите предыдущий запрос по {data}. {Environment.NewLine}" +
+                var text = $"💵 Оплатите предыдущий запрос по {data} (3&#8419;8&#8419; руб.). {Environment.NewLine}" +
                            $"Для оплаты перейдите по ссылке:{Environment.NewLine}" +
                            $"{paylink}{Environment.NewLine}";
-                if(succesfullComletedRequests.Count() < 5)
+                if(succesfullComletedRequests.Count() < 6)
                     text = text + $"Или выберите доступное действие для {autoData}.";
                 var keyboard = _keyboardBuilder.CreateKeyboard(succesfullComletedRequests, typeof(Auto));
                 SendMessageToUser(keyboard, userId, text);

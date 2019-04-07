@@ -127,11 +127,11 @@ namespace CheckAutoBot.Actors
                 var value = ReplaceLatinToCyrillic(match.Value);
                 return new KeyValuePair<InputDataType, string>(InputDataType.LicensePlate, value);
             }
-            match = _vinCodeRegex.Match(inputStr);
+            match = _vinCodeRegex.Match(stringWithOutWiteSpace);
             if (match.Success)
             {
                 var value = ReplaceCyrillicToLatin(match.Value);
-                return new KeyValuePair<InputDataType, string>(InputDataType.Vin, match.Value);
+                return new KeyValuePair<InputDataType, string>(InputDataType.Vin, value);
             }
 
            // match = _fioRegex.Match(inputStr);

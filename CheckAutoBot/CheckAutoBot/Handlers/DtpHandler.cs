@@ -109,6 +109,8 @@ namespace CheckAutoBot.Handlers
                 if (ForImages(type, pointInt))
                     pointsForImage.Add(point);
             }
+            if (!pointsForImage.Any())
+                return null;
 
             var svg = _svgBuilder.GenerateDamagePointsSvg(pointsForImage.ToArray(), type);
             return SvgToPngConverter.Convert(svg);
@@ -117,7 +119,7 @@ namespace CheckAutoBot.Handlers
         private bool ForImages(DamagePointsType type, int pointId)
         {
             if (type == DamagePointsType.New)
-                return Enumerable.Range(10, 11).Contains(pointId);
+                return pointId >= 10;
             else
                 return Enumerable.Range(1, 9).Contains(pointId);
         }

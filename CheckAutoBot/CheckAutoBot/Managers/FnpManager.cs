@@ -1,5 +1,5 @@
 ﻿using CheckAutoBot.Exceptions;
-using CheckAutoBot.PledgeModels;
+using CheckAutoBot.FnpModels;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -9,6 +9,7 @@ namespace CheckAutoBot.Managers
 {
     public class FnpManager
     {
+        private readonly string _invalidCaptchaError = "Captcha token required";
         private readonly Fnp _fnp;
 
         public FnpManager()
@@ -16,23 +17,22 @@ namespace CheckAutoBot.Managers
             _fnp = new Fnp();
         }
 
-        public PledgeResult GetPledges(string vin, string captcha, string sessionId)
+        public PledgeResponse GetPledges(string vin, string captcha, string sessionId)
         {
-            try
-            {
-                return _fnp.GetPledges(vin, captcha, sessionId);
-            }
-            catch (WebException ex)
-            {
-                HttpStatusCode? status = (ex.Response as HttpWebResponse)?.StatusCode;
 
-                if (status == HttpStatusCode.NotFound)
-                    return null;
-                else if (status == HttpStatusCode.Forbidden)
+            var response = _fnp.GetPledges(vin, captcha, sessionId);
+
+            if (response is null)
+                throw new InvalidOperationException("Response is null");
+
+            if (!string.IsNullOrEmpty(response.Error))
+            {
+                if (response.Message == _invalidCaptchaError)
                     throw new InvalidCaptchaException(captcha);
-
-                throw ex;
+                throw new InvalidOperationException($"Error: {response?.Message}. Status code: {response?.Status}. Message: {response?.Message}");
             }
+
+            return response;
         }
 
         public CaptchaResult GetCaptcha()

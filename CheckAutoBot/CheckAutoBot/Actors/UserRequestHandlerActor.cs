@@ -272,7 +272,7 @@ namespace CheckAutoBot.Actors
                 var autoData = auto.LicensePlate != null ? auto.LicensePlate : auto.Vin;
                 var dataWithType = auto.LicensePlate != null ? $"гос. номеру {autoData}" : $"VIN коду {autoData}";
                 var paylink = YandexMoney.GenerateQuickpayUrl(autoData, auto.Id.ToString());
-                var text = $"💵 Оплатите запрос по {dataWithType} для выполнения следующего.{Environment.NewLine}" +
+                var text = $"💵 Оплатите запрос по {dataWithType} (3&#8419;8&#8419; руб.) для выполнения следующего.{Environment.NewLine}" +
                            $"Для оплаты перейдите по ссылке:{Environment.NewLine} " +
                            $"{paylink}";
                 var msg = new SendToUserMessage(requestObject.UserId, text);

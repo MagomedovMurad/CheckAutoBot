@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using CheckAutoBot.Contracts;
 using CheckAutoBot.Enums;
+using CheckAutoBot.FnpModels;
 using CheckAutoBot.Managers;
-using CheckAutoBot.PledgeModels;
 using CheckAutoBot.Storage;
 using CheckAutoBot.Utils;
 
@@ -42,32 +42,31 @@ namespace CheckAutoBot.Handlers
             return new PreGetResult(captchaRequest.Id, captchaResult.SessionId);
         }
 
-        private Dictionary<string, byte[]> GenerateResponse(PledgeResult result)
+        private Dictionary<string, byte[]> GenerateResponse(PledgeResponse response)
         {
             var messages = new Dictionary<string, byte[]>();
-
-            if (result == null)
+            var pledges = response.Data.Where(x => x.History.FirstOrDefault(h => h.Type == HistoryItemType.Exclusion) == null);
+            if (pledges.Any())
+            {
+                for (int i = 0; i < pledges.Count(); i++)
+                {
+                    var text = PledgeToText(pledges.ElementAt(i), i + 1);
+                    messages.Add(text, null);
+                }
+            }
+            else
             {
                 var text = "✅ В базе ФНП не найдены сведения о нахождении транспортного средства в залоге";
                 messages.Add(text, null);
             }
-            else
-            {
-                for (int i = 0; i < result.Pledges?.Count; i++)
-                {
-                    var text = PledgeToText(result.Pledges[i], i+1);
-                    messages.Add(text, null);
-                }
-            }
-
             return messages;
         }
 
-        private string PledgeToText(PledgeListItem pledge, int number)
+        private string PledgeToText(Pledge pledge, int number)
         {
-            var text = $"📃 {number}. Уведомление о возникновении залога №{pledge.ReferenceNumber} {Environment.NewLine}";
-            text += $"Дата регистрации: {pledge.RegisterDate}{Environment.NewLine}";
-            text += $"Залогодатель: {string.Join(Environment.NewLine, pledge.Pledgors.Select(x => PledgorToText(x)))}";
+            var text = $"📃 {number}. Уведомление о возникновении залога №{pledge.Id} {Environment.NewLine}";
+            text += $"Дата регистрации: {pledge.RegistrationDate.ToString("dd.MM.yyyy H:mm:ss")}{Environment.NewLine}";
+            text += $"Залогодатель: {string.Join(Environment.NewLine, pledge.Pledgors.Select(x => PledgorToText(x)))} {Environment.NewLine}";
             text += $"Залогодержатель: {string.Join(Environment.NewLine, pledge.Pledgees.Select(x => PledgeeToText(x)))}";
             text += Environment.NewLine;
 
@@ -76,14 +75,49 @@ namespace CheckAutoBot.Handlers
 
         private string PledgorToText(Pledgor pledgor)
         {
-            var text = pledgor.Type == SubjectType.Person ? "Физическое лицо" : "Юридическое лицо";
+            if (pledgor.Organization != null)
+                return $"Юридическое лицо, {pledgor.Organization}";
+
+            if (pledgor.PrivatePerson != null)
+                return PrivatePersonToString(pledgor.PrivatePerson);
+
+            if (pledgor.SoleProprietorship != null)
+                return SoleProprietorshipToString(pledgor.SoleProprietorship);
+
+            var text = pledgor.Organization ?? 
+                    PrivatePersonToString(pledgor.PrivatePerson) ?? 
+                    SoleProprietorshipToString(pledgor.SoleProprietorship);
+
             return text += Environment.NewLine;
+        }
+
+        private string PrivatePersonToString(PrivatePerson person)
+        {
+            return $"Физическое лицо, " +
+                   $"{person.Name}, {person.Birthday.ToString("dd.MM.yyyy")}";
+        }
+
+        private string SoleProprietorshipToString(SoleProprietorship soleProprietorship)
+        {
+            return $"Индивидуальный предприниматель, " +
+                   $"{soleProprietorship.Name}, {soleProprietorship.Birthday}, ОГРНИП:{soleProprietorship.Ogrnip}";
         }
 
         private string PledgeeToText(Pledgee pledgee)
         {
-            var text = pledgee.Type == SubjectType.Organization ? "Юридическое лицо" : "Физическое лицо";
-            return text += Environment.NewLine + pledgee.Name + Environment.NewLine;
+            string text = null;
+            if (pledgee.Organization != null)
+                text = OrganizationToString(pledgee.Organization);
+
+            if (pledgee.PrivatePerson != null)
+                text = PrivatePersonToString(pledgee.PrivatePerson);
+
+            return text += Environment.NewLine;
+        }
+
+        private string OrganizationToString(Organization organization)
+        {
+            return $"Юридическое лицо, {organization.Name}";
         }
     }
 }

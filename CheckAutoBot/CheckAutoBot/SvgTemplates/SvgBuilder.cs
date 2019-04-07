@@ -19,6 +19,10 @@ namespace CheckAutoBot.Svg
         {
             _autoTemplateV1 = File.ReadAllText(@"SvgTemplates/AutoTemplateV1Svg.xml");
             _autoTemplateV2 = File.ReadAllText(@"SvgTemplates/AutoTemplateV2Svg.xml");
+            _busTemplate = File.ReadAllText(@"SvgTemplates/BusTemplateSvg.xml");
+            _motoTemplate = File.ReadAllText(@"SvgTemplates/MotoTemplateSvg.xml");
+            _truckTemplate = File.ReadAllText(@"SvgTemplates/TruckTemplateSvg.xml");
+            _schemaTemplate = File.ReadAllText(@"SvgTemplates/SchemaTemplateSvg.xml");
         }
 
         public string GenerateDamagePointsSvg(string[] damagePoints, DamagePointsType type)
@@ -56,7 +60,7 @@ namespace CheckAutoBot.Svg
                 else if (id >= 50 && id <= 45)  //Moto
                     template = _motoTemplate;
                 else if (id >= 60 && id <= 80)  //Truck
-                    template = _motoTemplate;
+                    template = _truckTemplate;
                 else if (id >= 90 && id <= 99)  //Schema
                     template = _schemaTemplate;
                 else return null;

@@ -26,7 +26,7 @@ namespace CheckAutoBot.Handlers
         {
             var dkCacheItem = captchas.FirstOrDefault(x => x.ActionType == ActionType.DiagnosticCard);
 
-            var diagnosticCard = _eaistoManager.GetDiagnosticCard(dkCacheItem.CaptchaWord, null, dkCacheItem.SessionId, licensePlate: licensePlate);
+            var diagnosticCard = _eaistoManager.GetLastDiagnosticCard(dkCacheItem.CaptchaWord, null, dkCacheItem.SessionId, licensePlate: licensePlate);
             if (diagnosticCard == null)
                 return null;
 

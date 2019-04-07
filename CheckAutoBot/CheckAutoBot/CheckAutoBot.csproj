@@ -12,6 +12,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="FnpModels\Pledge1.cs" />
+    <Compile Remove="FnpModels\PledgeListItem1.cs" />
+    <Compile Remove="FnpModels\PledgeProperty1.cs" />
+    <Compile Remove="FnpModels\PledgeReponse1.cs" />
+    <Compile Remove="FnpModels\Pledgor1.cs" />
+    <Compile Remove="FnpModels\SubjectType.cs" />
     <Compile Remove="Handlers\OsagoVechicleHandler.cs" />
     <Compile Remove="Handlers\PolicyNumberHandler.cs" />
     <Compile Remove="Handlers\VinByDiagnosticCardHandler.cs" />
@@ -50,6 +56,18 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="SvgTemplates\AutoTemplateV1Svg.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SvgTemplates\BusTemplateSvg.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SvgTemplates\MotoTemplateSvg.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SvgTemplates\SchemaTemplateSvg.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SvgTemplates\TruckTemplateSvg.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CheckAutoBot.PledgeModels
 {
-    public class PledgeProperty
+    public class PledgeProperty1
     {
         [JsonProperty("prefix")]
         public string Prefix { get; set; }

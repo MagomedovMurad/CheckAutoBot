@@ -67,9 +67,6 @@ namespace CheckAutoBot.Managers
             if (response == null)
                 throw new InvalidOperationException("Wanted response is null");
 
-            if (response.RequestResult.Wanteds.Any())
-                return response.RequestResult;
-
             if (response.Status == (int)HttpStatusCode.OK)
             {
                 if (response.RequestResult.Wanteds.Any())

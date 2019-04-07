@@ -1,6 +1,6 @@
 ﻿using CheckAutoBot.Exceptions;
+using CheckAutoBot.FnpModels;
 using CheckAutoBot.Infrastructure;
-using CheckAutoBot.PledgeModels;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -12,50 +12,76 @@ namespace CheckAutoBot.Managers
 {
     public class Fnp
     {
-        private const string url = "https://www.reestr-zalogov.ru/search/endpoint";
-        public PledgeResult GetPledges(string vin, string captcha, string jsessionId)
+        private const string url = "https://www.reestr-zalogov.ru/api/search";
+        public PledgeResponse GetPledges(string vin, string captcha, string jsessionId)
         {
-                string url = $"https://www.reestr-zalogov.ru/search/endpoint";
+            string url = $"https://www.reestr-zalogov.ru/api/search?token={captcha}";
 
-                string stringData = $"VIN={vin}&formName=vehicle-form&token={captcha}&uuid={Guid.NewGuid()}";
-                byte[] data = Encoding.ASCII.GetBytes(stringData);
+            //string stringData = $"VIN={vin}&formName=vehicle-form&token={captcha}&uuid={Guid.NewGuid()}";
 
-                #region Headers
-                WebHeaderCollection headers = new WebHeaderCollection();
-                headers.Add(HttpRequestHeader.Host, "www.reestr-zalogov.ru");
-                headers.Add(HttpRequestHeader.Connection, "keep-alive");
-                headers.Add(HttpRequestHeader.ContentLength, data.Length.ToString());
-                headers.Add(HttpRequestHeader.Accept, "*/*");
-                headers.Add("Origin", "https://www.reestr-zalogov.ru");
-                headers.Add("X-Requested-With", "XMLHttpRequest");
-                headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 YaBrowser/18.6.1.770 Yowser/2.5 Safari/537.36");
-                headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded; charset=UTF-8");
-                headers.Add(HttpRequestHeader.Referer, "https://www.reestr-zalogov.ru/search/index");
-                headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br");
-                headers.Add(HttpRequestHeader.AcceptLanguage, "ru,en;q=0.9");
-                #endregion
+            var filter = JsonConvert.SerializeObject(GenerateFilter(vin));
+            byte[] content = Encoding.ASCII.GetBytes(filter);
 
-                #region Cookie
-                CookieContainer cookieContainer = new CookieContainer();
-                Cookie cookie = new Cookie();
-                cookie.Name = "JSESSIONID";
-                cookie.Value = jsessionId;
-                cookieContainer.Add(new Uri(url), cookie);
-                #endregion
+            #region Headers
+            WebHeaderCollection headers = new WebHeaderCollection();
+            headers.Add(HttpRequestHeader.Host, "www.reestr-zalogov.ru");
+            headers.Add(HttpRequestHeader.Connection, "keep-alive");
+            headers.Add(HttpRequestHeader.ContentLength, content.Length.ToString());
+            headers.Add(HttpRequestHeader.Accept, "*/*");
+            headers.Add("Origin", "https://www.reestr-zalogov.ru");
+            headers.Add("X-Requested-With", "XMLHttpRequest");
+            headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 YaBrowser/18.6.1.770 Yowser/2.5 Safari/537.36");
+            headers.Add(HttpRequestHeader.ContentType, "application/json;charset=UTF-8");
+            headers.Add(HttpRequestHeader.Referer, "https://www.reestr-zalogov.ru/search/index");
+            headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br");
+            headers.Add(HttpRequestHeader.AcceptLanguage, "ru,en;q=0.9");
+            #endregion
 
-                HttpWebRequest request = WebRequest.CreateHttp(url);
-                request.Method = "POST";
-                request.Headers = headers;
-                request.CookieContainer = cookieContainer;
+            #region Cookie
+            CookieContainer cookieContainer = new CookieContainer();
+            Cookie cookie = new Cookie();
+            cookie.Name = "JSESSIONID";
+            cookie.Value = jsessionId;
+            cookieContainer.Add(new Uri(url), cookie);
+            #endregion
 
-                request.AddContent(data);
+            HttpWebRequest request = WebRequest.CreateHttp(url);
+            request.Method = "POST";
+            request.Headers = headers;
+            request.CookieContainer = cookieContainer;
 
+            request.AddContent(content);
+            WebResponse response = request.GetResponse();
+            var json = response.ReadDataAsString();
+            response.Close();
 
-                WebResponse response = request.GetResponse();
-                var json = response.ReadDataAsString();
-                response.Close();
+            return JsonConvert.DeserializeObject<PledgeResponse>(json);
+        }
 
-                return JsonConvert.DeserializeObject<PledgeResult>(json);
+        private SearchFilter GenerateFilter(string vin)
+        {
+            var vechicleProperty = new VechicleProperty()
+            {
+                Vin = vin
+            };
+
+            var filterProperty = new FilterProperty()
+            {
+                VechicleProperty = vechicleProperty
+            };
+
+            var filter = new Filter()
+            {
+                Property = filterProperty
+            };
+
+            return new SearchFilter()
+            {
+                Mode = SearchMode.All,
+                Filter = filter,
+                Limit = 50,
+                Offset = 0
+            };
         }
 
         public CaptchaResult GetCaptcha()

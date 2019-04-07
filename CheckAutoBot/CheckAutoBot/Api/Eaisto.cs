@@ -16,7 +16,7 @@ namespace CheckAutoBot.Managers
         private const string captchaUrl = "https://eaisto.info/securimage_show.php ";
 
 
-        public DiagnosticCard GetDiagnosticCard(string captcha,
+        public EaistoResult GetDiagnosticCard(string captcha,
                                       string sessionId,
                                       string vin = null,
                                       string licensePlate = null,
@@ -113,7 +113,7 @@ namespace CheckAutoBot.Managers
             return new CaptchaResult() { SessionId = phpsessid, ImageBase64 = base64 };
         }
 
-        private DiagnosticCard ParseHtml(string html)
+        private EaistoResult ParseHtml(string html)
         {
             try
             {
@@ -130,38 +130,45 @@ namespace CheckAutoBot.Managers
                 HtmlNodeCollection dcTables = doc.DocumentNode.SelectNodes(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody");
 
                 if (dcTables == null)
-                    return new DiagnosticCard() { ErrorMessage = errorMessage };
+                    return new EaistoResult() { ErrorMessage = errorMessage };
 
-                var lastDcTable = dcTables[0];
-
-                var lines = (lastDcTable.ChildNodes as IEnumerable<HtmlNode>).Where(x => x.Name == "tr").ToList();
-
-                var dictionary = lines.Select(l =>
+                var diagnosticCards = new List<DiagnosticCard>();
+                foreach (var dcTable in dcTables)
                 {
-                    var keyAndValue = l.ChildNodes.Where(chn => chn.Name == "td").ToList();
-                    var key = keyAndValue[0].InnerText;
-                    var value = keyAndValue[1].InnerText;
+                    var lines = (dcTable.ChildNodes as IEnumerable<HtmlNode>).Where(x => x.Name == "tr").ToList();
 
-                    return new KeyValuePair<string, string>(key, value);
-                }).ToDictionary(k => k.Key, v => v.Value);
+                    var dictionary = lines.Select(l =>
+                    {
+                        var keyAndValue = l.ChildNodes.Where(chn => chn.Name == "td").ToList();
+                        var key = keyAndValue[0].InnerText;
+                        var value = keyAndValue[1].InnerText;
 
-                dictionary.TryGetValue("Марка:", out string brand);
-                dictionary.TryGetValue("Модель:", out string model);
-                dictionary.TryGetValue("Дата с:", out string dateFrom);
-                dictionary.TryGetValue("Дата до:", out string dateTo);
-                dictionary.TryGetValue("VIN:", out string vin);
-                dictionary.TryGetValue("Регистрационный номер:", out string licensePlate);
-                dictionary.TryGetValue("Номер ЕАИСТО:", out string eaistoNumber);
+                        return new KeyValuePair<string, string>(key, value);
+                    }).ToDictionary(k => k.Key, v => v.Value);
 
-                return new DiagnosticCard()
+                    dictionary.TryGetValue("Марка:", out string brand);
+                    dictionary.TryGetValue("Модель:", out string model);
+                    dictionary.TryGetValue("Дата с:", out string dateFrom);
+                    dictionary.TryGetValue("Дата до:", out string dateTo);
+                    dictionary.TryGetValue("VIN:", out string vin);
+                    dictionary.TryGetValue("Регистрационный номер:", out string licensePlate);
+                    dictionary.TryGetValue("Номер ЕАИСТО:", out string eaistoNumber);
+
+                    diagnosticCards.Add(new DiagnosticCard()
+                    {
+                        Brand = brand,
+                        Model = model,
+                        Vin = vin,
+                        LicensePlate = licensePlate,
+                        EaistoNumber = eaistoNumber,
+                        DateFrom = dateFrom,
+                        DateTo = dateTo
+                    });
+                }
+
+                return new EaistoResult()
                 {
-                    Brand = brand,
-                    Model = model,
-                    Vin = vin,
-                    LicensePlate = licensePlate,
-                    EaistoNumber = eaistoNumber,
-                    DateFrom = dateFrom,
-                    DateTo = dateTo,
+                    DiagnosticCards = diagnosticCards,
                     ErrorMessage = errorMessage
                 };
             }

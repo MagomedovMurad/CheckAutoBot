@@ -1,6 +1,7 @@
 ﻿using Akka.Actor;
 using CheckAutoBot.Messages;
 using CheckAutoBot.Storage;
+using CheckAutoBot.Utils;
 using CheckAutoBot.Vk.Api.GroupModels;
 using CheckAutoBot.Vk.Api.MessagesModels;
 using Newtonsoft.Json;
@@ -14,9 +15,9 @@ namespace CheckAutoBot.Actors
     public class GroupEventsHandlerActor : ReceiveActor
     {
         private ICanSelectActor _actorSelector;
-        private readonly ILogger _logger;
+        private readonly ICustomLogger _logger;
 
-        public GroupEventsHandlerActor(ILogger logger)
+        public GroupEventsHandlerActor(ICustomLogger logger)
         {
             _actorSelector = new ActorSelector();
             _logger = logger;
@@ -43,7 +44,7 @@ namespace CheckAutoBot.Actors
                     MessageDenyEventHandler(userId);
                     break;
                 default:
-                    _logger.Error($"Не найден обработчик для типа \"{message.EventType}\"");
+                    _logger.WriteToLog(LogLevel.Error, $"Не найден обработчик для типа «{message.EventType}»", true);
                     break;
             }
         }
@@ -51,19 +52,22 @@ namespace CheckAutoBot.Actors
         private void PrivateMessageHandler(PrivateMessage message)
         {
             _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageHandlerActor.Path).Tell(message, Self);
-            _logger.Debug($"PrivateMessageHandler. Send message to PrivateMessageHandlerActor. PrivateMessage.Text={message.Text}");
+            var debug = $"PrivateMessageHandler. Send message to PrivateMessageHandlerActor. PrivateMessage.Text={message.Text}";
+            _logger.WriteToLog(LogLevel.Debug, debug);
         }
 
         private void MessageAllowEventHandler(MessagesAllowedEvent @event)
         {
             var message = new MessagesAllowedEventMessage(@event.UserId);
             _actorSelector.ActorSelection(Context, ActorsPaths.SubscribersActionsHandlerActor.Path).Tell(message, Self);
-            _logger.Debug($"Пользователь с идентификатором {@event.UserId} разрешил отправку личных сообщений");
+            var debug = $"Пользователь с идентификатором {@event.UserId} разрешил отправку личных сообщений";
+            _logger.WriteToLog(LogLevel.Debug, debug, true);
         }
 
         private void MessageDenyEventHandler(int userId)
         {
-            _logger.Warn($"Пользователь с идентификатором {userId} запретил отправку личных сообщений");
+            var warn = $"Пользователь с идентификатором {userId} запретил отправку личных сообщений";
+            _logger.WriteToLog(LogLevel.Warn, warn, true);
         }
 
 

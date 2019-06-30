@@ -4,7 +4,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 
-namespace CheckAutoBot.Infrastructure
+namespace CheckAutoBot.Infrastructure.Extensions
 {
     public static class WebResposeExtensions
     {

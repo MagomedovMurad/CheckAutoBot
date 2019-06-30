@@ -12,6 +12,6 @@ namespace CheckAutoBot.Contracts
 
         PreGetResult PreGet();
 
-        string Get(string licensePlate, IEnumerable<CaptchaCacheItem> cacheItems);
+        string Get(string licensePlate, IEnumerable<ActionCacheItem> cacheItems);
     }
 }

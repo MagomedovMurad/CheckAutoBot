@@ -1,4 +1,5 @@
 ﻿using CheckAutoBot.Infrastructure;
+using CheckAutoBot.Infrastructure.Extensions;
 using CheckAutoBot.Vk.Api.PhotosModels;
 using Newtonsoft.Json;
 using System;

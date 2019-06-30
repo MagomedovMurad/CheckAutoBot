@@ -1,6 +1,7 @@
 ﻿using CheckAutoBot.EaistoModels;
 using CheckAutoBot.Exceptions;
 using CheckAutoBot.Infrastructure;
+using CheckAutoBot.Infrastructure.Extensions;
 using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;

@@ -1,12 +1,11 @@
 ﻿using CheckAutoBot.Enums;
-using CheckAutoBot.Storage;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace CheckAutoBot.Utils
 {
-    public class CaptchaCacheItem
+    public class ActionCacheItem
     {
         public string CaptchaId { get; set; }
 
@@ -17,9 +16,5 @@ namespace CheckAutoBot.Utils
         public string CaptchaWord { get; set; }
 
         public string SessionId { get; set; }
-
-        public DateTime Date { get; set; }
-
-        public Guid SubscriberId { get; set; }
     }
 }

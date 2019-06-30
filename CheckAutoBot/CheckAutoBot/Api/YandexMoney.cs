@@ -1,4 +1,5 @@
 ﻿using CheckAutoBot.Infrastructure;
+using CheckAutoBot.Infrastructure.Extensions;
 using CheckAutoBot.YandexMoneyModels;
 using System;
 using System.Collections.Generic;

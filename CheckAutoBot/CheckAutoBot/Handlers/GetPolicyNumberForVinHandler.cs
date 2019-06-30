@@ -21,7 +21,7 @@ namespace CheckAutoBot.Handlers
         }
         public virtual ActionType SupportedActionType => ActionType.PolicyNumber;
 
-        public string Get(string licensePlate, IEnumerable<CaptchaCacheItem> captchas)
+        public string Get(string licensePlate, IEnumerable<ActionCacheItem> captchas)
         {
             var policyNumberCacheItem = captchas.First(x => x.ActionType == ActionType.PolicyNumber);
             var osagoVechicleCacheItem = captchas.First(x => x.ActionType == ActionType.OsagoVechicle);

@@ -1,16 +1,18 @@
 ﻿using CheckAutoBot.Infrastructure;
+using CheckAutoBot.Infrastructure.Extensions;
 using CheckAutoBot.Vk.Api.MessagesModels;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace CheckAutoBot.Vk.Api
 {
     public class Messages
     {
-        public static void Send(SendMessageParams args)
+        public static async Task Send(SendMessageParams args)
         {
             string url = $"https://api.vk.com/method/messages.send";
             //var encodedMsg = WebUtility.UrlEncode(args.Message);
@@ -31,7 +33,7 @@ namespace CheckAutoBot.Vk.Api
 
             request.AddContent(data);
 
-            WebResponse response = request.GetResponse();
+            WebResponse response = await request.GetResponseAsync();
             var json = response.ReadDataAsString();
             response.Close();
         }

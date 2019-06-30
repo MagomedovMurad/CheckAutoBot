@@ -1,6 +1,7 @@
 ﻿using CheckAutoBot.Exceptions;
 using CheckAutoBot.FnpModels;
 using CheckAutoBot.Infrastructure;
+using CheckAutoBot.Infrastructure.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

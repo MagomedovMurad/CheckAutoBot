@@ -22,7 +22,7 @@ namespace CheckAutoBot.Handlers
 
         public ActionType SupportedActionType => ActionType.DiagnosticCard;
 
-        public string Get(string licensePlate, IEnumerable<CaptchaCacheItem> captchas)
+        public string Get(string licensePlate, IEnumerable<ActionCacheItem> captchas)
         {
             var dkCacheItem = captchas.FirstOrDefault(x => x.ActionType == ActionType.DiagnosticCard);
 

@@ -1,4 +1,5 @@
-﻿using NLog;
+﻿using CheckAutoBot.Utils;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,9 +10,9 @@ namespace CheckAutoBot.Storage
     public class DbQueryExecutor
     {
         private IRepositoryFactory _repositoryFactory;
-        private ILogger _logger;
+        private ICustomLogger _logger;
 
-        public DbQueryExecutor(IRepositoryFactory repositoryFactory, ILogger logger)
+        public DbQueryExecutor(IRepositoryFactory repositoryFactory, ICustomLogger logger)
         {
             _repositoryFactory = repositoryFactory;
             _logger = logger;
@@ -33,7 +34,8 @@ namespace CheckAutoBot.Storage
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Ошибка в БД при получении запроса с идентификатором {requestId}");
+                var error = $"Ошибка в БД при получении запроса с идентификатором {requestId}: {ex}";
+                _logger.WriteToLog(LogLevel.Error, error, true);
                 return null;
             }
         }
@@ -55,7 +57,8 @@ namespace CheckAutoBot.Storage
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Ошибка в БД при обновлении VIN кода в объекте запроса.  RequestObjectId: {requestObjectId}, vin: {vin}");
+                var error = $"Ошибка в БД при обновлении VIN кода в объекте запроса.  RequestObjectId: {requestObjectId}, vin: {vin}. {ex}";
+                _logger.WriteToLog(LogLevel.Error, error, true);
             }
         }
 
@@ -75,7 +78,8 @@ namespace CheckAutoBot.Storage
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Ошибка в БД при получении последнего объекта запроса пользователя({userId})");
+                var error = $"Ошибка в БД при получении последнего объекта запроса пользователя({userId}). {ex}";
+                _logger.WriteToLog(LogLevel.Error, error, true);
                 return null;
             }
         }
@@ -91,7 +95,8 @@ namespace CheckAutoBot.Storage
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Ошибка в БД при получении объекта запроса пользователя({id})");
+                var error = $"Ошибка в БД при получении объекта запроса пользователя({id}). {ex}";
+                _logger.WriteToLog(LogLevel.Error, error, true);
                 return null;
             }
         }
@@ -113,7 +118,8 @@ namespace CheckAutoBot.Storage
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Ошибка в БД при добавлении объекта запроса. UserId: {requestObject.UserId}");
+                var error = $"Ошибка в БД при добавлении объекта запроса. UserId: {requestObject.UserId}. {ex}";
+                _logger.WriteToLog(LogLevel.Error, error, true);
                 return false;
             }
         }
@@ -134,7 +140,8 @@ namespace CheckAutoBot.Storage
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Ошибка в БД при сохранении запроса пользователя. RequestObjectId: {userRequest.RequestObjectId}");
+                var error = $"Ошибка в БД при сохранении запроса пользователя. RequestObjectId: {userRequest.RequestObjectId}. {ex}";
+                _logger.WriteToLog(LogLevel.Error, error, true);
                 return null;
             }
         }
@@ -151,7 +158,8 @@ namespace CheckAutoBot.Storage
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Ошибка в БД при изменении статуса запроса с идентификатором {requestId}");
+                var error = $"Ошибка в БД при изменении статуса запроса с идентификатором {requestId}. {ex}";
+                _logger.WriteToLog(LogLevel.Error, error, true);
             }
         }
 
@@ -171,7 +179,8 @@ namespace CheckAutoBot.Storage
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Ошибка в БД при получении типов выполненных запросов для RequestObject с id: {requestObjectId}");
+                var error = $"Ошибка в БД при получении типов выполненных запросов для RequestObject с id: {requestObjectId}. {ex}";
+                _logger.WriteToLog(LogLevel.Error, error, true);
                 return null;
             }
         }
@@ -192,7 +201,8 @@ namespace CheckAutoBot.Storage
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Ошибка в БД при получении типов выполненных запросов для RequestObject с id: {requestObjectId}");
+                var error = $"Ошибка в БД при получении типов выполненных запросов для RequestObject с id: {requestObjectId}. {ex}";
+                _logger.WriteToLog(LogLevel.Error, error, true);
                 return true;
             }
         }
@@ -208,7 +218,8 @@ namespace CheckAutoBot.Storage
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Ошибка в БД при сохранении данных об оплате. RequestObject id: {requestObjectId}");
+                var error = $"Ошибка в БД при сохранении данных об оплате. RequestObject id: {requestObjectId}. {ex}";
+                _logger.WriteToLog(LogLevel.Error, error, true);
                 return true;
             }
         }
@@ -229,7 +240,8 @@ namespace CheckAutoBot.Storage
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Ошибка в БД при получении типов выполненных запросов для RequestObject с id: {requestObjectId}");
+                var error = $"Ошибка в БД при получении типов выполненных запросов для RequestObject с id: {requestObjectId}. {ex}";
+                _logger.WriteToLog(LogLevel.Error, error, true);
                 return true;
             }
         }
@@ -245,7 +257,8 @@ namespace CheckAutoBot.Storage
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Ошибка в БД при сохранении элемента кэша объекта запросов. RequestObjectId: {item.RequestObjectId}");
+                var error = $"Ошибка в БД при сохранении элемента кэша объекта запросов. RequestObjectId: {item.RequestObjectId}. {ex}";
+                _logger.WriteToLog(LogLevel.Error, error, true);
             }
         }
 
@@ -260,7 +273,8 @@ namespace CheckAutoBot.Storage
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Ошибка в БД при получении элемента кэша объекта запросов. RequestObjectId: {requestObjectId}");
+                var error = $"Ошибка в БД при получении элемента кэша объекта запросов. RequestObjectId: {requestObjectId}. {ex}";
+                _logger.WriteToLog(LogLevel.Error, error, true);
                 return null;
             }
         }

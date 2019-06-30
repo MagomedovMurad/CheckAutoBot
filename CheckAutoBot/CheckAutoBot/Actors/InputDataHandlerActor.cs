@@ -19,10 +19,10 @@ namespace CheckAutoBot.Actors
         private readonly DbQueryExecutor _queryExecutor;
         private readonly ICanSelectActor _actorSelector;
         private readonly KeyboardBuilder _keyboardBuilder;
-        private readonly ILogger _logger;
+        private readonly ICustomLogger _logger;
         private readonly VkApiManager _vkApi;
 
-        public InputDataHandlerActor(ILogger logger, DbQueryExecutor queryExecutor, VkApiManager vkApi)
+        public InputDataHandlerActor(ICustomLogger logger, DbQueryExecutor queryExecutor, VkApiManager vkApi)
         {
             _logger = logger;
             _queryExecutor = queryExecutor;

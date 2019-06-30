@@ -17,14 +17,14 @@ namespace CheckAutoBot.Actors
     public class PrivateMessageHandlerActor : ReceiveActor
     {
         private ActorSelector _actorSelection;
-        private readonly ILogger _logger;
+        private readonly ICustomLogger _logger;
         private DbQueryExecutor _queryExecutor;
 
         private Regex _regNumberRegex;
         private Regex _vinCodeRegex;
         //private Regex _fioRegex;
 
-        public PrivateMessageHandlerActor(DbQueryExecutor queryExecutor, ILogger logger)
+        public PrivateMessageHandlerActor(DbQueryExecutor queryExecutor, ICustomLogger logger)
         {
             _logger = logger;
             _queryExecutor = queryExecutor;
@@ -80,7 +80,6 @@ namespace CheckAutoBot.Actors
                 SendHelpMessage(message.FromId);
                 return;
             }
-
 
             var reqestObjectMessage = new UserInputDataMessage()
             {

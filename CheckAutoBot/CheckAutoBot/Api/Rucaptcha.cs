@@ -1,6 +1,7 @@
 ﻿using Akka.Serialization;
 using CheckAutoBot.Captcha;
 using CheckAutoBot.Infrastructure;
+using CheckAutoBot.Infrastructure.Extensions;
 using CheckAutoBot.Managers;
 using Newtonsoft.Json;
 using System;
@@ -16,9 +17,9 @@ namespace CheckAutoBot
     public class Rucaptcha
     {
         private const string apiKey = "3c0d64865e369b523fae883355223479";
-        public const string LpPingbackUrl = "http://95.31.241.19/bot/captcha/lp";
-        public const string VinPingbackUrl = "http://95.31.241.19/bot/captcha/vin";
-        public const string RequestPingbackUrl = "http://95.31.241.19/bot/captcha/request";
+        public const string LpPingbackUrl = "http://95.31.241.19/bot/captcha";
+        public const string VinPingbackUrl = "http://95.31.241.19/bot/captcha";
+        public const string RequestPingbackUrl = "http://95.31.241.19/bot/captcha";
 
         public CaptchaRequest SendReCaptcha2(string dataSiteKey, string pageUrl, string pingback)
         {
@@ -73,7 +74,7 @@ namespace CheckAutoBot
             return JsonConvert.DeserializeObject<CaptchaRequest>(json);
         }
 
-        public CaptchaAnswer GetCapthaResult(long capthchaId)
+        public CaptchaAnswer GetCapthaResult(string capthchaId)
         {
             var url = $"http://rucaptcha.com/res.php?key={apiKey}&action=get&id={capthchaId}&json=1";
             var json = ExecuteRequest(url, "GET");

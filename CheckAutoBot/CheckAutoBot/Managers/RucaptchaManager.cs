@@ -31,6 +31,11 @@ namespace CheckAutoBot.Managers
             _rucaptcha = new Rucaptcha();
         }
 
+        public string GetCaptchaResult(string captchaId)
+        {
+            return _rucaptcha.GetCapthaResult(captchaId).Answer;
+        }
+
         public CaptchaRequest SendImageCaptcha(string base64, string pingback)
         {
             var captchaRequest = _rucaptcha.SendImageCaptcha(base64, pingback);

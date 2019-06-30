@@ -4,6 +4,7 @@ using CheckAutoBot.Vk.Api.PhotosModels;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace CheckAutoBot.Utils
 {
@@ -37,7 +38,7 @@ namespace CheckAutoBot.Utils
 
         #region Messages
 
-        public void SendMessage(int userId, string text, string attachments, Keyboard keyboard)
+        public async Task SendMessage(int userId, string text, string attachments, Keyboard keyboard)
         {
             var messageParams = new SendMessageParams()
             {
@@ -48,7 +49,7 @@ namespace CheckAutoBot.Utils
                 Keyboard = keyboard
             };
 
-            Vk.Api.Messages.Send(messageParams);
+            await Vk.Api.Messages.Send(messageParams);
         }
 
         #endregion Messages

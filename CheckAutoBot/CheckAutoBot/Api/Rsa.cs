@@ -1,6 +1,7 @@
 ﻿//using HtmlAgilityPack;
 using CheckAutoBot.Exceptions;
 using CheckAutoBot.Infrastructure;
+using CheckAutoBot.Infrastructure.Extensions;
 using CheckAutoBot.RsaModels;
 using Newtonsoft.Json;
 using System;

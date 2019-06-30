@@ -1,5 +1,6 @@
 ﻿using CheckAutoBot.AvtoYslygaModels;
 using CheckAutoBot.Infrastructure;
+using CheckAutoBot.Infrastructure.Extensions;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using System;
@@ -80,7 +81,7 @@ namespace CheckAutoBot.Api
             }
             catch (Exception ex)
             {
-                throw new Exception("Eaisto HTML parsing exception", ex);
+                throw new Exception("AvtoYsluga HTML parsing exception", ex);
             }
         }
 

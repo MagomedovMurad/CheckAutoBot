@@ -4,4 +4,12 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="EasyNetQ" Version="3.4.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Bus\" />
+  </ItemGroup>
+
 </Project>

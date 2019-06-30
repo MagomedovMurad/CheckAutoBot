@@ -15,10 +15,10 @@ namespace CheckAutoBot.Actors
 {
     public class PrivateMessageSenderActor: ReceiveActor
     {
-        private readonly ILogger _logger;
+        private readonly ICustomLogger _logger;
         private readonly VkApiManager _vkApi;
 
-        public PrivateMessageSenderActor(ILogger logger, VkApiManager vkApi)
+        public PrivateMessageSenderActor(ICustomLogger logger, VkApiManager vkApi)
         {
             _logger = logger;
             _vkApi = vkApi;
@@ -28,7 +28,7 @@ namespace CheckAutoBot.Actors
         private async Task SendToUserMessageHandler(SendToUserMessage message)
         {
             var attachments = PhotoToAttachment(message.UserId, message.Photo);
-            _vkApi.SendMessage(message.UserId, message.Text, attachments, message.Keyboard);
+            await _vkApi.SendMessage(message.UserId, message.Text, attachments, message.Keyboard);
         }
 
         private string PhotoToAttachment(int userId, byte[] binPhoto)

@@ -37,13 +37,13 @@ namespace CheckAutoBot.Actors
             try
             {
                 // var isSubscriber = Groups.IsMember("checkautobot", message.UserId.ToString(), "374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2");
-                var isSubscriber = _vkApi.UserIsMember("checkautobot", message.UserId);
+                //var isSubscriber = _vkApi.UserIsMember("checkautobot", message.UserId);
 
-                if (!isSubscriber)
-                {
-                    SendMessageToUser(null, message.UserId, StaticResources.OnlySubscribers);
-                    return true;
-                }
+                //if (!isSubscriber)
+                //{
+                //    SendMessageToUser(null, message.UserId, StaticResources.OnlySubscribers);
+                //    return true;
+                //}
 
                 if (!await Test(message.UserId))
                     return true;

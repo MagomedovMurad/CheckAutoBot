@@ -13,10 +13,10 @@ namespace CheckAutoBot.Managers
 {
     public class Fnp
     {
-        private const string url = "https://www.reestr-zalogov.ru/api/search";
+       // private const string url = "https://www.reestr-zalogov.ru/api/search";
         public PledgeResponse GetPledges(string vin, string captcha, string jsessionId)
         {
-            string url = $"https://www.reestr-zalogov.ru/api/search?token={captcha}";
+            string url = $"https://www.reestr-zalogov.ru/api/search/notary?token={captcha}";
 
             //string stringData = $"VIN={vin}&formName=vehicle-form&token={captcha}&uuid={Guid.NewGuid()}";
 
@@ -31,11 +31,11 @@ namespace CheckAutoBot.Managers
             headers.Add(HttpRequestHeader.Accept, "*/*");
             headers.Add("Origin", "https://www.reestr-zalogov.ru");
             headers.Add("X-Requested-With", "XMLHttpRequest");
-            headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 YaBrowser/18.6.1.770 Yowser/2.5 Safari/537.36");
+            headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36");
             headers.Add(HttpRequestHeader.ContentType, "application/json;charset=UTF-8");
             headers.Add(HttpRequestHeader.Referer, "https://www.reestr-zalogov.ru/search/index");
             headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br");
-            headers.Add(HttpRequestHeader.AcceptLanguage, "ru,en;q=0.9");
+            headers.Add(HttpRequestHeader.AcceptLanguage, "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7");
             #endregion
 
             #region Cookie

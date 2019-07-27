@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,6 +9,7 @@ namespace CheckAutoBot.FnpModels
     public class SearchFilter
     {
         [JsonProperty("mode")]
+        [JsonConverter(typeof(StringEnumConverter))]
         public SearchMode Mode { get; set; }
 
         [JsonProperty("filter")]

@@ -17,8 +17,7 @@ namespace CheckAutoBot.Api
         public const string DataSiteKey = "6LeBPAcUAAAAAF060gcWCfNEjO4vQAAbKOyIyGTR";
         public const string Key = "5ae032b75566215ba300b886e3741db6";
 
-        private AvtoYslygaResult GetDiagnosticCard(string captcha,
-                                      string licensePlate)
+        private AvtoYslygaResult GetDiagnosticCard(string captcha, string licensePlate)
         {
             var response = ExecuteRequest(captcha, licensePlate);
             return ParseHtml(response);

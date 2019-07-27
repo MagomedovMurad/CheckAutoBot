@@ -1,4 +1,4 @@
-﻿,using Akka.Actor;
+﻿using Akka.Actor;
 using CheckAutoBot.Contracts;
 using CheckAutoBot.Enums;
 using CheckAutoBot.Exceptions;
@@ -20,7 +20,6 @@ namespace CheckAutoBot.Actors
 {
     public class LicensePlateHandlerActor: ReceiveActor
     {
-        //private List<CaptchaCacheItem> _captchaCacheItems;
         private List<CacheItem> _repeatedRequestsCache;
         private DbQueryExecutor _queryExecutor;
         private ICustomLogger _logger;
@@ -29,11 +28,13 @@ namespace CheckAutoBot.Actors
         private RsaManager _rsaManager;
         private RucaptchaManager _rucaptchaManager;
         private EaistoManager _eaistoManager;
+
+        private CaptchaCacheManager _captchaCacheManager;
+
         private KeyboardBuilder _keyboardBuilder;
         private ICanTell _messageSenderActor;
         private ICanTell _vinCodeHandlerActor;
-        private CaptchaCacheManager _captchaCacheManager;
-        IActorRef _self;
+        private IActorRef _self;
 
         private readonly Guid _subcriberId = Guid.Parse("77E64ABB-FAD1-4FE5-AD7A-4C1528638B6C");
 
@@ -51,13 +52,11 @@ namespace CheckAutoBot.Actors
             _rsaManager = new RsaManager();
             _repeatedRequestsCache = new List<CacheItem>();
             _captchaCacheManager = captchaCacheManager;
-            //_captchaCacheItems = new List<CaptchaCacheItem>();
             _messageSenderActor = _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path);
             _vinCodeHandlerActor = _actorSelector.ActorSelection(Context, ActorsPaths.VinCodeHandlerActor.Path);
             Receive<StartVinSearchingMessage>(x => StartVinSearch(x));
             _self = Self;
             _captchaCacheManager.Subscribe(_subcriberId, CaptchaResponseMessageHandler);
-            //Receive<CaptchaResponseMessage>(x => CaptchaResponseMessageHandler(x));
 
             InitHandlers();
         }
@@ -75,7 +74,7 @@ namespace CheckAutoBot.Actors
         private void StartVinSearch(StartVinSearchingMessage message)
         {
             _logger.WriteToLog(LogLevel.Debug, $"Запущен поиск вин кода. {Environment.NewLine}" +
-                          $"Идентификатор объекта запроса: {message?.RequestObjectId}");
+                                               $"Идентификатор объекта запроса: {message?.RequestObjectId}");
 
             StartPreGet(message.RequestObjectId, new[] { ActionType.DiagnosticCard });
         }
@@ -92,8 +91,6 @@ namespace CheckAutoBot.Actors
                     var pregetResult = handler.PreGet();
 
                     _captchaCacheManager.AddToCaptchaCache(requestObjectId, actionType, pregetResult.CaptchaId, pregetResult.SessionId, _subcriberId);
-
-                    //AddCaptchaCacheItem(requestObjectId, actionType, pregetResult.CaptchaId, pregetResult.SessionId);
                 }
             }
             catch (InvalidOperationException ex)
@@ -101,19 +98,17 @@ namespace CheckAutoBot.Actors
                 _logger.WriteToLog(LogLevel.Warn, $"Ошибка при попытке выполнения запроса каптчи. {Environment.NewLine}" +
                                                   $"Идентификатор объекта запроса: {requestObjectId}. {ex}", true);
 
-                //var actionTypes = _captchaCacheItems.Where(x => x.Id == requestObjectId).Select(x => x.ActionType);
                 TryExecuteRequestAgain(requestObjectId, actionTypes.First(), actionTypes);
             }
             catch (Exception ex)
             {
                 //Очистка кэша
-                //RemoveCaptchaCacheItems(requestObjectId);
                 RemoveRepeatedRequestsCacheItems(requestObjectId);
 
                 //Отправка пользователю сообщения о непредвиденной ошибке
                 var requestObject = await _queryExecutor.GetUserRequestObject(requestObjectId);
                 SendMessageToUser(null, requestObject.UserId, StaticResources.UnexpectedError);
-
+                 
                 var error = $"Непредвиденная ошибка при попытке выполнения повторного запроса. {Environment.NewLine}" +
                             $"Идентификатор пользователя {requestObject.UserId}. {Environment.NewLine}" +
                             $"Идентификатор объекта запроса: {requestObjectId}. {Environment.NewLine}. {ex}";
@@ -124,20 +119,6 @@ namespace CheckAutoBot.Actors
 
         private async Task CaptchaResponseMessageHandler(IEnumerable<ActionCacheItem> items)
         {
-            //_logger.Debug($"Получена каптча с идентификатором: {message.CaptchaId}. Ответ: {message.Value}");
-
-            // var captchaItem = _captchaCacheItems.FirstOrDefault(x => x.CaptchaId == message.CaptchaId);
-
-            //if (captchaItem == null)
-            //    return;
-
-            //_logger.Debug($"В кэше найдена запись с идентификатором каптчи: {captchaItem.CaptchaId}. {Environment.NewLine}" +
-            //              $"Для действия: {captchaItem.ActionType}");
-
-            //captchaItem.CaptchaWord = message.Value;
-            //var requestCptchaItems = _captchaCacheItems.Where(x => x.Id == captchaItem.Id);
-            // var isNotCompleted = requestCptchaItems.Any(x => string.IsNullOrWhiteSpace(x.CaptchaWord));
-
             var firstCaptchaCacheItem = items.First();
 
             try
@@ -161,7 +142,6 @@ namespace CheckAutoBot.Actors
             catch (Exception ex)
             {
                 //Очистка кэша
-                //RemoveCaptchaCacheItems(captchaItem.Id)
                 RemoveRepeatedRequestsCacheItems(firstCaptchaCacheItem.Id);
 
                 //Отправка пользователю сообщения о непредвиденной ошибке
@@ -177,7 +157,6 @@ namespace CheckAutoBot.Actors
 
         private async void TryExecuteRequestAgain(int requestObjectId, ActionType actionType, IEnumerable<ActionType> actionTypes)
         {
-            //RemoveCaptchaCacheItems(requestObjectId);
             bool? eaistoNotAvailable = null;
             var item = _repeatedRequestsCache.FirstOrDefault(x => x.Id == requestObjectId && x.ActionType == actionType);
 
@@ -187,8 +166,6 @@ namespace CheckAutoBot.Actors
                 if (actionType == ActionType.DiagnosticCard)
                 {
                     StartPreGet(requestObjectId, new[] { ActionType.PolicyNumber, ActionType.OsagoVechicle });
-                    //StartPreGet(requestObjectId, ActionType.PolicyNumber);
-                    //StartPreGet(requestObjectId, ActionType.OsagoVechicle);
                     eaistoNotAvailable = true;
                 }
                 else
@@ -199,8 +176,7 @@ namespace CheckAutoBot.Actors
             }
             else
             {
-                //foreach (var type in actionTypes)
-                    StartPreGet(requestObjectId, actionTypes);
+                StartPreGet(requestObjectId, actionTypes);
             }
 
             foreach (var type in actionTypes)
@@ -219,7 +195,6 @@ namespace CheckAutoBot.Actors
             var handler = _handlers.FirstOrDefault(x => x.SupportedActionType == actionType);
             var vin = handler.Get(requestObject.LicensePlate, requestCaptchaItems);
 
-            //RemoveCaptchaCacheItems(requestObject.Id);
             RemoveRepeatedRequestsCacheItems(requestObject.Id);
 
             if (!string.IsNullOrWhiteSpace(vin))
@@ -233,20 +208,12 @@ namespace CheckAutoBot.Actors
                 };
                 _vinCodeHandlerActor.Tell(msg, _self);
 
-                //Send buttons to user
-                //var keyboard = await CreateKeyBoard(requestObject);
-                //var text = $"Гос. номер: {requestObject.LicensePlate}. {Environment.NewLine}" +
-                //           $"Выберите доступное действие.";
-                //SendMessageToUser(keyboard, requestObject.UserId, text);
-
                 return;
             }
 
             if (actionType == ActionType.DiagnosticCard)
             {
                 StartPreGet(requestObject.Id, new[] { ActionType.PolicyNumber, ActionType.OsagoVechicle });
-                //StartPreGet(requestObject.Id, ActionType.PolicyNumber);
-                //StartPreGet(requestObject.Id, ActionType.OsagoVechicle);
             }
             else
             {
@@ -282,27 +249,8 @@ namespace CheckAutoBot.Actors
             _repeatedRequestsCache.RemoveAll(x => x.Id == requestObjectId);
         }
 
-        //private void AddCaptchaCacheItem(int id, ActionType actionType, string captchaId, string sessionId)
-        //{
-        //    _captchaCacheItems.Add(
-        //        new CaptchaCacheItem()
-        //        {
-        //            Id = id,
-        //            ActionType = actionType,
-        //            CaptchaId = captchaId,
-        //            SessionId = sessionId,
-        //            Date = DateTime.Now
-        //        });
-        //}
-
-        //private void RemoveCaptchaCacheItems(int requestObjectId)
-        //{
-        //    _captchaCacheItems.RemoveAll(x => x.Id == requestObjectId);
-        //}
-
         private async Task<Keyboard> CreateKeyBoard(RequestObject requestObject)
         {
-            //var requestTypes = await _queryExecutor.GetExecutedRequestTypes(requestObject.Id).ConfigureAwait(false);
             return _keyboardBuilder.CreateKeyboard(new List<RequestType>(), requestObject.GetType());
         }
 

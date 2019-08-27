@@ -1,4 +1,5 @@
-﻿using CheckAutoBot.Utils;
+﻿using CheckAutoBot.Enums;
+using CheckAutoBot.Utils;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -246,10 +247,16 @@ namespace CheckAutoBot.Storage
             }
         }
 
-        public async Task AddRequestObjectCacheItem(RequestObjectCache item)
+        public async Task AddRequestObjectCacheItem(int requestObjectId, DataType dataType, string data)
         {
             try
             {
+                var item = new RequestObjectCache()
+                {
+                    RequestObjectId = requestObjectId,
+                    DataType = dataType,
+                    Data = data
+                };
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
                     await rep.AddRequestObjectCacheItem(item);
@@ -257,7 +264,7 @@ namespace CheckAutoBot.Storage
             }
             catch (Exception ex)
             {
-                var error = $"Ошибка в БД при сохранении элемента кэша объекта запросов. RequestObjectId: {item.RequestObjectId}. {ex}";
+                var error = $"Ошибка в БД при сохранении элемента кэша объекта запросов. Data type: {dataType}, RequestObjectId: {requestObjectId}. {ex}";
                 _logger.WriteToLog(LogLevel.Error, error, true);
             }
         }

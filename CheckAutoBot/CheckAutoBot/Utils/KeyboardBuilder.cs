@@ -55,11 +55,13 @@ namespace CheckAutoBot.Utils
         /// </summary>
         /// <param name="existRequestTypes">Типы запросов для которых НЕ нужно создавать кнопки</param>
         /// <param name="objectType">Тип объекта</param>
-        public Keyboard CreateKeyboard(IEnumerable<RequestType> existRequestTypes, Type objectType)
+        public Keyboard CreateKeyboard(Type objectType, IEnumerable<RequestType> existRequestTypes = null)
         {
             Dictionary<RequestType, Button> requestTypeWithButton = null;
+            if (existRequestTypes is null)
+                existRequestTypes = new List<RequestType>();
 
-            if(objectType.Equals(typeof(Auto)))
+            if (objectType.Equals(typeof(Auto)))
                 requestTypeWithButton = _carRequestTypeWithButton;
 
             var buttons = requestTypeWithButton.Where(x => !existRequestTypes.Contains(x.Key)).Select(x => x.Value);

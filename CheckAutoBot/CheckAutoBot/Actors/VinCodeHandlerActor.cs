@@ -145,7 +145,7 @@ namespace CheckAutoBot.Actors
             var result = _historyHandler.Get(requestObject, сaptchaItem.CaptchaWord, сaptchaItem.SessionId);
 
             var auto = requestObject as Auto;
-            var autoData = auto.LicensePlate != null ? auto.LicensePlate : auto.Vin;
+            var autoData = auto.LicensePlate ?? auto.Vin;
             string data;
             if (result == null)
             {

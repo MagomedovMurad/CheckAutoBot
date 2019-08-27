@@ -19,6 +19,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Topshelf;
 
 namespace CheckAutoBot
 {
@@ -30,31 +31,48 @@ namespace CheckAutoBot
         //JMBLYV97W7J004216 залог
         static void Main(string[] args)
         {
-            IBus bus = RabbitHutch.CreateBus("host=localhost");
+            var rc = HostFactory.Run(x =>                                   
+            {
+                x.Service<Service>(s =>                                   
+                {
+                    s.ConstructUsing(name => new Service());                
+                    s.WhenStarted(service => service.Start());                         
+                    s.WhenStopped(service => service.Stop());                          
+                });
+                x.RunAsLocalSystem();                                       
+
+                x.SetDescription("Check auto bot");                   
+                x.SetDisplayName("CheckAutoBot");                                  
+                x.SetServiceName("CheckAutoBot");                                  
+            });                                                             
+
+            var exitCode = (int)Convert.ChangeType(rc, rc.GetTypeCode());  
+            Environment.ExitCode = exitCode;
 
 
-            VkApiManager vkApiManager = new VkApiManager("374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2");
-            ICustomLogger logger = new CustomLogger(vkApiManager);
+            //IBus bus = RabbitHutch.CreateBus("host=localhost");
+            //VkApiManager vkApiManager = new VkApiManager("374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2");
+            //ICustomLogger logger = new CustomLogger(vkApiManager);
 
-            var captchaCacheManager = new CaptchaCacheManager(bus, logger);
+            //var captchaCacheManager = new CaptchaCacheManager(bus, logger);
 
-            IRepositoryFactory repositoryFactory = new RepositoryFactory();
-            DbQueryExecutor queryExecutor = new DbQueryExecutor(repositoryFactory, logger);
+            //IRepositoryFactory repositoryFactory = new RepositoryFactory();
+            //DbQueryExecutor queryExecutor = new DbQueryExecutor(repositoryFactory, logger);
 
-            ActorSystem actorSystem = ActorSystem.Create("TestSystem");
-            var server = actorSystem.ActorOf(Props.Create(() => new ServerActor(logger, bus)), ActorsPaths.ServerActor.Name);
-            var groupEventsHandlerActor = actorSystem.ActorOf(Props.Create(() => new GroupEventsHandlerActor(logger)), ActorsPaths.GroupEventsHandlerActor.Name);
-            var privateMessageHandlerActor = actorSystem.ActorOf(Props.Create(() => new PrivateMessageHandlerActor(queryExecutor, logger)), ActorsPaths.PrivateMessageHandlerActor.Name);
-            var privateMessageSenderActor = actorSystem.ActorOf(Props.Create(() => new PrivateMessageSenderActor(logger, vkApiManager)), ActorsPaths.PrivateMessageSenderActor.Name);
-            var userRequestHandlerActor = actorSystem.ActorOf(Props.Create(() => new UserRequestHandlerActor(logger, queryExecutor, captchaCacheManager)), ActorsPaths.UserRequestHandlerActor.Name);
-            var inputDataHandlerActor = actorSystem.ActorOf(Props.Create(() => new InputDataHandlerActor(logger, queryExecutor, vkApiManager)), ActorsPaths.InputDataHandlerActor.Name);
-            var licensePlateHandlerActor = actorSystem.ActorOf(Props.Create(() => new LicensePlateHandlerActor(queryExecutor, logger, captchaCacheManager)), ActorsPaths.LicensePlateHandlerActor.Name);
-            var yandexMoneyRequestHandlerActor = actorSystem.ActorOf(Props.Create(() => new YandexMoneyRequestHandlerActor(queryExecutor)), ActorsPaths.YandexMoneyRequestHandlerActor.Name);
-            var subscribersActionsHandlerActor = actorSystem.ActorOf(Props.Create(() => new SubscribersActionsHandlerActor()), ActorsPaths.SubscribersActionsHandlerActor.Name);
-            var vinCodeHandlerActor = actorSystem.ActorOf(Props.Create(() => new VinCodeHandlerActor(logger, queryExecutor, captchaCacheManager)), ActorsPaths.VinCodeHandlerActor.Name);
+            //ActorSystem actorSystem = ActorSystem.Create("TestSystem");
+            //var server = actorSystem.ActorOf(Props.Create(() => new ServerActor(logger, bus)), ActorsPaths.ServerActor.Name);
+            //var groupEventsHandlerActor = actorSystem.ActorOf(Props.Create(() => new GroupEventsHandlerActor(logger)), ActorsPaths.GroupEventsHandlerActor.Name);
+            //var privateMessageHandlerActor = actorSystem.ActorOf(Props.Create(() => new PrivateMessageHandlerActor(queryExecutor, logger)), ActorsPaths.PrivateMessageHandlerActor.Name);
+            //var privateMessageSenderActor = actorSystem.ActorOf(Props.Create(() => new PrivateMessageSenderActor(logger, vkApiManager)), ActorsPaths.PrivateMessageSenderActor.Name);
+            //var userRequestHandlerActor = actorSystem.ActorOf(Props.Create(() => new UserRequestHandlerActor(logger, queryExecutor, captchaCacheManager)), ActorsPaths.UserRequestHandlerActor.Name);
+            //var inputDataHandlerActor = actorSystem.ActorOf(Props.Create(() => new InputDataHandlerActor(logger, queryExecutor, vkApiManager)), ActorsPaths.InputDataHandlerActor.Name);
+            //var licensePlateHandlerActor = actorSystem.ActorOf(Props.Create(() => new LicensePlateHandlerActor(queryExecutor, logger, captchaCacheManager)), ActorsPaths.LicensePlateHandlerActor.Name);
+            //var yandexMoneyRequestHandlerActor = actorSystem.ActorOf(Props.Create(() => new YandexMoneyRequestHandlerActor(queryExecutor)), ActorsPaths.YandexMoneyRequestHandlerActor.Name);
+            //var subscribersActionsHandlerActor = actorSystem.ActorOf(Props.Create(() => new SubscribersActionsHandlerActor()), ActorsPaths.SubscribersActionsHandlerActor.Name);
+            //var vinCodeHandlerActor = actorSystem.ActorOf(Props.Create(() => new VinCodeHandlerActor(logger, queryExecutor, captchaCacheManager)), ActorsPaths.VinCodeHandlerActor.Name);
 
-            server.Tell(new StartServerMessage());
-            Console.ReadKey();
+            //server.Tell(new StartServerMessage());
+            //Console.ReadKey();
         }
     }
 }

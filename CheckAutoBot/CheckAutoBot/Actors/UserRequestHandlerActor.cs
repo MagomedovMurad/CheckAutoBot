@@ -129,7 +129,6 @@ namespace CheckAutoBot.Actors
             catch (Exception ex)
             {
                 //Очистка кэша
-                //RemoveCaptchaCacheItems(message.RequestId);
                 RemoveRepeatedRequestsCacheItems(message.RequestId);
                 await _queryExecutor.ChangeRequestStatus(message.RequestId, false);
 

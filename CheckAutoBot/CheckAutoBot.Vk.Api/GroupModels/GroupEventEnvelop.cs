@@ -1,27 +1,24 @@
-﻿using CheckAutoBot.Enums;
-using CheckAutoBot.Vk.Api.MessagesModels;
+﻿using CheckAutoBot.Vk.Api.Enums;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CheckAutoBot.Messages
+namespace CheckAutoBot.Vk.Api.GroupModels
 {
-    [Obsolete("Заменен на GroupEventEnvelop")]
-    public class GroupEventMessage
+    public class GroupEventEnvelop
     {
         [JsonProperty("type")]
-        public VkEventType EventType { get; set; }
+        public EventType EventType { get; set; }
 
         [JsonProperty("object")]
-        public JObject JsonObject { get; set; } 
+        public JObject JsonObject { get; set; }
 
         [JsonProperty("group_id")]
         public int GroupId { get; set; }
 
         [JsonProperty("secret")]
         public string Secret { get; set; }
-
     }
 }

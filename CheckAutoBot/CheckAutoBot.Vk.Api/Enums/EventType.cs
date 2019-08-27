@@ -1,13 +1,11 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace CheckAutoBot.Enums
+namespace CheckAutoBot.Vk.Api.Enums
 {
-    [Obsolete("Заменен на CheckAutoBot.Vk.Api.Enums.EventType")]
-    public enum VkEventType
+    public enum EventType
     {
         /// <summary>
         /// Входящее сообщение
@@ -236,6 +234,5 @@ namespace CheckAutoBot.Enums
         /// </summary>
         [EnumMember(Value = "group_change_photo")]
         ChangeGroupPhoto
-
     }
 }

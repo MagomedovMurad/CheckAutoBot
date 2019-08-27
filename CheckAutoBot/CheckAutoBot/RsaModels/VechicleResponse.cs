@@ -22,7 +22,7 @@ namespace CheckAutoBot.RsaModels
         public string ChassisNumber { get; set; }
 
         /// <summary>
-        /// Государственный регистрацтонный знак автомобиля
+        /// Государственный регистрационный знак автомобиля
         /// </summary>
         [JsonProperty("licensePlate")]
         public string LicensePlate { get; set; }

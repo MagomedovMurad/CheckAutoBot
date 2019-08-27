@@ -21,6 +21,11 @@ namespace CheckAutoBot.Managers
             _eaisto = new Eaisto();
         }
 
+        public DiagnosticCard GetLastDiagnosticCard(string licensePlate)
+        {
+
+        }
+
         public DiagnosticCard GetLastDiagnosticCard(string captcha,
                                       string phoneNumber,
                                       string sessionId,

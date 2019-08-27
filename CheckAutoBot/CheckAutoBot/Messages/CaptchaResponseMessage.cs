@@ -1,31 +1,28 @@
-﻿//using Newtonsoft.Json;
-//using System;
-//using System.Collections.Generic;
-//using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
-//namespace CheckAutoBot.Messages
-//{
-//    public class CaptchaResponseMessage
-//    {
-//        #region Ctor
+namespace CheckAutoBot.Infrastructure.Messages
+{
+    public class CaptchaResponseMessage
+    {
+        #region Ctor
 
-//        public CaptchaResponseMessage()
-//        {
+        public CaptchaResponseMessage()
+        {
 
-//        }
+        }
 
-//        public CaptchaResponseMessage(string captchaId, string value)
-//        {
-//            CaptchaId = captchaId;
-//            Value = value;
-//        }
-        
-//        #endregion Ctor
+        public CaptchaResponseMessage(string captchaId, string value)
+        {
+            CaptchaId = captchaId;
+            Value = value;
+        }
 
-//        [JsonProperty()]
-//        public string CaptchaId { get; set; }
+        #endregion Ctor
 
-//        [JsonProperty()]
-//        public string Value { get; set; }
-//    }
-//}
+        public string CaptchaId { get; set; }
+
+        public string Value { get; set; }
+    }
+}

@@ -6,6 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Actors\GroupEventsHandlerActor.cs" />
+    <Compile Remove="Actors\InputDataHandlerActor.cs" />
+    <Compile Remove="Actors\SubscribersActionsHandlerActor.cs" />
+    <Compile Remove="Actors\UserRequestHandlerActor.cs" />
+    <Compile Remove="Actors\UserRequestObjectHandlerActor.cs" />
     <Compile Remove="FnpModels\Pledge1.cs" />
     <Compile Remove="FnpModels\PledgeListItem1.cs" />
     <Compile Remove="FnpModels\PledgeProperty1.cs" />
@@ -65,6 +70,10 @@
     <None Update="SvgTemplates\TruckTemplateSvg.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Actors\" />
   </ItemGroup>
 
 </Project>

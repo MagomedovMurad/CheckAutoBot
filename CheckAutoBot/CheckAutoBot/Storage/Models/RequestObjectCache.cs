@@ -14,5 +14,7 @@ namespace CheckAutoBot.Storage
         public string Data { get; set; }
 
         public DataType DataType { get; set; }
+
+        public DateTime DateTime { get; set; }
     }
 }

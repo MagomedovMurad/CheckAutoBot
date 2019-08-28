@@ -12,7 +12,12 @@ using NLog;
 
 namespace CheckAutoBot.Controllers
 {
-    public class LicensePlateController
+    public interface ILicensePlateController
+    {
+        Task StartVinSearch(string licencePlate, int requestObjectId);
+    }
+
+    public class LicensePlateController: ILicensePlateController
     {
         private ICustomLogger _logger;
         private IDataRequestController _dataRequestController;
@@ -67,7 +72,7 @@ namespace CheckAutoBot.Controllers
 
                     if (!string.IsNullOrWhiteSpace(dc.Vin))
                         await _vinCodeController.StartGeneralInfoSearch(dc.Vin, requestObjectId);
-                    else if (!string.IsNullOrWhiteSpace(dc.FrameNumber))
+                    else //if(!string.IsNullOrWhiteSpace(dc.FrameNumber))
                         await _frameNumberController.StartGeneralInfoSearch(dc.FrameNumber, requestObjectId);
                 }
             }
@@ -78,7 +83,7 @@ namespace CheckAutoBot.Controllers
             }
         }
 
-        private async Task PolicyOsagoHandler(int requestObjectId, PolicyOsago policy, bool isSuccssfull, string licencePlate, bool eaistoAvailable)
+        private async Task PolicyOsagoHandler(int requestObjectId, PolicyOsago policy, bool isSuccssfull, string licensePlate, bool eaistoAvailable)
         {
             if (isSuccssfull)
             {
@@ -88,7 +93,7 @@ namespace CheckAutoBot.Controllers
                     string error;
 
                     if (eaistoAvailable)
-                        error = StaticResources.VinNotFoundError;
+                        error = GetInfoNotFoundError(licensePlate);
                     else
                         error = StaticResources.RequestFailedError;
 
@@ -96,11 +101,9 @@ namespace CheckAutoBot.Controllers
                 }
                 else
                 {
-                    _licensePlateControllerCache.Remove(requestObjectId);
-
                     if (!string.IsNullOrWhiteSpace(policy.Vin))
                         await _vinCodeController.StartGeneralInfoSearch(policy.Vin, requestObjectId);
-                    else if (!string.IsNullOrWhiteSpace(policy.FrameNumber))
+                    else //if(!string.IsNullOrWhiteSpace(policy.FrameNumber))
                         await _frameNumberController.StartGeneralInfoSearch(policy.FrameNumber, requestObjectId);
                 }
             }
@@ -109,6 +112,7 @@ namespace CheckAutoBot.Controllers
                 var requestObject = await _queryExecutor.GetUserRequestObject(requestObjectId);
                 await _messagesSenderController.SendMessage(requestObject.UserId, StaticResources.RequestFailedError);
             }
+            _licensePlateControllerCache.Remove(requestObjectId);
         }
 
         private async Task Callback(DataRequestResult result)
@@ -117,72 +121,21 @@ namespace CheckAutoBot.Controllers
 
             if (data.RequestedDataType == DataType.DiagnosticCards)
             {
-                var dc = result.DataSourceResult.Data as DiagnosticCard;
+                var dc = result.DataSourceResult?.Data as DiagnosticCard;
                 await DiagnosticCardHandler(result.Id, dc, result.IsSuccessfull, data.LicensePlate);
             }
             else if (data.RequestedDataType == DataType.Osago)
             {
-                var policy = result.DataSourceResult.Data as PolicyOsago;
+                var policy = result.DataSourceResult?.Data as PolicyOsago;
                 await PolicyOsagoHandler(result.Id, policy, result.IsSuccessfull, data.LicensePlate, data.DCSourcesNotAvailable);
             }
         }
 
-
-        //private async Task Callback(DataRequestResult result)
-        //{
-        //    var data = _licensePlateControllerCache.Get(result.Id);
-
-        //    if (!result.IsSuccessfull)
-        //    {
-        //        if (data.RequestedDataType == DataType.DiagnosticCards)
-        //        {
-        //            _licensePlateControllerCache.Update(result.Id, DataType.Osago, false);
-        //            await _dataRequestController.StartDataSearch(result.Id, DataType.Osago, data.LicensePlate, Callback);
-        //        }
-        //        else if (data.RequestedDataType == DataType.Osago)
-        //        {
-        //            var requestObject = await _queryExecutor.GetUserRequestObject(result.Id);
-        //            await _messagesSenderController.SendMessage(requestObject.UserId, StaticResources.RequestFailedError);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        if (data.RequestedDataType == DataType.DiagnosticCards)
-        //        {
-        //            var dc = result.DataSourceResult.Data as DiagnosticCard;
-
-        //            if (dc is null)
-        //            {
-        //                _licensePlateControllerCache.Update(result.Id, DataType.Osago, true);
-        //                await _dataRequestController.StartDataSearch(result.Id, DataType.Osago, data.LicensePlate, Callback);
-        //            }
-        //            else
-        //            {
-        //                if (!string.IsNullOrWhiteSpace(dc.Vin))
-        //                    await _vinCodeController.StartGeneralInfoSearch(dc.Vin, result.Id);
-        //                //else if (!string.IsNullOrWhiteSpace(dc.FrameNumber))
-        //                //    await _frameNumberController.StartGeneralInfoSearch(dc.FrameNumber, result.Id);
-        //            }
-        //        }
-        //        else if (data.RequestedDataType == DataType.Osago)
-        //        {
-        //            var pn = result.DataSourceResult.Data as PolicyOsago;
-
-        //            if (pn is null)
-        //            {
-        //                var requestObject = await _queryExecutor.GetUserRequestObject(result.Id);
-        //                await _messagesSenderController.SendMessage(requestObject.UserId, StaticResources.VinNotFoundError);
-        //            }
-        //            else
-        //            {
-        //                if (!string.IsNullOrWhiteSpace(pn.Vin))
-        //                    await _vinCodeController.StartGeneralInfoSearch(pn.Vin, result.Id);
-        //                //else if (!string.IsNullOrWhiteSpace(pn.FrameNumber))
-        //                //    await _frameNumberController.StartGeneralInfoSearch(pn.FrameNumber, result.Id);
-        //            }
-        //        }
-        //    }
-        //}
+        public string GetInfoNotFoundError(string licensePlate)
+        {
+            return $"😕 К сожалению не удалось найти информацию по гос. номеру {licensePlate}{Environment.NewLine}" +
+                   $"Попробуйте выполнить поиск по VIN коду.";
+        }
     }
 }
 

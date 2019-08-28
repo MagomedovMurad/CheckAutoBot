@@ -9,16 +9,16 @@ using System.Text;
 
 namespace CheckAutoBot.DataSources
 {
-    public class EaistoVin2DataSource : IDataSource
+    public class Eaisto2DataSource : IDataSource
     {
         private EaistoManager _eaistoManager;
 
-        public EaistoVin2DataSource(EaistoManager eaistoManager)
+        public Eaisto2DataSource(EaistoManager eaistoManager)
         {
             _eaistoManager = eaistoManager;
         }
 
-        public DataType DataType => DataType.Vin;
+        public DataType DataType => DataType.DiagnosticCards;
 
         public int MaxRepeatCount => 2;
 

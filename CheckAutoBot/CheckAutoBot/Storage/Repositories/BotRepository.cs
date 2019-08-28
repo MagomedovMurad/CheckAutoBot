@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CheckAutoBot.Enums;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,10 +76,9 @@ namespace CheckAutoBot.Storage
             await _dbContext.AddAsync(item);
             await _dbContext.SaveChangesAsync();
         }
-
-        public async Task<RequestObjectCache> GetRequestObjectCacheItem(int requestObjectId)
+        public async Task<RequestObjectCache> GetRequestObjectCacheItem(int requestObjectId, DataType dataType)
         {
-            return await _dbContext.RequestObjectCache.SingleOrDefaultAsync(x => x.RequestObjectId == requestObjectId);
+            return await _dbContext.RequestObjectCache.SingleOrDefaultAsync(x => x.RequestObjectId == requestObjectId && x.DataType == dataType);
         }
 
         public async Task ChangeRequestStatus(int requestId, bool? state)

@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CheckAutoBot.Actors
+namespace CheckAutoBot.DataSources
 {
-    public class DataRequesterActor
+    public class PledgeDataSource
     {
-
     }
 }

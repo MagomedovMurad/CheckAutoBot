@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CheckAutoBot.Storage;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -13,8 +14,8 @@ namespace CheckAutoBot
                                                $"Информация об ошибке передана разработчикам.{Environment.NewLine}" +
                                                $"Попробуйте повторить Ваш запрос";
 
-        public static string VinNotFoundError = $"😕 К сожалению не удалось найти информацию по гос. номеру.{Environment.NewLine}" +
-                                           $" Попробуйте выполнить поиск по vin коду";
+      //  public static string VinNotFoundError = $"😕 К сожалению не удалось найти информацию по гос. номеру {Environment.NewLine}" +
+      //                                     $" Попробуйте выполнить поиск по vin коду";
 
         public static string HelpMessage = $"⚠ Не удалось распознать запрос!{Environment.NewLine}" +
                 $"💡 Для получения информации введите гос.номер или VIN код.{Environment.NewLine}" +
@@ -25,8 +26,5 @@ namespace CheckAutoBot
         public static string OnlySubscribers = "⛔ Только подписчики сообщества могут выполнять запросы. *checkautobot (Подписаться)";
 
         public static int MyUserId = 192287910;
-
-
-
     }
 }

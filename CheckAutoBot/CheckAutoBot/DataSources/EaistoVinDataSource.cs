@@ -9,20 +9,20 @@ using System.Text;
 
 namespace CheckAutoBot.DataSources
 {
-    public class EaistoVinDataSource : IDataSourceWithCaptcha
+    public class EaistoDataSource : IDataSourceWithCaptcha
     {
         private EaistoManager _eaistoManager;
         private RucaptchaManager _rucaptchaManager;
 
-        public EaistoVinDataSource(EaistoManager eaistoManager, RucaptchaManager rucaptchaManager)
+        public EaistoDataSource(EaistoManager eaistoManager, RucaptchaManager rucaptchaManager)
         {
             _rucaptchaManager = rucaptchaManager;
             _eaistoManager = eaistoManager;
         }
 
-        public DataType DataType => DataType.Vin;
+        public DataType DataType => DataType.DiagnosticCards;
 
-        public int MaxRepeatCount => 1;
+        public int MaxRepeatCount => 2;
 
         public int Order => 2;
 

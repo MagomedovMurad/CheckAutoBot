@@ -255,7 +255,8 @@ namespace CheckAutoBot.Storage
                 {
                     RequestObjectId = requestObjectId,
                     DataType = dataType,
-                    Data = data
+                    Data = data,
+                    DateTime = DateTime.Now
                 };
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
@@ -269,13 +270,13 @@ namespace CheckAutoBot.Storage
             }
         }
 
-        public async Task<RequestObjectCache> GetRequestObjectCacheItem(int requestObjectId)
+        public async Task<RequestObjectCache> GetRequestObjectCacheItem(int requestObjectId, DataType dataType)
         {
             try
             {
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
-                    return await rep.GetRequestObjectCacheItem(requestObjectId);
+                    return await rep.GetRequestObjectCacheItem(requestObjectId, dataType);
                 }
             }
             catch (Exception ex)

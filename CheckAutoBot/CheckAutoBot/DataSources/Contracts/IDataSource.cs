@@ -15,6 +15,6 @@ namespace CheckAutoBot.DataSources.Contracts
 
         int Order { get; }
 
-        DataSourceResult GetData(object data, IEnumerable<CaptchaRequestData> captchaRequestItems);
+        DataSourceResult GetData(object inputData, IEnumerable<CaptchaRequestData> captchaRequestItems);
     }
 }

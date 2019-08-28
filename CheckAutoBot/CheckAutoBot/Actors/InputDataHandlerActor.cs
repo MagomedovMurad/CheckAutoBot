@@ -1,5 +1,6 @@
 ﻿using Akka.Actor;
 using CheckAutoBot.Api;
+using CheckAutoBot.Enums;
 using CheckAutoBot.Messages;
 using CheckAutoBot.Storage;
 using CheckAutoBot.Utils;
@@ -144,7 +145,7 @@ namespace CheckAutoBot.Actors
         private async Task<Keyboard> CreateKeyBoard(RequestObject requestObject)
         {
             //var requestTypes = await _queryExecutor.GetExecutedRequestTypes(requestObject.Id).ConfigureAwait(false);
-            return _keyboardBuilder.CreateKeyboard(new List<RequestType>(), requestObject.GetType());
+            return _keyboardBuilder.CreateKeyboard(new List<DataType>(), requestObject.GetType());
         }
 
         private async Task<bool> Test(int userId)

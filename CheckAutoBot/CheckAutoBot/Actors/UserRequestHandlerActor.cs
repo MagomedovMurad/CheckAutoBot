@@ -172,7 +172,6 @@ namespace CheckAutoBot.Actors
                     });
                 else if (dataSourceType == DataSourceType.Db)
                     await StartProcessRequest(actionType, auto, requestId.Value);
-
             }
 
             return true;

@@ -7,29 +7,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NLog;
 
 namespace CheckAutoBot.Controllers
 {
-    public class InputDataController
+    public interface IInputDataController
+    {
+        Task HandleInputData(InputData inputData, int userId, int messageId, DateTime date);
+    }
+
+    public class InputDataController: IInputDataController
     {
         private readonly DbQueryExecutor _queryExecutor;
-        private readonly ICanSelectActor _actorSelector;
         private readonly KeyboardBuilder _keyboardBuilder;
         private readonly ICustomLogger _logger;
-        private readonly VkApiManager _vkApi;
 
-        private VinCodeController _vinCodeController;
+        private IVinCodeController _vinCodeController;
+        private ILicensePlateController _licensePlateController;
+        private IMessagesSenderController _messagesSenderController;
 
-        public InputDataController(ICustomLogger logger, DbQueryExecutor queryExecutor, VkApiManager vkApi)
+        public InputDataController(ICustomLogger logger, DbQueryExecutor queryExecutor)
         {
             _logger = logger;
             _queryExecutor = queryExecutor;
-            _actorSelector = new ActorSelector();
             _keyboardBuilder = new KeyboardBuilder();
-            _vkApi = vkApi;
         }
 
-        private async Task<bool> HandleInputData(InputData data, int userId, int messageId, DateTime date)
+        public async Task HandleInputData(InputData inputData, int userId, int messageId, DateTime date)
         {
             try
             {
@@ -42,45 +46,19 @@ namespace CheckAutoBot.Controllers
                 //    return true;
                 //}
 
-                if (!await Test(userId))
-                    return true;
+                if (!await CheckUser(userId, inputData))
+                    return;
 
-                RequestObject requestObject;
-
-                switch (data.Type)
+                switch (inputData.Type)
                 {
                     #region VIN
                     case InputDataType.Vin:
                         {
-                            requestObject = new Auto
-                            {
-                                Vin = data.Value,
-                                Date = date,
-                                UserId = userId,
-                                MessageId = messageId
-                            };
+                            var auto = await SaveAutoWithVinToDB(userId, messageId, inputData.Value, date);
 
-                            await _queryExecutor.AddRequestObject(requestObject);
-
-                            var msg = new StartGeneralInfoSearchMessage()
-                            {
-                                RequestObjectId = requestObject.Id,
-                                Vin = message.Data
-                            };
-                            _actorSelector.ActorSelection(Context, ActorsPaths.VinCodeHandlerActor.Path).Tell(msg, Self);
-
-                            var text = $"⌛ Выполняется проверка возможности получения информации по vin коду {message.Data}.{Environment.NewLine}" +
-                                       $"Обычно это занимает не более 2-х минут {Environment.NewLine}";
-                                       $"Дождитесь ответа."
-                                      
-
-                            SendMessageToUser(null, message.UserId, text);
-
-                            //Send buttons to user
-                            //var keyboard = await CreateKeyBoard(data);
-                            //var text = $"VIN код: {(data as Auto).Vin}. {Environment.NewLine}" +
-                            //           $"Выберите доступное действие.";
-                            //SendMessageToUser(keyboard, data.UserId, text);
+                            _vinCodeController.StartGeneralInfoSearch(inputData.Value, auto.Id);
+                            var message = GetMessageForUser(inputData);
+                            _messagesSenderController.SendMessage(userId, message);
                         }
                         break;
                     #endregion VIN
@@ -88,108 +66,136 @@ namespace CheckAutoBot.Controllers
                     #region LicensePlate
                     case InputDataType.LicensePlate:
                         {
-                            requestObject = new Auto
-                            {
-                                LicensePlate = message.Data,
-                                Date = message.Date,
-                                UserId = message.UserId,
-                                MessageId = message.MessageId
-                            };
-                            await _queryExecutor.AddRequestObject(requestObject);
+                            var auto = await SaveAutoWithLPToDB(userId, messageId, inputData.Value, date);
 
-                            var msg = new StartVinSearchingMessage(data.Id);
-                            _actorSelector.ActorSelection(Context, ActorsPaths.LicensePlateHandlerActor.Path).Tell(msg, Self);
+                            _licensePlateController.StartVinSearch(inputData.Value, auto.Id);
+                            var message = GetMessageForUser(inputData);
+                            _messagesSenderController.SendMessage(userId, message);
 
-                            var text = $"⌛ Выполняется проверка возможности получения информации по гос. номеру {message.Data}.{Environment.NewLine}" +
-                                       $"Дождитесь ответа.{Environment.NewLine}" +
-                                       $"Обычно это занимает не более 2-х минут";
-
-                            SendMessageToUser(null, message.UserId, text);
-
-                            break;
                         }
-
+                        break;
                     #endregion LicensePlate
 
                     #region FullName
                     case InputDataType.FullName:
 
-                        string[] personData = message.Data.Split(' ');
-                        string lastName = personData[0].Replace('_', ' '); //Фамилия
-                        string firstName = personData[1].Replace('_', ' '); //Имя
-                        string middleName = personData[2].Replace('_', ' '); //Отчество
-                        requestObject = new Person
-                        {
-                            FirstName = firstName,
-                            LastName = lastName,
-                            MiddleName = middleName,
-                            Date = message.Date,
-                            UserId = message.UserId,
-                            MessageId = message.MessageId
-                        };
+                        //string[] personData = message.Data.Split(' ');
+                        //string lastName = personData[0].Replace('_', ' '); //Фамилия
+                        //string firstName = personData[1].Replace('_', ' '); //Имя
+                        //string middleName = personData[2].Replace('_', ' '); //Отчество
+                        //requestObject = new Person
+                        //{
+                        //    FirstName = firstName,
+                        //    LastName = lastName,
+                        //    MiddleName = middleName,
+                        //    Date = message.Date,
+                        //    UserId = message.UserId,
+                        //    MessageId = message.MessageId
+                        //};
                         break;
                     #endregion FullName
 
                     default:
-                        throw new InvalidOperationException($"Не найден обработчик для типа {message.Type}");
+                        throw new InvalidOperationException($"Не найден обработчик для типа {inputData.Type}");
                 }
-
-                //await _queryExecutor.AddRequestObject(data);
-
-
-                return true;
+                return;
             }
             catch (Exception ex)
             {
-                return false;
+                _logger.WriteToLog(LogLevel.Error, $"Ошибка пр обработке входных данных: {ex}");
             }
         }
 
-        private async Task<Keyboard> CreateKeyBoard(RequestObject requestObject)
+        private async Task<Auto> SaveAutoWithVinToDB(int userId, int messageId, string vin, DateTime date)
         {
-            //var requestTypes = await _queryExecutor.GetExecutedRequestTypes(requestObject.Id).ConfigureAwait(false);
-            return _keyboardBuilder.CreateKeyboard(new List<RequestType>(), requestObject.GetType());
+            var auto = new Auto
+            {
+                Vin = vin,
+                Date = date,
+                UserId = userId,
+                MessageId = messageId
+            };
+
+            await _queryExecutor.AddRequestObject(auto);
+            return auto;
         }
 
-        private async Task<bool> Test(int userId)
+        private async Task<Auto> SaveAutoWithLPToDB(int userId, int messageId, string licensePlate, DateTime date)
+        {
+            var auto = new Auto
+            {
+                LicensePlate = licensePlate,
+                Date = date,
+                UserId = userId,
+                MessageId = messageId
+            };
+            await _queryExecutor.AddRequestObject(auto);
+            return auto;
+        }
+
+        private string GetMessageForUser(InputData data)
+        {
+
+           var dataType = GetStringInputDataType(data.Type);
+           return $"⌛ Выполняется проверка возможности получения информации по {dataType}: {data.Value}.{Environment.NewLine}" +
+                       $"Дождитесь ответа.{Environment.NewLine}" +
+                       $"Обычно это занимает не более 2-х минут";
+        }
+
+        private string GetStringInputDataType(InputDataType type)
+        {
+            switch (type)
+            {
+                case InputDataType.Vin:
+                    return "VIN коду";
+                case InputDataType.LicensePlate:
+                    return "гос. номеру";
+                default: return null;
+            }
+        }
+
+        private async Task<bool> CheckUser(int userId, InputData inputdata)
         {
             var lastRequestObject = await _queryExecutor.GetLastUserRequestObject(userId);
-            if (lastRequestObject == null)
+            if (lastRequestObject is null)
                 return true;
+
             var existRequestsInProcess = await _queryExecutor.ExistRequestsInProcess(lastRequestObject.Id);
             if (existRequestsInProcess)
             {
-                var text = "Дождитесь завершения выполнения запроса";
-                SendMessageToUser(null, userId, text);
+                var message = "⛔ Дождитесь завершения выполнения запроса";
+                _messagesSenderController.SendMessage(userId, message);
                 return false;
             }
 
-            var succesfullComletedRequests = await _queryExecutor.GetExecutedRequestTypes(lastRequestObject.Id);
+            var requestTypes = await _queryExecutor.GetExecutedRequestTypes(lastRequestObject.Id);
 
-            if (succesfullComletedRequests.Any() && !lastRequestObject.IsPaid)
+            if (requestTypes.Any() && !lastRequestObject.IsPaid)
             {
-                var auto = lastRequestObject as Auto;
-                var autoData = auto.LicensePlate != null ? auto.LicensePlate : auto.Vin;
+                if (lastRequestObject is Auto auto)
+                    AutoRequestsPayHandler(auto, inputdata, requestTypes);
 
-                var data = auto.LicensePlate != null ? $"гос. номеру {autoData}" : $"VIN коду {autoData}";
-                var paylink = YandexMoney.GenerateQuickpayUrl(autoData, auto.Id.ToString());
-                var text = $"💵 Оплатите предыдущий запрос по {data} (3&#8419;8&#8419; руб.). {Environment.NewLine}" +
-                           $"Для оплаты перейдите по ссылке:{Environment.NewLine}" +
-                           $"{paylink}{Environment.NewLine}";
-                if (succesfullComletedRequests.Count() < 6)
-                    text = text + $"Или выберите доступное действие для {autoData}.";
-                var keyboard = _keyboardBuilder.CreateKeyboard(succesfullComletedRequests, typeof(Auto));
-                SendMessageToUser(keyboard, userId, text);
                 return false;
             }
 
             return true;
         }
 
-        private void SendMessageToUser(Keyboard keyboard, int userId, string text)
+        private void AutoRequestsPayHandler(Auto auto, InputData inputData, IEnumerable <RequestType> requestTypes)
         {
-            var msg = new SendToUserMessage(userId, text, keyboard: keyboard);
-            _actorSelector.ActorSelection(Context, ActorsPaths.PrivateMessageSenderActor.Path).Tell(msg, Self);
+            var dataType = GetStringInputDataType(inputData.Type);
+
+            var paylink = YandexMoney.GenerateQuickpayUrl(inputData.Value, auto.Id.ToString());
+
+            var message = $"💵 Оплатите предыдущий запрос по {dataType}: {inputData.Value} (3&#8419;8&#8419; руб.). {Environment.NewLine}" +
+                          $"Для оплаты перейдите по ссылке:{Environment.NewLine}" +
+                          $"{paylink}{Environment.NewLine}";
+
+            if (requestTypes.Count() < 6)
+                message = message + $"Или выберите доступное действие для {inputData.Value}.";
+            var keyboard = _keyboardBuilder.CreateKeyboard(typeof(Auto), requestTypes);
+
+            _messagesSenderController.SendMessage(auto.UserId, message, keyboard: keyboard);
         }
     }
 }

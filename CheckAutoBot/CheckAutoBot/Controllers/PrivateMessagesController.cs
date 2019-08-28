@@ -14,14 +14,18 @@ namespace CheckAutoBot.Controllers
         private readonly ICustomLogger _logger;
         private DbQueryExecutor _queryExecutor;
         private MessagesSenderController _messagesSenderController;
-        private InputDataController _inputDataController;
+        private IInputDataController _inputDataController;
+        private UserRequestController _userRequestController;
 
         private Regex _regNumberRegex;
         private Regex _vinCodeRegex;
         //private Regex _fioRegex;
 
-        public PrivateMessagesController(DbQueryExecutor queryExecutor, ICustomLogger logger)
+        public PrivateMessagesController(MessagesSenderController messagesSenderController, IInputDataController inputDataController, UserRequestController userRequestController, DbQueryExecutor queryExecutor, ICustomLogger logger)
         {
+            _messagesSenderController = messagesSenderController;
+            _inputDataController = inputDataController;
+            _userRequestController = userRequestController;
             _logger = logger;
             _queryExecutor = queryExecutor;
         }
@@ -74,19 +78,8 @@ namespace CheckAutoBot.Controllers
                 return;
             }
 
-            _inputDataController.
-
-            var reqestObjectMessage = new UserInputDataMessage()
-            {
-                Data = inputData.Value,
-                Type = inputData.Type,
-                UserId = message.FromId,
-                MessageId = message.Id,
-            };
-            _actorSelection
-                .ActorSelection(Context, ActorsPaths.InputDataHandlerActor.Path)
-                .Tell(reqestObjectMessage, Self);
-
+            var dateTime = (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(message.Date);
+            _inputDataController.HandleInputData(inputData, message.FromId, message.Id, dateTime);
         }
 
         private void UserRequestHandler(PrivateMessage message)
@@ -96,6 +89,9 @@ namespace CheckAutoBot.Controllers
 
             if (payload is RequestPayload requestPayload)
             {
+                requestPayload.
+                _userRequestController.
+
                 var msg = new UserRequestMessage()
                 {
                     MessageId = message.Id,

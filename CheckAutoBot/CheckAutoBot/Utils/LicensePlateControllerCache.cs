@@ -1,4 +1,5 @@
 ﻿using CheckAutoBot.Enums;
+using CheckAutoBot.Infrastructure.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;

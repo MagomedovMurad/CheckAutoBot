@@ -4,7 +4,8 @@ using System.Text;
 
 namespace CheckAutoBot.Infrastructure.Models.DataSource
 {
-    class Restricted
+    public class PledgeData
     {
+        public IEnumerable<PledgeAccident> Accidents { get; set; }
     }
 }

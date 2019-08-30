@@ -6,20 +6,33 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Actors\GroupEventsHandlerActor.cs" />
-    <Compile Remove="Actors\InputDataHandlerActor.cs" />
-    <Compile Remove="Actors\SubscribersActionsHandlerActor.cs" />
-    <Compile Remove="Actors\UserRequestHandlerActor.cs" />
-    <Compile Remove="Actors\UserRequestObjectHandlerActor.cs" />
+    <Compile Remove="Actors\**" />
+    <Compile Remove="Handlers\**" />
+    <EmbeddedResource Remove="Actors\**" />
+    <EmbeddedResource Remove="Handlers\**" />
+    <None Remove="Actors\**" />
+    <None Remove="Handlers\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="FnpModels\Pledge1.cs" />
     <Compile Remove="FnpModels\PledgeListItem1.cs" />
     <Compile Remove="FnpModels\PledgeProperty1.cs" />
     <Compile Remove="FnpModels\PledgeReponse1.cs" />
     <Compile Remove="FnpModels\Pledgor1.cs" />
     <Compile Remove="FnpModels\SubjectType.cs" />
-    <Compile Remove="Handlers\OsagoVechicleHandler.cs" />
-    <Compile Remove="Handlers\PolicyNumberHandler.cs" />
-    <Compile Remove="Handlers\VinByDiagnosticCardHandler.cs" />
+    <Compile Remove="Messages\NewYMPaymentMessage.cs" />
+    <Compile Remove="Messages\SendToUserMessage.cs" />
+    <Compile Remove="Messages\StartActionMessage.cs" />
+    <Compile Remove="Messages\StartGeneralInfoSearchMessage.cs" />
+    <Compile Remove="Messages\StartServerMessage.cs" />
+    <Compile Remove="Messages\StartVinSearchingMessage.cs" />
+    <Compile Remove="Messages\StopServerMessage.cs" />
+    <Compile Remove="Messages\UserInputDataMessage.cs" />
+    <Compile Remove="Messages\UserRequestMessage.cs" />
+    <Compile Remove="Utils\CacheItem.cs" />
+    <Compile Remove="Utils\CaptchaCacheManager.cs" />
+    <Compile Remove="Utils\PreGetResult.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -70,10 +83,6 @@
     <None Update="SvgTemplates\TruckTemplateSvg.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Actors\" />
   </ItemGroup>
 
 </Project>

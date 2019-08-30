@@ -7,6 +7,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using NLog;
+using System.Linq;
+using CheckAutoBot.Infrastructure.Enums;
+using CheckAutoBot.Infrastructure.Contracts;
 
 namespace CheckAutoBot.Controllers
 {
@@ -22,43 +25,42 @@ namespace CheckAutoBot.Controllers
         private IMessagesSenderController _messagesSenderController;
         private KeyboardBuilder _keyboardBuilder;
         private ICustomLogger _customLogger;
+        private IEnumerable<IDataConverter> _dataConverters;
 
-        private Dictionary<RequestType, DataType>  _requestTypeToDataType = new Dictionary<RequestType, DataType>()
+        private Dictionary<RequestType, DataType> _requestTypeToDataType = new Dictionary<RequestType, DataType>()
         {
-            { }
-        }
+            { RequestType.VechiclePassportData, DataType.VechiclePassportData},
+            { RequestType.OwnershipPeriods, DataType.OwnershipPeriods},
+            { RequestType.Dtp, DataType.Dtp},
+            { RequestType.Wanted, DataType.Wanted},
+            { RequestType.Restricted, DataType.Restricted},
+            { RequestType.Pledge, DataType.Pledge}
+        };
+        
 
         private DataType GetDataType(RequestType requestType)
         {
-            switch (requestType)
-            {
-                case RequestType.VechiclePassportData:
-                    return DataType.VechiclePassportData;
-                case RequestType.OwnershipPeriods:
-                    return DataType.OwnershipPeriods;
-                case RequestType.Dtp:
-                    return DataType.Dtp;
-                case RequestType.Wanted:
-                    return DataType.Wanted;
-                case RequestType.Restricted:
-                    return DataType.Restricted;
-                case RequestType.Pledge:
-                    return DataType.Pledge;
-                default: throw new InvalidOperationException($"Тип {requestType} не поддерживается");
-            }
+            return _requestTypeToDataType[requestType];
+        }
+
+        private RequestType GetRequestType(DataType dataType)
+        {
+            return _requestTypeToDataType.Single(x => x.Value == dataType).Key;
         }
 
         public UserRequestController(IDataRequestController dataRequestController,
                                      DbQueryExecutor queryExecutor, 
                                      IMessagesSenderController messagesSenderController,
                                      KeyboardBuilder keyboardBuilder,
-                                     ICustomLogger customLogger)
+                                     ICustomLogger customLogger,
+                                     IEnumerable<IDataConverter> dataConverters)
         {
             _dataRequestController = dataRequestController;
             _queryExecutor = queryExecutor;
             _messagesSenderController = messagesSenderController;
             _keyboardBuilder = keyboardBuilder;
             _customLogger = customLogger;
+            _dataConverters = dataConverters;
         }
 
         public async Task HandleUserRequest(int messageId, int userId, RequestType requestType, DateTime date)
@@ -97,8 +99,12 @@ namespace CheckAutoBot.Controllers
                 }
                 else
                 {
-                    var stringData = dataRequestResult.DataSourceResult.Data.ToString();
-                    _messagesSenderController.SendMessage(request.RequestObject.UserId, stringData, keyboard: keyboard);
+                    var converter = _dataConverters.Single(x => x.SupportedDataType.Equals(dataRequestResult.DataType));
+                    var bags = converter.Convert(dataRequestResult.DataSourceResult.Data);
+
+                    foreach (var bag in bags)
+                        _messagesSenderController.SendMessage(request.RequestObject.UserId, bag.Message, photo: bag.Picture, keyboard: keyboard);
+
                     requestStatus = true;
                 }
             }

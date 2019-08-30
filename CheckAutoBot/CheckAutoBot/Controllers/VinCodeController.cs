@@ -1,6 +1,4 @@
-﻿using CheckAutoBot.Enums;
-using CheckAutoBot.Handlers;
-using CheckAutoBot.Managers;
+﻿using CheckAutoBot.Managers;
 using CheckAutoBot.Storage;
 using CheckAutoBot.Utils;
 using System;
@@ -11,6 +9,7 @@ using Newtonsoft.Json;
 using CheckAutoBot.Models.RequestedDataCache;
 using CheckAutoBot.Infrastructure.Models.DataSource;
 using CheckAutoBot.DataSources.Models;
+using CheckAutoBot.Infrastructure.Enums;
 
 namespace CheckAutoBot.Controllers
 {
@@ -22,7 +21,6 @@ namespace CheckAutoBot.Controllers
     public class VinCodeController: IVinCodeController
     {
         private readonly ICustomLogger _logger;
-        private readonly HistoryHandler _historyHandler;
         private DbQueryExecutor _queryExecutor;
         private KeyboardBuilder _keyboardBuilder;
         private MessagesSenderController _messagesSenderController;
@@ -30,12 +28,10 @@ namespace CheckAutoBot.Controllers
 
         public VinCodeController(ICustomLogger logger, 
                                  DbQueryExecutor queryExecutor, 
-                                 CaptchaCacheManager captchaCacheManager,
                                  DataRequestController dataRequestController)
         {
             _logger = logger;
             _queryExecutor = queryExecutor;
-            _historyHandler = new HistoryHandler(new GibddManager(), new RucaptchaManager());
             _keyboardBuilder = new KeyboardBuilder();
             _dataRequestController = dataRequestController;
         }

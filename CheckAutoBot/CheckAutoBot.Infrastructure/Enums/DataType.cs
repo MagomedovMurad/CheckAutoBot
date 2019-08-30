@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CheckAutoBot.Enums
+namespace CheckAutoBot.Infrastructure.Enums
 {
     public enum DataType
     {

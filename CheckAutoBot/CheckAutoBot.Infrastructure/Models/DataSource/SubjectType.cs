@@ -4,7 +4,10 @@ using System.Text;
 
 namespace CheckAutoBot.Infrastructure.Models.DataSource
 {
-    class Dtp
+    public enum SubjectType
     {
+        Organization,
+        SoleProprietor,
+        PrivatePerson
     }
 }

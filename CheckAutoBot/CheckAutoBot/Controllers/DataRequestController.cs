@@ -10,6 +10,7 @@ using CheckAutoBot.Models.Captcha;
 using CheckAutoBot.Models.RequestedDataCache;
 using CheckAutoBot.Exceptions;
 using CheckAutoBot.DataSources.Models;
+using CheckAutoBot.Infrastructure.Enums;
 
 namespace CheckAutoBot.Controllers
 {
@@ -64,7 +65,7 @@ namespace CheckAutoBot.Controllers
 
                 if (dataSource is null)
                 {
-                    ReturnData(id, null, false);
+                    ReturnData(id, null, null, false);
                 }
                 else
                 {
@@ -114,7 +115,7 @@ namespace CheckAutoBot.Controllers
             try
             {
                 var dataSourceResult = dataSource.GetData(inputData, captchas);
-                ReturnData(id, dataSourceResult, true);
+                ReturnData(id, dataSourceResult, dataSource.DataType, true);
                 return;
             }
             catch (InvalidOperationException ex)
@@ -145,7 +146,7 @@ namespace CheckAutoBot.Controllers
             }
             RepeatRequest(id);
         }
-        private void ReturnData(int id, DataSourceResult dataSourceResult, bool isSuccessfull)
+        private void ReturnData(int id, DataSourceResult dataSourceResult, DataType? dataType, bool isSuccessfull)
         {
             var dataRequest = _requestsCache.Get(id);
 
@@ -153,6 +154,7 @@ namespace CheckAutoBot.Controllers
             {
                 Id = id,
                 DataSourceResult = dataSourceResult,
+                DataType = dataType,
                 IsSuccessfull = isSuccessfull
             };
 

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CheckAutoBot.Contracts
+namespace CheckAutoBot.Infrastructure.Contracts
 {
-    public interface IManager
+    public interface ISourceData
     {
     }
 }

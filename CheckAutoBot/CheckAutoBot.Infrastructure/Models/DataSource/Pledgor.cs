@@ -4,7 +4,10 @@ using System.Text;
 
 namespace CheckAutoBot.Infrastructure.Models.DataSource
 {
-    class Pledge
+    public class Pledgor
     {
+        public SubjectType Type { get; set; }
+
+        public string Name { get; set; }
     }
 }

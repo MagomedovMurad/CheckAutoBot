@@ -23,7 +23,7 @@ namespace CheckAutoBot.GbddModels
         public string Vin { get; set; }
 
         [JsonProperty("codDL")]
-        public int codDL { get; set; }
+        public int CodDL { get; set; }
 
         [JsonProperty("dateogr")]
         public string RestrictedDate { get; set; }

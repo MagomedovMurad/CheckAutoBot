@@ -1,4 +1,5 @@
 ﻿using CheckAutoBot.Enums;
+using CheckAutoBot.Infrastructure.Enums;
 using CheckAutoBot.Utils;
 using NLog;
 using System;

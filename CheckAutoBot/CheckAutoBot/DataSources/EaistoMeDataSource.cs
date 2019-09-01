@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CheckAutoBot.DataSources
 {
-    public class WantedDataSource: IDataSourceWithCaptcha
+    public class EaistoMeDataSource: IDataSourceWithCaptcha
     {
     }
 }

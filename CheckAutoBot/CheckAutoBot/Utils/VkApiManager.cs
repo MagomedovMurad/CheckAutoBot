@@ -1,9 +1,6 @@
 ﻿using CheckAutoBot.Vk.Api;
 using CheckAutoBot.Vk.Api.MessagesModels;
 using CheckAutoBot.Vk.Api.PhotosModels;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CheckAutoBot.Utils

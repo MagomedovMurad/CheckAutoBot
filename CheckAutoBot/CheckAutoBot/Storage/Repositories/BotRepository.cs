@@ -105,5 +105,9 @@ namespace CheckAutoBot.Storage
             return true;
         }
 
+        public RequestObject GetAutoObjectByVin(string vin)
+        {
+            return _dbContext.RequestObjects.OfType<Auto>().SingleOrDefault(x => x.Vin.Equals(vin));
+        }
     }
 }

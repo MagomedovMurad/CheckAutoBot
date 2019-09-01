@@ -1,4 +1,5 @@
 ﻿using CheckAutoBot.Enums;
+using CheckAutoBot.Infrastructure.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -31,5 +32,7 @@ namespace CheckAutoBot.Storage
         Task AddRequestObjectCacheItem(RequestObjectCache item);
 
         Task<RequestObjectCache> GetRequestObjectCacheItem(int requestObjectId, DataType dataType);
+
+        RequestObject GetAutoObjectByVin(string vin);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using CheckAutoBot.DataSources.Contracts;
 using CheckAutoBot.Enums;
+using CheckAutoBot.Infrastructure.Enums;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Models.Captcha;
 using System;

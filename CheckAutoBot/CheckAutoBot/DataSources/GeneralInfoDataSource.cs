@@ -2,6 +2,7 @@
 using CheckAutoBot.DataSources.Models;
 using CheckAutoBot.Enums;
 using CheckAutoBot.GbddModels;
+using CheckAutoBot.Infrastructure.Enums;
 using CheckAutoBot.Infrastructure.Models.DataSource;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Models.Captcha;

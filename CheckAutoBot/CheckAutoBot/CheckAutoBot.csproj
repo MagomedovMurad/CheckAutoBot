@@ -7,11 +7,8 @@
 
   <ItemGroup>
     <Compile Remove="Actors\**" />
-    <Compile Remove="Handlers\**" />
     <EmbeddedResource Remove="Actors\**" />
-    <EmbeddedResource Remove="Handlers\**" />
     <None Remove="Actors\**" />
-    <None Remove="Handlers\**" />
   </ItemGroup>
 
   <ItemGroup>

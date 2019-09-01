@@ -33,6 +33,6 @@ namespace CheckAutoBot.Storage
 
         Task<RequestObjectCache> GetRequestObjectCacheItem(int requestObjectId, DataType dataType);
 
-        RequestObject GetAutoObjectByVin(string vin);
+        RequestObject GetAutoObjectByVin(string vin)
     }
 }

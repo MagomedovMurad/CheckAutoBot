@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CheckAutoBot.Enums;
+using CheckAutoBot.Infrastructure.Enums;
 using CheckAutoBot.Infrastructure.Models.DataSource;
 using CheckAutoBot.Models.RequestedDataCache;
 using CheckAutoBot.Storage;
@@ -57,11 +59,11 @@ namespace CheckAutoBot.Controllers
             await _dataRequestController.StartDataSearch(requestObjectId, DataType.DiagnosticCards, licencePlate, Callback);
         }
 
-        private async Task DiagnosticCardHandler(int requestObjectId, DiagnosticCard dc, bool isSuccssfull, string licencePlate)
+        private async Task DiagnosticCardHandler(int requestObjectId, DiagnosticCardsData dcs, bool isSuccssfull, string licencePlate)
         {
             if (isSuccssfull)
             {
-                if (dc is null)
+                if (dcs is null || dcs.DiagnosticCards is null || !dcs.DiagnosticCards.Any())
                 {
                     _licensePlateControllerCache.Update(requestObjectId, DataType.Osago, true);
                     await _dataRequestController.StartDataSearch(requestObjectId, DataType.Osago, licencePlate, Callback);
@@ -69,11 +71,12 @@ namespace CheckAutoBot.Controllers
                 else
                 {
                     _licensePlateControllerCache.Remove(requestObjectId);
+                    var diagnosticCard = dcs.DiagnosticCards.OrderBy(x => x.DateFrom).First();
 
-                    if (!string.IsNullOrWhiteSpace(dc.Vin))
-                        await _vinCodeController.StartGeneralInfoSearch(dc.Vin, requestObjectId);
+                    if (!string.IsNullOrWhiteSpace(diagnosticCard.Vin))
+                        await _vinCodeController.StartGeneralInfoSearch(diagnosticCard.Vin, requestObjectId);
                     else //if(!string.IsNullOrWhiteSpace(dc.FrameNumber))
-                        await _frameNumberController.StartGeneralInfoSearch(dc.FrameNumber, requestObjectId);
+                        await _frameNumberController.StartGeneralInfoSearch(diagnosticCard.FrameNumber, requestObjectId);
                 }
             }
             else
@@ -121,8 +124,8 @@ namespace CheckAutoBot.Controllers
 
             if (data.RequestedDataType == DataType.DiagnosticCards)
             {
-                var dc = result.DataSourceResult?.Data as DiagnosticCard;
-                await DiagnosticCardHandler(result.Id, dc, result.IsSuccessfull, data.LicensePlate);
+                var dcs = result.DataSourceResult?.Data as DiagnosticCardsData;
+                await DiagnosticCardHandler(result.Id, dcs, result.IsSuccessfull, data.LicensePlate);
             }
             else if (data.RequestedDataType == DataType.Osago)
             {

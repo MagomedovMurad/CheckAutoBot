@@ -71,7 +71,7 @@ namespace CheckAutoBot.DataSources
             {
                 return new OwnershipPeriod()
                 {
-                    OwnerType = x.OwnerType == OwnerType.Legal ? Infrastructure.Enums.OwnerType.Legal : Infrastructure.Enums.OwnerType.Natural,
+                    OwnerType = x.OwnerType == Enums.OwnerType.Legal ? Infrastructure.Enums.OwnerType.Legal : Infrastructure.Enums.OwnerType.Natural,
                     DateFrom = x.From,
                     DateTo = x.To,
                     LastOperation = x.LastOperation,

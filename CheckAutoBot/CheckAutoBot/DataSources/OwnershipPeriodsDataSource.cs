@@ -2,8 +2,10 @@
 using CheckAutoBot.DataSources.Models;
 using CheckAutoBot.Enums;
 using CheckAutoBot.Infrastructure.Enums;
+using CheckAutoBot.Infrastructure.Models.DataSource;
 using CheckAutoBot.Models.Captcha;
 using CheckAutoBot.Storage;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -27,8 +29,15 @@ namespace CheckAutoBot.DataSources
 
         public DataSourceResult GetData(object inputData, IEnumerable<CaptchaRequestData> captchaRequestItems)
         {
-            int? id = inputData as int?;
-            var cache = _queryExecutor.GetRequestObjectCacheItem(id.Value, DataType.OwnershipPeriods);
+            var auto = inputData as Auto;
+            var cache = _queryExecutor.GetRequestObjectCacheItem(auto.Id, DataType.OwnershipPeriods);
+
+            var delta = (DateTime.Now - cache.DateTime).TotalHours;
+            if (delta > 24)
+                return null;
+
+            var data = JsonConvert.DeserializeObject<OwnershipPeriodPata>(cache.Data);
+            return new DataSourceResult(data);
         }
     }
 }

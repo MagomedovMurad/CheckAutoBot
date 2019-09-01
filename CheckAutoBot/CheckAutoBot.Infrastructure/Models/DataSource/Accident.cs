@@ -41,10 +41,10 @@ namespace CheckAutoBot.Infrastructure.Models.DataSource
         /// </summary>
         public string VehicleMark { get; set; }
 
-        /// <summary>
-        /// Поврежденные участки
-        /// </summary>
-        public string[] DamagePoints { get; set; }
+        ///// <summary>
+        ///// Поврежденные участки
+        ///// </summary>
+        //public string[] DamagePoints { get; set; }
 
         /// <summary>
         /// Год выпуска автомобиля

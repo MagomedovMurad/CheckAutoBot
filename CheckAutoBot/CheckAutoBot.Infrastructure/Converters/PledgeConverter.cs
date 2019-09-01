@@ -38,11 +38,25 @@ namespace CheckAutoBot.Infrastructure.Converters
         {
             var text = $"📃 {number}. Уведомление о возникновении залога №{pledge.Id} {Environment.NewLine}";
             text += $"Дата регистрации: {pledge.RegistrationDate.ToString("dd.MM.yyyy H:mm:ss")}{Environment.NewLine}";
-            text += $"Залогодатель: {string.Join(Environment.NewLine, pledge.Pledgors.Select(x => x.Name))} {Environment.NewLine}";
-            text += $"Залогодержатель: {string.Join(Environment.NewLine, pledge.Pledgees.Select(x => x.Name))}";
+            text += $"Залогодатель: {string.Join(Environment.NewLine, pledge.Pledgors.Select(x => $"{SubjectTypeToString(x.Type)}, {x.Name}"))} {Environment.NewLine}";
+            text += $"Залогодержатель: {string.Join(Environment.NewLine, pledge.Pledgees.Select(x => $"{SubjectTypeToString(x.Type)}, {x.Name}"))}";
             text += Environment.NewLine;
 
             return text;
+        }
+
+        private string SubjectTypeToString(SubjectType type)
+        {
+            switch (type)
+            {
+                case SubjectType.Organization:
+                    return "Юридическое лицо";
+                case SubjectType.SoleProprietor:
+                    return "Индивидуальный предприниматель";
+                case SubjectType.PrivatePerson:
+                    return "Физическое лицо";
+                default: return string.Empty;
+            }
         }
     }
 }

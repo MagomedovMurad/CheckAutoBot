@@ -21,12 +21,7 @@ namespace CheckAutoBot.Managers
             _eaisto = new Eaisto();
         }
 
-        public DiagnosticCard GetLastDiagnosticCard(string licensePlate)
-        {
-
-        }
-
-        public DiagnosticCard GetLastDiagnosticCard(string captcha,
+        public IEnumerable<DiagnosticCard> GetLastDiagnosticCards(string captcha,
                                       string phoneNumber,
                                       string sessionId,
                                       string vin = null,
@@ -49,12 +44,13 @@ namespace CheckAutoBot.Managers
             }
             else
             {
-                var lastDiagnosticCard = eaistoResult.DiagnosticCards.FirstOrDefault();
+                return eaistoResult.DiagnosticCards;
+                //var lastDiagnosticCard = eaistoResult.DiagnosticCards.FirstOrDefault();
 
-                if (lastDiagnosticCard == null || string.IsNullOrWhiteSpace(lastDiagnosticCard.Vin))
-                    return null;
+                //if (lastDiagnosticCard == null || string.IsNullOrWhiteSpace(lastDiagnosticCard.Vin))
+                //    return null;
 
-                return lastDiagnosticCard;
+                //return lastDiagnosticCard;
             }
         }
 

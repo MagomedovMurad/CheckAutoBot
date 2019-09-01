@@ -19,7 +19,7 @@ namespace CheckAutoBot.Infrastructure.Converters
             var data = sourceData as DtpData;
 
             var bags = new List<ConvertedDataBag>();
-            if (data.Accidents.Count() is 0)
+            if (data.Accidents is null || data.Accidents.Count() is 0)
             {
                 var message = "✅ В базе ГИБДД не найдены сведения о дорожно-транспортных происшествиях";
                 var bag = new ConvertedDataBag(message);
@@ -39,8 +39,6 @@ namespace CheckAutoBot.Infrastructure.Converters
 
             return bags;
         }
-
-
 
         private string AccidentToMessageText(DtpAccident accident, int number)
         {

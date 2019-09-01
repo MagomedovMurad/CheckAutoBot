@@ -1,6 +1,8 @@
 ﻿using CheckAutoBot.DataSources.Contracts;
+using CheckAutoBot.DataSources.Models;
 using CheckAutoBot.Enums;
 using CheckAutoBot.Infrastructure.Enums;
+using CheckAutoBot.Infrastructure.Models.DataSource;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Models.Captcha;
 using System;
@@ -27,6 +29,31 @@ namespace CheckAutoBot.DataSources
 
         public int Order => 2;
 
+        public DataSourceResult GetData(object inputData, IEnumerable<CaptchaRequestData> captchaRequestItems)
+        {
+            var licensePlate = inputData as string;
+            var captcha = captchaRequestItems.First();
+
+            var diagnosticCards = _eaistoManager.GetLastDiagnosticCards(captcha.Value, null, captcha.SessionId, licensePlate: licensePlate);
+            if (diagnosticCards == null)
+                return null;
+
+            var dcs = diagnosticCards.Select(x => new DiagnosticCard()
+            {
+                Brand = x.Brand,
+                DateFrom = x.DateFrom,
+                DateTo = x.DateTo,
+                EaistoNumber = x.EaistoNumber,
+                FrameNumber = x.EaistoNumber,
+                LicensePlate = x.LicensePlate,
+                Model = x.Model,
+                Operator = x.Model,
+                Vin = x.Vin
+            });
+
+            return new DataSourceResult(new DiagnosticCardsData() { DiagnosticCards = dcs});
+        }
+
         public IEnumerable<CaptchaRequestData> RequestCaptcha()
         {
             var captchaResult = _eaistoManager.GetCaptcha();
@@ -35,17 +62,17 @@ namespace CheckAutoBot.DataSources
             return new[] { new CaptchaRequestData(captchaRequest.Id, captchaResult.SessionId, "") };
         }
 
-        public object GetData(object data, IEnumerable<CaptchaRequestData> captchaRequestItems)
-        {
-            var licensePlate = data as string;
-            var captcha = captchaRequestItems.First();
+        //public object GetData(object data, IEnumerable<CaptchaRequestData> captchaRequestItems)
+        //{
+        //    var licensePlate = data as string;
+        //    var captcha = captchaRequestItems.First();
 
-            var lastDiagnosticCard = _eaistoManager.GetLastDiagnosticCard(captcha.Value, null, captcha.SessionId, licensePlate: licensePlate);
-            if (lastDiagnosticCard == null)
-                return null;
+        //    var lastDiagnosticCard = _eaistoManager.GetLastDiagnosticCard(captcha.Value, null, captcha.SessionId, licensePlate: licensePlate);
+        //    if (lastDiagnosticCard == null)
+        //        return null;
 
-            return lastDiagnosticCard;
-        }
+        //    return lastDiagnosticCard;
+        //}
 
     }
 }

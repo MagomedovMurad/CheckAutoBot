@@ -1,4 +1,5 @@
 ﻿using CheckAutoBot.Enums;
+using CheckAutoBot.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -76,9 +77,9 @@ namespace CheckAutoBot.Storage
             await _dbContext.AddAsync(item);
             await _dbContext.SaveChangesAsync();
         }
-        public async Task<RequestObjectCache> GetRequestObjectCacheItem(int requestObjectId, DataType dataType)
+        public RequestObjectCache GetRequestObjectCacheItem(int requestObjectId, DataType dataType)
         {
-            return await _dbContext.RequestObjectCache.SingleOrDefaultAsync(x => x.RequestObjectId == requestObjectId && x.DataType == dataType);
+            return _dbContext.RequestObjectCache.SingleOrDefault(x => x.RequestObjectId == requestObjectId && x.DataType == dataType);
         }
 
         public async Task ChangeRequestStatus(int requestId, bool? state)
@@ -103,11 +104,6 @@ namespace CheckAutoBot.Storage
             requestObject.IsPaid = true;
             await _dbContext.SaveChangesAsync();
             return true;
-        }
-
-        public RequestObject GetAutoObjectByVin(string vin)
-        {
-            return _dbContext.RequestObjects.OfType<Auto>().SingleOrDefault(x => x.Vin.Equals(vin));
         }
     }
 }

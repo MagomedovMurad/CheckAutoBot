@@ -271,30 +271,13 @@ namespace CheckAutoBot.Storage
             }
         }
 
-        public RequestObject GetAutoObjectByVin(string vin)
+        public RequestObjectCache GetRequestObjectCacheItem(int requestObjectId, DataType dataType)
         {
             try
             {
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
-                    return rep.GetAutoObjectByVin(vin);
-                }
-            }
-            catch (Exception ex)
-            {
-                var error = $"Ошибка в БД при получении объекта запроса по VIN коду. Vin: {vin}. {ex}";
-                _logger.WriteToLog(LogLevel.Error, error, true);
-                return null;
-            }
-        }
-
-        public async Task<RequestObjectCache> GetRequestObjectCacheItem(int requestObjectId, DataType dataType)
-        {
-            try
-            {
-                using (var rep = _repositoryFactory.CreateBotRepository())
-                {
-                    return await rep.GetRequestObjectCacheItem(requestObjectId, dataType);
+                    return rep.GetRequestObjectCacheItem(requestObjectId, dataType);
                 }
             }
             catch (Exception ex)

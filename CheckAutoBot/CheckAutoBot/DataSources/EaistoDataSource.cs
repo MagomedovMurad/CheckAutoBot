@@ -1,14 +1,11 @@
 ﻿using CheckAutoBot.DataSources.Contracts;
 using CheckAutoBot.DataSources.Models;
-using CheckAutoBot.Enums;
 using CheckAutoBot.Infrastructure.Enums;
 using CheckAutoBot.Infrastructure.Models.DataSource;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Models.Captcha;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace CheckAutoBot.DataSources
 {
@@ -34,7 +31,7 @@ namespace CheckAutoBot.DataSources
             var licensePlate = inputData as string;
             var captcha = captchaRequestItems.First();
 
-            var diagnosticCards = _eaistoManager.GetLastDiagnosticCards(captcha.Value, null, captcha.SessionId, licensePlate: licensePlate);
+            var diagnosticCards = _eaistoManager.GetDiagnosticCards(captcha.Value, null, captcha.SessionId, licensePlate: licensePlate);
             if (diagnosticCards == null)
                 return null;
 
@@ -61,18 +58,5 @@ namespace CheckAutoBot.DataSources
 
             return new[] { new CaptchaRequestData(captchaRequest.Id, captchaResult.SessionId, "") };
         }
-
-        //public object GetData(object data, IEnumerable<CaptchaRequestData> captchaRequestItems)
-        //{
-        //    var licensePlate = data as string;
-        //    var captcha = captchaRequestItems.First();
-
-        //    var lastDiagnosticCard = _eaistoManager.GetLastDiagnosticCard(captcha.Value, null, captcha.SessionId, licensePlate: licensePlate);
-        //    if (lastDiagnosticCard == null)
-        //        return null;
-
-        //    return lastDiagnosticCard;
-        //}
-
     }
 }

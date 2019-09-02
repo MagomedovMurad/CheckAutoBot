@@ -17,7 +17,7 @@ namespace CheckAutoBot.Managers
         private const string captchaUrl = "https://eaisto.info/securimage_show.php ";
 
 
-        public EaistoResult GetDiagnosticCard(string captcha,
+        public EaistoResult GetDiagnosticCards(string captcha,
                                       string sessionId,
                                       string vin = null,
                                       string licensePlate = null,
@@ -27,6 +27,11 @@ namespace CheckAutoBot.Managers
         {
             var response = ExecuteRequest(captcha, sessionId, vin, licensePlate, bodyNumber, chassis, eaisto);
             return ParseHtml(response);
+        }
+
+        public DiagnosticCard GetLastDiagnosticCard()
+        {
+
         }
 
         private string ExecuteRequest(string captcha,

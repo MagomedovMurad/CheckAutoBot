@@ -21,7 +21,7 @@ namespace CheckAutoBot.Managers
             _eaisto = new Eaisto();
         }
 
-        public IEnumerable<DiagnosticCard> GetLastDiagnosticCards(string captcha,
+        public IEnumerable<DiagnosticCard> GetDiagnosticCards(string captcha,
                                       string phoneNumber,
                                       string sessionId,
                                       string vin = null,
@@ -30,7 +30,7 @@ namespace CheckAutoBot.Managers
                                       string chassis = null,
                                       string eaisto = null)
         {
-            var eaistoResult = _eaisto.GetDiagnosticCard(captcha, sessionId, vin, licensePlate, bodyNumber, chassis, eaisto);
+            var eaistoResult = _eaisto.GetDiagnosticCards(captcha, sessionId, vin, licensePlate, bodyNumber, chassis, eaisto);
 
             if (!string.IsNullOrWhiteSpace(eaistoResult.ErrorMessage))
             {
@@ -45,12 +45,6 @@ namespace CheckAutoBot.Managers
             else
             {
                 return eaistoResult.DiagnosticCards;
-                //var lastDiagnosticCard = eaistoResult.DiagnosticCards.FirstOrDefault();
-
-                //if (lastDiagnosticCard == null || string.IsNullOrWhiteSpace(lastDiagnosticCard.Vin))
-                //    return null;
-
-                //return lastDiagnosticCard;
             }
         }
 

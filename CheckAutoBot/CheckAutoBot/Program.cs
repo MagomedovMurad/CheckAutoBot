@@ -1,24 +1,4 @@
-﻿using Akka.Actor;
-using CheckAutoBot.Actors;
-using CheckAutoBot.Captcha;
-using CheckAutoBot.Infrastructure;
-using CheckAutoBot.Managers;
-using CheckAutoBot.Messages;
-using CheckAutoBot.Storage;
-using CheckAutoBot.Utils;
-using CheckAutoBot.Vk.Api;
-using CheckAutoBot.Vk.Api.MessagesModels;
-using CheckAutoBot.Vk.Api.PhotosModels;
-using EasyNetQ;
-using Newtonsoft.Json;
-using NLog;
-using System;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using Topshelf;
 
 namespace CheckAutoBot

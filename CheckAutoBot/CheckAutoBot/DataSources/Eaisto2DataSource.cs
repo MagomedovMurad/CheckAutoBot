@@ -1,4 +1,5 @@
 ﻿using CheckAutoBot.DataSources.Contracts;
+using CheckAutoBot.DataSources.Models;
 using CheckAutoBot.Enums;
 using CheckAutoBot.Infrastructure.Enums;
 using CheckAutoBot.Managers;
@@ -25,12 +26,7 @@ namespace CheckAutoBot.DataSources
 
         public int Order => 1;
 
-        public object GetData(object data)
-        {
-           
-        }
-
-        public object GetData(object data, IEnumerable<CaptchaRequestData> captchaRequestItems)
+        public DataSourceResult GetData(object inputData, IEnumerable<CaptchaRequestData> captchaRequestItems)
         {
             throw new NotImplementedException();
         }

@@ -3,6 +3,7 @@ using CheckAutoBot.Exceptions;
 using CheckAutoBot.Infrastructure;
 using CheckAutoBot.Infrastructure.Extensions;
 using HtmlAgilityPack;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,9 +30,55 @@ namespace CheckAutoBot.Managers
             return ParseHtml(response);
         }
 
-        public DiagnosticCard GetLastDiagnosticCard()
+        public DiagnosticCard GetLastDiagnosticCard(string licensePlate)
         {
+            var response = ExecuteRequest(licensePlate, null);
+            return JsonConvert.DeserializeObject<DiagnosticCard>(response);
+        }
 
+        private string ExecuteRequest(string licensePlate, string sessionId)
+        {
+            var stringData = $"action=getDataByLicensePlate&licensePlate={licensePlate.UrlEncode()}";
+            byte[] data = Encoding.ASCII.GetBytes(stringData);
+
+            #region Headers
+            WebHeaderCollection headers = new WebHeaderCollection();
+            headers.Add(HttpRequestHeader.Host, "eaisto.info");
+            headers.Add(HttpRequestHeader.Connection, "keep-alive");
+            headers.Add(HttpRequestHeader.ContentLength, data.Length.ToString());
+            headers.Add(HttpRequestHeader.Accept, "*/*");
+            headers.Add("X-Requested-With", "XMLHttpRequest");
+            headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36");
+            headers.Add("Sec-Fetch-Mode", "cors");
+            headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded; charset=UTF-8");
+            headers.Add("Origin", "https://eaisto.info");
+            headers.Add("Sec-Fetch-Site", "same-origin");
+            headers.Add(HttpRequestHeader.Referer, "https://eaisto.info/osago/");
+            headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br");
+            headers.Add(HttpRequestHeader.AcceptLanguage, "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7");
+            #endregion
+
+            #region Cookie
+            CookieContainer cookieContainer = new CookieContainer();
+            Cookie cookie = new Cookie();
+            cookie.Name = "PHPSESSID";
+            cookie.Value = sessionId;
+            cookieContainer.Add(new Uri(url), cookie);
+            #endregion
+
+            HttpWebRequest request = WebRequest.CreateHttp(url);
+            request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            request.Method = "POST";
+            request.Headers = headers;
+            request.CookieContainer = cookieContainer;
+
+            request.AddContent(data);
+
+            WebResponse response = request.GetResponse();
+            var responseData = response.ReadDataAsString();
+            response.Close();
+
+            return responseData;
         }
 
         private string ExecuteRequest(string captcha,

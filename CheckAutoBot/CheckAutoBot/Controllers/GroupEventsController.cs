@@ -14,12 +14,23 @@ using System.Threading.Tasks;
 
 namespace CheckAutoBot.Controllers
 {
-    public class GroupEventsController
+    public interface IGroupEventsController
+    {
+        Task HandleGroupEvent(string json);
+    }
+
+    public class GroupEventsController: IGroupEventsController
     {
         private readonly ICustomLogger _logger;
         private readonly IBus _bus;
+        private IPrivateMessagesController _privateMessagesController;
 
-        private PrivateMessagesController _privateMessagesController;
+        public GroupEventsController(ICustomLogger logger, IBus bus, IPrivateMessagesController privateMessagesController)
+        {
+            _logger = logger;
+            _bus = bus;
+            _privateMessagesController = privateMessagesController;
+        }
 
         public async Task HandleGroupEvent(string json)
         {

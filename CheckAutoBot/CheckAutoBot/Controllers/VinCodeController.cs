@@ -23,17 +23,19 @@ namespace CheckAutoBot.Controllers
         private readonly ICustomLogger _logger;
         private DbQueryExecutor _queryExecutor;
         private KeyboardBuilder _keyboardBuilder;
-        private MessagesSenderController _messagesSenderController;
-        private DataRequestController _dataRequestController;
+        private IMessagesSenderController _messagesSenderController;
+        private IDataRequestController _dataRequestController;
 
         public VinCodeController(ICustomLogger logger, 
                                  DbQueryExecutor queryExecutor, 
-                                 DataRequestController dataRequestController)
+                                 IDataRequestController dataRequestController,
+                                 IMessagesSenderController messagesSenderController)
         {
             _logger = logger;
             _queryExecutor = queryExecutor;
             _keyboardBuilder = new KeyboardBuilder();
             _dataRequestController = dataRequestController;
+            _messagesSenderController = messagesSenderController;
         }
 
         public async Task StartGeneralInfoSearch(string vin, int requestObjectId)

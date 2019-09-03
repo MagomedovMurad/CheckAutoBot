@@ -4,30 +4,40 @@ using CheckAutoBot.Vk.Api.MessagesModels;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace CheckAutoBot.Controllers
 {
-    public class PrivateMessagesController
+    public interface IPrivateMessagesController
+    {
+        void HandleMessage(PrivateMessage message);
+    }
+
+    public class PrivateMessagesController: IPrivateMessagesController
     {
         private readonly ICustomLogger _logger;
         private DbQueryExecutor _queryExecutor;
-        private MessagesSenderController _messagesSenderController;
+        private IMessagesSenderController _messagesSenderController;
         private IInputDataController _inputDataController;
-        private UserRequestController _userRequestController;
+        private IUserRequestController _userRequestController;
 
         private Regex _regNumberRegex;
         private Regex _vinCodeRegex;
         //private Regex _fioRegex;
 
-        public PrivateMessagesController(MessagesSenderController messagesSenderController, IInputDataController inputDataController, UserRequestController userRequestController, DbQueryExecutor queryExecutor, ICustomLogger logger)
+        public PrivateMessagesController(IMessagesSenderController messagesSenderController, 
+                                         IInputDataController inputDataController,
+                                         IUserRequestController userRequestController, 
+                                         DbQueryExecutor queryExecutor,
+                                         ICustomLogger logger)
         {
             _messagesSenderController = messagesSenderController;
             _inputDataController = inputDataController;
             _userRequestController = userRequestController;
             _logger = logger;
             _queryExecutor = queryExecutor;
+
+            Initialize();
         }
 
         private Dictionary<string, string> _latinToCyrillicSymbols = new Dictionary<string, string>()
@@ -89,20 +99,8 @@ namespace CheckAutoBot.Controllers
 
             if (payload is RequestPayload requestPayload)
             {
-                requestPayload.
-                _userRequestController.
-
-                var msg = new UserRequestMessage()
-                {
-                    MessageId = message.Id,
-                    UserId = message.FromId,
-                    RequestType = requestPayload.RequestType,
-                    Date = DateTime.Now
-                };
-
-                _actorSelection
-                    .ActorSelection(Context, ActorsPaths.UserRequestHandlerActor.Path)
-                    .Tell(msg, Self);
+                var dateTime = (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(message.Date);
+                _userRequestController.HandleUserRequest(message.Id, message.FromId, requestPayload.RequestType, dateTime);
             }
         }
 

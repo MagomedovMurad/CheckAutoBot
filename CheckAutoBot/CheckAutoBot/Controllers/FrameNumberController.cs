@@ -11,7 +11,7 @@ namespace CheckAutoBot.Controllers
         Task StartGeneralInfoSearch(string frameNumber, int requestObjectId);
     }
 
-    public class FrameNumberController
+    public class FrameNumberController: IFrameNumberController
     {
         private IMessagesSenderController _messagesSenderController;
         private DbQueryExecutor _queryExecutor;

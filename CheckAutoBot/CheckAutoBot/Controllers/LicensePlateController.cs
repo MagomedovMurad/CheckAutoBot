@@ -35,7 +35,8 @@ namespace CheckAutoBot.Controllers
                                       ILicensePlateControllerCache licensePlateControllerCache,
                                       IMessagesSenderController messagesSenderController,
                                       DbQueryExecutor queryExecutor,
-                                      IVinCodeController vinCodeController)
+                                      IVinCodeController vinCodeController,
+                                      IFrameNumberController frameNumberController)
         {
             _logger = logger;
             _dataRequestController = dataRequestController;
@@ -43,6 +44,7 @@ namespace CheckAutoBot.Controllers
             _messagesSenderController = messagesSenderController;
             _queryExecutor = queryExecutor;
             _vinCodeController = vinCodeController;
+            _frameNumberController = frameNumberController;
         }
 
         public async Task StartVinSearch(string licencePlate, int requestObjectId)

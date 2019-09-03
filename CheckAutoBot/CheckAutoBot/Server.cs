@@ -24,15 +24,17 @@ namespace CheckAutoBot
     public class Server: IServer
     {
         private HttpListener _httpListener;
-        private GroupEventsController _groupEventsController;
-        private YandexMoneyController _yandexMoneyController;
+        private IGroupEventsController _groupEventsController;
+        private IYandexMoneyController _yandexMoneyController;
         private readonly ICustomLogger _logger;
         private readonly IBus _bus;
 
-        public Server(ICustomLogger logger, IBus bus)
+        public Server(ICustomLogger logger, IBus bus, IGroupEventsController groupEventsController, IYandexMoneyController yandexMoneyController)
         {
             _bus = bus;
             _logger = logger;
+            _groupEventsController = groupEventsController;
+            _yandexMoneyController = yandexMoneyController;
         }
 
         public async Task Start()

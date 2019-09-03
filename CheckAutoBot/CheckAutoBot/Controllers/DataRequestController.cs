@@ -21,18 +21,19 @@ namespace CheckAutoBot.Controllers
 
     public class DataRequestController: IDataRequestController
     {
-        private List<IDataSource> _dataSources;
-        private RequestedDataCacheController _requestsCache;
-        private RequestedCaptchasCacheController _captchasCacheController;
-
+        private IDataSource[] _dataSources;
+        private IRequestedDataCacheController _requestsCache;
+        private IRequestedCaptchasCacheController _captchasCacheController;
         private readonly ICustomLogger _logger;
 
-        public DataRequestController(List<IDataSource> dataSources,
-                                     RequestedCaptchasCacheController captchasCacheController,
+        public DataRequestController(IDataSource[] dataSources,
+                                     IRequestedCaptchasCacheController captchasCacheController,
+                                     IRequestedDataCacheController requestsCache,
                                      ICustomLogger logger)
         {
             _dataSources = dataSources;
             _logger = logger;
+            _requestsCache = requestsCache;
             _captchasCacheController = captchasCacheController;
             _captchasCacheController.CaptchasSolved += SolvedCaptchasHandler;
         }

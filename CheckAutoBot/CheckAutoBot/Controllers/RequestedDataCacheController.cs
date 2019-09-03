@@ -8,7 +8,15 @@ using System.Threading.Tasks;
 
 namespace CheckAutoBot.Controllers
 {
-    public class RequestedDataCacheController
+    public interface IRequestedDataCacheController
+    {
+        void Add(int id, IDataSource dataSource, object inputData, Func<DataRequestResult, Task> callBack);
+        DataRequest Get(int id);
+        void UpRepeatCount(int id);
+        void UpdateDataSource(int id, IDataSource dataSource);
+    }
+
+    public class RequestedDataCacheController: IRequestedDataCacheController
     {
         private List<DataRequest> _dataRequest;
 

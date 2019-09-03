@@ -38,6 +38,21 @@ namespace CheckAutoBot.Controllers
         };
         
 
+        public UserRequestController(IDataRequestController dataRequestController,
+                                     DbQueryExecutor queryExecutor, 
+                                     IMessagesSenderController messagesSenderController,
+                                     //KeyboardBuilder keyboardBuilder,
+                                     ICustomLogger customLogger,
+                                     IEnumerable<IDataConverter> dataConverters)
+        {
+            _dataRequestController = dataRequestController;
+            _queryExecutor = queryExecutor;
+            _messagesSenderController = messagesSenderController;
+            _keyboardBuilder = new KeyboardBuilder();
+            _customLogger = customLogger;
+            _dataConverters = dataConverters;
+        }
+
         private DataType GetDataType(RequestType requestType)
         {
             return _requestTypeToDataType[requestType];
@@ -48,20 +63,7 @@ namespace CheckAutoBot.Controllers
             return _requestTypeToDataType.Single(x => x.Value == dataType).Key;
         }
 
-        public UserRequestController(IDataRequestController dataRequestController,
-                                     DbQueryExecutor queryExecutor, 
-                                     IMessagesSenderController messagesSenderController,
-                                     KeyboardBuilder keyboardBuilder,
-                                     ICustomLogger customLogger,
-                                     IEnumerable<IDataConverter> dataConverters)
-        {
-            _dataRequestController = dataRequestController;
-            _queryExecutor = queryExecutor;
-            _messagesSenderController = messagesSenderController;
-            _keyboardBuilder = keyboardBuilder;
-            _customLogger = customLogger;
-            _dataConverters = dataConverters;
-        }
+
 
         public async Task HandleUserRequest(int messageId, int userId, RequestType requestType, DateTime date)
         {

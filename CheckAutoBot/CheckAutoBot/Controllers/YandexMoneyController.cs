@@ -9,15 +9,22 @@ using NLog;
 
 namespace CheckAutoBot.Controllers
 {
-    public class YandexMoneyController
+    public interface IYandexMoneyController
+    {
+        Task HandlePayment(Payment payment, bool isValid);
+    }
+
+    public class YandexMoneyController: IYandexMoneyController
     {
         private DbQueryExecutor _queryExecutor;
-        private MessagesSenderController _messagesSenderController;
+        private IMessagesSenderController _messagesSenderController;
         private ICustomLogger _logger;
 
-        public YandexMoneyController(DbQueryExecutor queryExecutor)
+        public YandexMoneyController(DbQueryExecutor queryExecutor, ICustomLogger logger, IMessagesSenderController messagesSenderController)
         {
             _queryExecutor = queryExecutor;
+            _logger = logger;
+            _messagesSenderController = messagesSenderController;
         }
 
         public async Task HandlePayment(Payment payment, bool isValid)

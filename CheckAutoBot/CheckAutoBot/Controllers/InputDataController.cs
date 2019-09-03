@@ -26,11 +26,18 @@ namespace CheckAutoBot.Controllers
         private ILicensePlateController _licensePlateController;
         private IMessagesSenderController _messagesSenderController;
 
-        public InputDataController(ICustomLogger logger, DbQueryExecutor queryExecutor)
+        public InputDataController(ICustomLogger logger, 
+                                   DbQueryExecutor queryExecutor, 
+                                   IVinCodeController vinCodeController, 
+                                   ILicensePlateController licensePlateController,
+                                   IMessagesSenderController messagesSenderController)
         {
             _logger = logger;
             _queryExecutor = queryExecutor;
             _keyboardBuilder = new KeyboardBuilder();
+            _vinCodeController = vinCodeController;
+            _licensePlateController = licensePlateController;
+            _messagesSenderController = messagesSenderController;
         }
 
         public async Task HandleInputData(InputData inputData, int userId, int messageId, DateTime date)

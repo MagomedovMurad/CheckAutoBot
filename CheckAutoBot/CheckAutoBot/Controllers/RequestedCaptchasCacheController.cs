@@ -10,7 +10,14 @@ using System.Linq;
 
 namespace CheckAutoBot.Controllers
 {
-    public class RequestedCaptchasCacheController
+    public interface IRequestedCaptchasCacheController
+    {
+        event EventHandler<CaptchaRequestDataEnvelop> CaptchasSolved;
+        void Add(int id, IEnumerable<CaptchaRequestData> captchas);
+        void Report(string captchaId, string answer);
+    }
+
+    public class RequestedCaptchasCacheController: IRequestedCaptchasCacheController
     {
         private List<CaptchaRequestDataEnvelop> _requestedCaptchas;
         private RucaptchaManager _rucaptchaManager;

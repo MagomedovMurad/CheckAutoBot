@@ -21,9 +21,9 @@ namespace CheckAutoBot.DataSources
             _eaistoManager = eaistoManager;
         }
 
-        public string Name => "EAISTO_DIAGNOSTIC_CARDS";
+        public string Name => "EAISTO_VECHICLE_IDENTIFIERS";
 
-        public DataType DataType => DataType.DiagnosticCards;
+        public DataType DataType => DataType.VechicleIdentifiers;
 
         public int MaxRepeatCount => 2;
 

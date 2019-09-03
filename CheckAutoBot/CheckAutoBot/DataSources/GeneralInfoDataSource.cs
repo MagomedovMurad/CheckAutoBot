@@ -85,12 +85,13 @@ namespace CheckAutoBot.DataSources
                 OwnershipPeriods = periods
             };
 
-            return new DataSourceResult()
+            var relatedData = new[] 
             {
-                Data = generalInfo,
-                RelatedData = new[] { new RelatedData(vechiclePassportData, DataType.VechiclePassportData),
-                                      new RelatedData(ownershipPeriodData, DataType.OwnershipPeriods)  }
+                new RelatedData(vechiclePassportData, DataType.VechiclePassportData),
+                new RelatedData(ownershipPeriodData, DataType.OwnershipPeriods)
             };
+
+            return new DataSourceResult(generalInfo, relatedData);
         }
     }
 }

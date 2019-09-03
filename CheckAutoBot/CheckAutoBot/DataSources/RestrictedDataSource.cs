@@ -23,6 +23,7 @@ namespace CheckAutoBot.DataSources
             _gibddManager = gibddManager;
         }
 
+        public string Name => "GIBDD_RESTRICTEDS";
         public DataType DataType => DataType.Restricted;
 
         public int MaxRepeatCount => 3;

@@ -49,23 +49,19 @@ namespace CheckAutoBot.Controllers
             var dataRequest = _requestsCache.Get(envelop.Id);
             GetDataFromSource(envelop.Id, dataRequest.DataSource, dataRequest.InputData, envelop.CaptchaRequestDataList);
         }
-        private void RepeatRequest(int id)
+
+        private void RepeatRequest(int id, bool selectNextSource = false)
         {
             var dataRequest = _requestsCache.Get(id);
 
-            if (dataRequest.DataSource.MaxRepeatCount >= dataRequest.RepeatCount)
-            {
-                _requestsCache.UpRepeatCount(id);
-                RequestData(id, dataRequest.InputData, dataRequest.DataSource);
-            }
-            else
+            if (dataRequest.RepeatCount >= dataRequest.DataSource.MaxRepeatCount || selectNextSource)
             {
                 var dataSource = _dataSources.Where(x => x.DataType.Equals(dataRequest.DataSource.DataType))
                                              .FirstOrDefault(x => x.Order.Equals(dataRequest.DataSource.Order + 1));
 
                 if (dataSource is null)
                 {
-                    ReturnData(id, null, null, false);
+                    ReturnData(id, null, null, null, false);
                 }
                 else
                 {
@@ -73,18 +69,25 @@ namespace CheckAutoBot.Controllers
                     RequestData(id, dataRequest.InputData, dataSource);
                 }
             }
+            else
+            {
+                _requestsCache.UpRepeatCount(id);
+                RequestData(id, dataRequest.InputData, dataRequest.DataSource);
+            }
         }
+
         private void RequestData(int id, object inputData, IDataSource dataSource)
         {
             if (dataSource is IDataSourceWithCaptcha dataSourceWithCaptcha)
             {
                 RequestCaptcha(id, dataSourceWithCaptcha);
             }
-            else if (dataSource is IDataSourceWithoutCaptcha dataSourceWithoutCaptcha)
+            else if (dataSource is IDataSource dataSourceWithoutCaptcha)
             {
                 GetDataFromSource(id, dataSourceWithoutCaptcha, inputData, null);
             }
         }
+
         private async Task RequestCaptcha(int id, IDataSourceWithCaptcha dataSource)
         {
             try
@@ -115,7 +118,7 @@ namespace CheckAutoBot.Controllers
             try
             {
                 var dataSourceResult = dataSource.GetData(inputData, captchas);
-                ReturnData(id, dataSourceResult, dataSource.DataType, true);
+                ReturnData(id, dataSourceResult, dataSource.DataType, dataSource.Name, true);
                 return;
             }
             catch (InvalidOperationException ex)
@@ -127,6 +130,13 @@ namespace CheckAutoBot.Controllers
                                $"Тип данных: { dataSource.DataType}." +
                                $"Ошибка: {ex.Message}. {ex.InnerException?.Message}";
                     _logger.WriteToLog(LogLevel.Warn, warn, true);
+                }
+                else if (ex is DataNotFoundException nfEx)
+                {
+                    var warn = $"В источнике данных типа {dataSource.DataType} не найдены данные. {Environment.NewLine}";
+                    _logger.WriteToLog(LogLevel.Warn, warn, false);
+                    RepeatRequest(id, true);
+                    return;
                 }
                 else
                 {
@@ -146,7 +156,7 @@ namespace CheckAutoBot.Controllers
             }
             RepeatRequest(id);
         }
-        private void ReturnData(int id, DataSourceResult dataSourceResult, DataType? dataType, bool isSuccessfull)
+        private void ReturnData(int id, DataSourceResult dataSourceResult, DataType? dataType, string dataSourceName, bool isSuccessfull)
         {
             var dataRequest = _requestsCache.Get(id);
 
@@ -155,7 +165,8 @@ namespace CheckAutoBot.Controllers
                 Id = id,
                 DataSourceResult = dataSourceResult,
                 DataType = dataType,
-                IsSuccessfull = isSuccessfull
+                IsSuccessfull = isSuccessfull,
+                DataSourceName = dataSourceName
             };
 
             dataRequest.CallBack(result);

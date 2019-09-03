@@ -10,6 +10,8 @@ namespace CheckAutoBot.DataSources.Contracts
 {
     public interface IDataSource
     {
+        string Name { get; }
+
         DataType DataType { get; }
 
         int MaxRepeatCount { get; }

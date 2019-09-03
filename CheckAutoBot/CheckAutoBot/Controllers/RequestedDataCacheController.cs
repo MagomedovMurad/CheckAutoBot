@@ -25,7 +25,7 @@ namespace CheckAutoBot.Controllers
                 InputData = inputData,
                 DataSource = dataSource,
                 CallBack = callBack,
-                RepeatCount = 1
+                RepeatCount = 1,
             };
 
             _dataRequest.Add(request);
@@ -41,6 +41,7 @@ namespace CheckAutoBot.Controllers
             var dataRequest = _dataRequest.Single(x => x.Id.Equals(id));
             dataRequest.RepeatCount++;
         }
+
         public void UpdateDataSource(int id, IDataSource dataSource)
         {
             var dataRequest = _dataRequest.Single(x => x.Id.Equals(id));

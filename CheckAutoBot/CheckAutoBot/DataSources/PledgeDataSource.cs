@@ -23,7 +23,8 @@ namespace CheckAutoBot.DataSources
 
         }
 
-        
+        public string Name => "FNP_PLEDGES";
+
         public DataType DataType => DataType.Pledge;
 
         public int MaxRepeatCount => 3;

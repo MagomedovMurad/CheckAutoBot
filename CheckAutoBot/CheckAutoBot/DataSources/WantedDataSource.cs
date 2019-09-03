@@ -23,6 +23,8 @@ namespace CheckAutoBot.DataSources
             _gibddManager = gibddManager;
         }
 
+        public string Name => "GIBDD_WANTEDS";
+
         public DataType DataType => DataType.Wanted;
 
         public int MaxRepeatCount => 3;
@@ -35,8 +37,8 @@ namespace CheckAutoBot.DataSources
             var captchaRequestData = captchaRequestItems.Single();
             var wantedResult = _gibddManager.GetWanted(auto.Vin, captchaRequestData.Value, captchaRequestData.SessionId);
 
-            if(wantedResult is null)
-                return new DataSourceResult() { Data = new WantedData() };
+            if (wantedResult is null)
+                return new DataSourceResult(new WantedData());
 
             var wantedAccidents = wantedResult.Wanteds.Select(x => new WantedAccident()
             {

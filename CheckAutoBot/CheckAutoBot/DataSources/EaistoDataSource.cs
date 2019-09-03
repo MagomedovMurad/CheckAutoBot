@@ -1,5 +1,6 @@
 ﻿using CheckAutoBot.DataSources.Contracts;
 using CheckAutoBot.DataSources.Models;
+using CheckAutoBot.Exceptions;
 using CheckAutoBot.Infrastructure.Enums;
 using CheckAutoBot.Infrastructure.Models.DataSource;
 using CheckAutoBot.Managers;
@@ -20,11 +21,13 @@ namespace CheckAutoBot.DataSources
             _eaistoManager = eaistoManager;
         }
 
+        public string Name => "EAISTO_DIAGNOSTIC_CARDS";
+
         public DataType DataType => DataType.DiagnosticCards;
 
         public int MaxRepeatCount => 2;
 
-        public int Order => 2;
+        public int Order => 1;
 
         public DataSourceResult GetData(object inputData, IEnumerable<CaptchaRequestData> captchaRequestItems)
         {
@@ -33,7 +36,7 @@ namespace CheckAutoBot.DataSources
 
             var diagnosticCards = _eaistoManager.GetDiagnosticCards(captcha.Value, null, captcha.SessionId, licensePlate: licensePlate);
             if (diagnosticCards == null)
-                return null;
+                throw new DataNotFoundException();
 
             var dcs = diagnosticCards.Select(x => new DiagnosticCard()
             {
@@ -48,7 +51,11 @@ namespace CheckAutoBot.DataSources
                 Vin = x.Vin
             });
 
-            return new DataSourceResult(new DiagnosticCardsData() { DiagnosticCards = dcs});
+            var lastDc = dcs.FirstOrDefault();
+
+            var vechicleIdentifiers = new VechicleIdentifiers() { FrameNumber = lastDc.FrameNumber, Vin = lastDc.FrameNumber, LicensePlate = lastDc.LicensePlate };
+            var relatedData = new RelatedData(new DiagnosticCardsData() { DiagnosticCards = dcs }, DataType.DiagnosticCards);
+            return new DataSourceResult(vechicleIdentifiers, new[] { relatedData });
         }
 
         public IEnumerable<CaptchaRequestData> RequestCaptcha()
@@ -56,7 +63,7 @@ namespace CheckAutoBot.DataSources
             var captchaResult = _eaistoManager.GetCaptcha();
             var captchaRequest = _rucaptchaManager.SendImageCaptcha(captchaResult.ImageBase64, Rucaptcha.LpPingbackUrl);
 
-            return new[] { new CaptchaRequestData(captchaRequest.Id, captchaResult.SessionId, "") };
+            return new[] { new CaptchaRequestData(captchaRequest.Id, captchaResult.SessionId, null) };
         }
     }
 }

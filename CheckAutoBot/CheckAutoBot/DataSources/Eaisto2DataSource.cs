@@ -19,6 +19,7 @@ namespace CheckAutoBot.DataSources
         {
             _eaistoManager = eaistoManager;
         }
+        public string Name => "EAISTO_DIAGNOSTIC_CARDS2";
 
         public DataType DataType => DataType.DiagnosticCards;
 

@@ -18,9 +18,9 @@ namespace CheckAutoBot.DataSources.Models
             Data = data;
         }
 
-        public DataSourceResult()
-        {
-        }
+        //public DataSourceResult()
+        //{
+        //}
 
         public object Data { get; set; }
 

@@ -15,7 +15,13 @@ using CheckAutoBot.Messages;
 
 namespace CheckAutoBot
 {
-    public class Server
+    public interface IServer
+    {
+        Task Start();
+        void Stop();
+    }
+
+    public class Server: IServer
     {
         private HttpListener _httpListener;
         private GroupEventsController _groupEventsController;
@@ -128,8 +134,6 @@ namespace CheckAutoBot
         }
 
         #endregion
-
-
 
         #region Helpers
 

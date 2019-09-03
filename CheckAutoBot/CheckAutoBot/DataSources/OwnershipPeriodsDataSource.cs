@@ -21,6 +21,8 @@ namespace CheckAutoBot.DataSources
             _queryExecutor = dbQueryExecutor;
         }
 
+        public string Name => "GIBDD_OWNERS";
+
         public DataType DataType => DataType.OwnershipPeriods;
 
         public int MaxRepeatCount => 1;

@@ -10,24 +10,8 @@ namespace CheckAutoBot
         //XWB3K32EDCA235394 nexia
         //JMBLYV97W7J004216 залог
         static void Main(string[] args)
-        {
-            var rc = HostFactory.Run(x =>                                   
-            {
-                x.Service<Service>(s =>                                   
-                {
-                    s.ConstructUsing(name => new Service());                
-                    s.WhenStarted(service => service.Start());                         
-                    s.WhenStopped(service => service.Stop());                          
-                });
-                x.RunAsLocalSystem();                                       
+        {                                      
 
-                x.SetDescription("Check auto bot");                   
-                x.SetDisplayName("CheckAutoBot");                                  
-                x.SetServiceName("CheckAutoBot");                                  
-            });                                                             
-
-            var exitCode = (int)Convert.ChangeType(rc, rc.GetTypeCode());  
-            Environment.ExitCode = exitCode;
 
 
             //IBus bus = RabbitHutch.CreateBus("host=localhost");

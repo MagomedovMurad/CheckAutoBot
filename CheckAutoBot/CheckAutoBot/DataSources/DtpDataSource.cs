@@ -32,11 +32,14 @@ namespace CheckAutoBot.DataSources
             _customLogger = customLogger;
         }
 
+        public string Name => "GIBDD_DTP";
+
         public DataType DataType => DataType.Dtp;
 
         public int MaxRepeatCount => 3;
 
         public int Order => 1;
+
 
         public DataSourceResult GetData(object inputData, IEnumerable<CaptchaRequestData> captchaRequestItems)
         {
@@ -45,7 +48,7 @@ namespace CheckAutoBot.DataSources
             var dtpResult = _gibddManager.GetDtp(auto.Vin, captchaRequestData.CaptchaId, captchaRequestData.SessionId);
 
             if (dtpResult is null)
-                return new DataSourceResult() { Data = new DtpData()};
+                return new DataSourceResult(new DtpData());
 
             var accidents = new List<DtpAccident>();
 

@@ -10,6 +10,7 @@ namespace CheckAutoBot.DataSources
 {
     public class EaistoMeDataSource : IDataSourceWithCaptcha
     {
+        public string Name => "";
         public DataType DataType => throw new NotImplementedException();
 
         public int MaxRepeatCount => throw new NotImplementedException();

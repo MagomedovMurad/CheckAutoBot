@@ -20,6 +20,8 @@ namespace CheckAutoBot.DataSources
             _queryExecutor = queryExecutor;
         }
 
+        public string Name => "GIBDD_VECHICLE_PASSPORT_DATA";
+
         public DataType DataType => DataType.VechiclePassportData;
 
         public int MaxRepeatCount => 2;

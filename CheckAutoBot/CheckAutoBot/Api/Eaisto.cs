@@ -101,18 +101,21 @@ namespace CheckAutoBot.Managers
 
             #region Headers
             WebHeaderCollection headers = new WebHeaderCollection();
-            headers.Add(HttpRequestHeader.Accept, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
-            headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br");
-            headers.Add(HttpRequestHeader.AcceptLanguage, "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7");
-            headers.Add(HttpRequestHeader.CacheControl, "max-age=0");
+            headers.Add(HttpRequestHeader.Host, "eaisto.info");
             headers.Add(HttpRequestHeader.Connection, "keep-alive");
             headers.Add(HttpRequestHeader.ContentLength, data.Length.ToString());
-            headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
-            headers.Add(HttpRequestHeader.Host, "eaisto.info");
+            headers.Add(HttpRequestHeader.CacheControl, "max-age=0");
             headers.Add("Origin", "https://eaisto.info");
-            headers.Add(HttpRequestHeader.Referer, "https://eaisto.info/");
             headers.Add("Upgrade-Insecure-Requests", "1");
-            headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 YaBrowser/18.6.1.770 Yowser/2.5 Safari/537.36");
+            headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
+            headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36");
+            headers.Add("Sec-Fetch-Mode", "navigate");
+            headers.Add("Sec-Fetch-User", "?1");
+            headers.Add(HttpRequestHeader.Accept, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3");
+            headers.Add("Sec-Fetch-Site", "same-origin");
+            headers.Add(HttpRequestHeader.Referer, "https://eaisto.info/");
+            headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br");
+            headers.Add(HttpRequestHeader.AcceptLanguage, "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7");
             #endregion
 
             #region Cookie
@@ -143,8 +146,10 @@ namespace CheckAutoBot.Managers
             WebHeaderCollection headers = new WebHeaderCollection();
             headers.Add(HttpRequestHeader.Host, "eaisto.info");
             headers.Add(HttpRequestHeader.Connection, "keep-alive");
-            headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36");
+            headers.Add("Sec-Fetch-Mode", "no-cors");
+            headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36");
             headers.Add(HttpRequestHeader.Accept, "image/webp,image/apng,image/*,*/*;q=0.8");
+            headers.Add("Sec-Fetch-Site", "same-origin");
             headers.Add(HttpRequestHeader.Referer, "https://eaisto.info/");
             headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br");
             headers.Add(HttpRequestHeader.AcceptLanguage, "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7");

@@ -7,11 +7,8 @@
 
   <ItemGroup>
     <Compile Remove="Actors\**" />
-    <Compile Remove="Handlers\**" />
     <EmbeddedResource Remove="Actors\**" />
-    <EmbeddedResource Remove="Handlers\**" />
     <None Remove="Actors\**" />
-    <None Remove="Handlers\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -56,7 +53,6 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.3.0" />
-    <PackageReference Include="Topshelf" Version="4.2.1" />
   </ItemGroup>
 
   <ItemGroup>

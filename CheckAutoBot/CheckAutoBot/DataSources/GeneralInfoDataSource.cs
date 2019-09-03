@@ -20,6 +20,8 @@ namespace CheckAutoBot.DataSources
         protected GibddManager _gibddManager;
         protected RucaptchaManager _rucaptchaManager;
 
+        public string Name => "GIBDD_GENERAL_INFO";
+
         public DataType DataType => DataType.GeneralInfo;
 
         public int MaxRepeatCount => 3;
@@ -37,9 +39,8 @@ namespace CheckAutoBot.DataSources
 
         public IEnumerable<CaptchaRequestData> RequestCaptcha()
         {
-            var captchaResult = _gibddManager.GetCaptcha();
             var captchaRequest = _rucaptchaManager.SendReCaptcha3(Gibdd.dataSiteKey, Gibdd.url, Rucaptcha.VinPingbackUrl, 3, "check_auto_history");
-            return new[] { new CaptchaRequestData(captchaRequest.Id, captchaResult.SessionId, "") };
+            return new[] { new CaptchaRequestData(captchaRequest.Id, null, null) };
         }
 
         private DataSourceResult ConvertData(HistoryResult history)

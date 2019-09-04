@@ -6,7 +6,8 @@ namespace CheckAutoBot.Infrastructure.Enums
 {
     public enum DataType
     {
-        VechicleIdentifiers,
+        VechicleIdentifiersEAISTO,
+        VechicleIdentifiersRSA,
         GeneralInfo,
         DiagnosticCards,
         Osago,

@@ -52,33 +52,33 @@ namespace CheckAutoBot.Controllers
             _logger.WriteToLog(LogLevel.Debug, $"Запущен поиск вин кода по гос. номеру {licencePlate}. {Environment.NewLine}" +
                                                $"Идентификатор объекта запроса: {requestObjectId}");
 
-            await Start(licencePlate, requestObjectId, DataType.DiagnosticCards);
+            await Start(licencePlate, requestObjectId);
         }
 
-        private async Task Start(string licencePlate, int requestObjectId, DataType dataType)
+        private async Task Start(string licencePlate, int requestObjectId)
         {
-            _licensePlateControllerCache.Add(requestObjectId, DataType.DiagnosticCards, licencePlate);
-            await _dataRequestController.StartDataSearch(requestObjectId, DataType.DiagnosticCards, licencePlate, Callback);
+            _licensePlateControllerCache.Add(requestObjectId, DataType.VechicleIdentifiersEAISTO, licencePlate);
+            await _dataRequestController.StartDataSearch(requestObjectId, DataType.VechicleIdentifiersEAISTO, licencePlate, Callback);
         }
 
-        private async Task DiagnosticCardHandler(int requestObjectId, DiagnosticCardsData dcs, bool isSuccssfull, string licencePlate)
+        private async Task EaistoDataHandler(int requestObjectId, VechicleIdentifiersData vid, bool isSuccssfull, string licencePlate)
         {
             if (isSuccssfull)
             {
-                if (dcs is null || dcs.DiagnosticCards is null || !dcs.DiagnosticCards.Any())
+                if (vid is null)
                 {
-                    _licensePlateControllerCache.Update(requestObjectId, DataType.Osago, true);
-                    await _dataRequestController.StartDataSearch(requestObjectId, DataType.Osago, licencePlate, Callback);
+                    _licensePlateControllerCache.Update(requestObjectId, DataType.VechicleIdentifiersRSA, true);
+                    await _dataRequestController.StartDataSearch(requestObjectId, DataType.VechicleIdentifiersRSA, licencePlate, Callback);
                 }
                 else
                 {
                     _licensePlateControllerCache.Remove(requestObjectId);
-                    var diagnosticCard = dcs.DiagnosticCards.OrderBy(x => x.DateFrom).First();
+                    //var diagnosticCard = dcs.DiagnosticCards.OrderBy(x => x.DateFrom).First();
 
-                    if (!string.IsNullOrWhiteSpace(diagnosticCard.Vin))
-                        await _vinCodeController.StartGeneralInfoSearch(diagnosticCard.Vin, requestObjectId);
+                    if (!string.IsNullOrWhiteSpace(vid.Vin))
+                        await _vinCodeController.StartGeneralInfoSearch(vid.Vin, requestObjectId);
                     else //if(!string.IsNullOrWhiteSpace(dc.FrameNumber))
-                        await _frameNumberController.StartGeneralInfoSearch(diagnosticCard.FrameNumber, requestObjectId);
+                        await _frameNumberController.StartGeneralInfoSearch(vid.FrameNumber, requestObjectId);
                 }
             }
             else
@@ -88,11 +88,11 @@ namespace CheckAutoBot.Controllers
             }
         }
 
-        private async Task PolicyOsagoHandler(int requestObjectId, PolicyOsago policy, bool isSuccssfull, string licensePlate, bool eaistoAvailable)
+        private async Task RsaDataHandler(int requestObjectId, VechicleIdentifiersData vid, bool isSuccssfull, string licensePlate, bool eaistoAvailable)
         {
             if (isSuccssfull)
             {
-                if (policy is null)
+                if (vid is null)
                 {
                     var requestObject = await _queryExecutor.GetUserRequestObject(requestObjectId);
                     string error;
@@ -106,10 +106,10 @@ namespace CheckAutoBot.Controllers
                 }
                 else
                 {
-                    if (!string.IsNullOrWhiteSpace(policy.Vin))
-                        await _vinCodeController.StartGeneralInfoSearch(policy.Vin, requestObjectId);
+                    if (!string.IsNullOrWhiteSpace(vid.Vin))
+                        await _vinCodeController.StartGeneralInfoSearch(vid.Vin, requestObjectId);
                     else //if(!string.IsNullOrWhiteSpace(policy.FrameNumber))
-                        await _frameNumberController.StartGeneralInfoSearch(policy.FrameNumber, requestObjectId);
+                        await _frameNumberController.StartGeneralInfoSearch(vid.FrameNumber, requestObjectId);
                 }
             }
             else
@@ -123,16 +123,15 @@ namespace CheckAutoBot.Controllers
         private async Task Callback(DataRequestResult result)
         {
             var data = _licensePlateControllerCache.Get(result.Id);
+            var vid = result.DataSourceResult?.Data as VechicleIdentifiersData;
 
-            if (data.RequestedDataType == DataType.DiagnosticCards)
+            if (data.RequestedDataType == DataType.VechicleIdentifiersEAISTO)
             {
-                var dcs = result.DataSourceResult?.Data as DiagnosticCardsData;
-                await DiagnosticCardHandler(result.Id, dcs, result.IsSuccessfull, data.LicensePlate);
+                await EaistoDataHandler(result.Id, vid, result.IsSuccessfull, data.LicensePlate);
             }
             else if (data.RequestedDataType == DataType.Osago)
             {
-                var policy = result.DataSourceResult?.Data as PolicyOsago;
-                await PolicyOsagoHandler(result.Id, policy, result.IsSuccessfull, data.LicensePlate, data.DCSourcesNotAvailable);
+                await RsaDataHandler(result.Id, vid, result.IsSuccessfull, data.LicensePlate, data.DCSourcesNotAvailable);
             }
         }
 

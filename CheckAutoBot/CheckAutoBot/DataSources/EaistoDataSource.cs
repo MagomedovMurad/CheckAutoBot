@@ -23,7 +23,7 @@ namespace CheckAutoBot.DataSources
 
         public string Name => "EAISTO_VECHICLE_IDENTIFIERS";
 
-        public DataType DataType => DataType.VechicleIdentifiers;
+        public DataType DataType => DataType.VechicleIdentifiersEAISTO;
 
         public int MaxRepeatCount => 2;
 
@@ -36,7 +36,8 @@ namespace CheckAutoBot.DataSources
 
             var diagnosticCards = _eaistoManager.GetDiagnosticCards(captcha.Value, null, captcha.SessionId, licensePlate: licensePlate);
             if (diagnosticCards == null)
-                throw new DataNotFoundException();
+                return new DataSourceResult(null);
+            //throw new DataNotFoundException();
 
             var dcs = diagnosticCards.Select(x => new DiagnosticCard()
             {
@@ -53,7 +54,7 @@ namespace CheckAutoBot.DataSources
 
             var lastDc = dcs.FirstOrDefault();
 
-            var vechicleIdentifiers = new VechicleIdentifiers() { FrameNumber = lastDc.FrameNumber, Vin = lastDc.FrameNumber, LicensePlate = lastDc.LicensePlate };
+            var vechicleIdentifiers = new VechicleIdentifiersData() { FrameNumber = lastDc.FrameNumber, Vin = lastDc.FrameNumber, LicensePlate = lastDc.LicensePlate };
             var relatedData = new RelatedData(new DiagnosticCardsData() { DiagnosticCards = dcs }, DataType.DiagnosticCards);
             return new DataSourceResult(vechicleIdentifiers, new[] { relatedData });
         }

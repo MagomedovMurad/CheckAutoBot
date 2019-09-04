@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CheckAutoBot.Infrastructure.Models.DataSource
 {
-    public class VechicleIdentifiers
+    public class VechicleIdentifiersData
     {
         public string Vin { get; set; }
 

@@ -19,7 +19,7 @@ namespace CheckAutoBot.DataSources
 
         public string Name => "RSA_VECHICLE_IDENTIFIERS";
 
-        public DataType DataType => DataType.VechicleIdentifiers;
+        public DataType DataType => DataType.VechicleIdentifiersRSA;
 
         public int MaxRepeatCount => 3;
 
@@ -32,17 +32,18 @@ namespace CheckAutoBot.DataSources
             var pn = captchaRequestItems.Single(x => x.Key == "pn");
             var ov = captchaRequestItems.Single(x => x.Key == "ov");
 
-            VechicleIdentifiers vechicleIdentifiers = null;
+            VechicleIdentifiersData vechicleIdentifiers = null;
 
             var policyResponse = _rsaManager.GetPolicy(pn.Value, DateTime.Now, lp: licensePlate);
 
             if (policyResponse is null)
-                throw new DataNotFoundException();
+                return new DataSourceResult(null);
+              //  throw new DataNotFoundException();
 
             var policy = policyResponse.Policies.FirstOrDefault();
             var vechicleResponse = _rsaManager.GetVechicleInfo(policy.Serial, policy.Number, DateTime.Now, ov.Value);
 
-            vechicleIdentifiers = new VechicleIdentifiers() { Vin = vechicleResponse.Vin, FrameNumber = vechicleResponse.BodyNumber, LicensePlate = vechicleResponse.LicensePlate };
+            vechicleIdentifiers = new VechicleIdentifiersData() { Vin = vechicleResponse.Vin, FrameNumber = vechicleResponse.BodyNumber, LicensePlate = vechicleResponse.LicensePlate };
             return new DataSourceResult(vechicleIdentifiers);
         }
 

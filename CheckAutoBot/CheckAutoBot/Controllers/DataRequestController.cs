@@ -132,13 +132,13 @@ namespace CheckAutoBot.Controllers
                                $"Ошибка: {ex.Message}. {ex.InnerException?.Message}";
                     _logger.WriteToLog(LogLevel.Warn, warn, true);
                 }
-                else if (ex is DataNotFoundException nfEx)
-                {
-                    var warn = $"В источнике данных типа {dataSource.DataType} не найдены данные. {Environment.NewLine}";
-                    _logger.WriteToLog(LogLevel.Warn, warn, false);
-                    RepeatRequest(id, true);
-                    return;
-                }
+                //else if (ex is DataNotFoundException nfEx)
+                //{
+                //    var warn = $"В источнике данных типа {dataSource.DataType} не найдены данные. {Environment.NewLine}";
+                //    _logger.WriteToLog(LogLevel.Warn, warn, false);
+                //    RepeatRequest(id, true);
+                //    return;
+                //}
                 else
                 {
                     var error = $"Идентификатор запроса: {id}.{Environment.NewLine}" +

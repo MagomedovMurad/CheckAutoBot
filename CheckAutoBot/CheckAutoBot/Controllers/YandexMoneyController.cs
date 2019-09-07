@@ -47,7 +47,7 @@ namespace CheckAutoBot.Controllers
             else
             {
                 var textForAdmin = $"Не удалось оплатить запрос ({requestObject.Id}) пользователем с ID *id{requestObject.UserId}";
-                _logger.WriteToLog(LogLevel.Warn, textForAdmin, true);
+                _logger.WriteToLog(LogLevel.Error, textForAdmin, true);
             }
         }
     }

@@ -65,22 +65,22 @@ namespace CheckAutoBot.Controllers
             }
         }
 
-        private void RepeatRequest(int id, bool selectNextSource = false)
+        private void RepeatRequest(int id)
         {
-            _logger.WriteToLog(LogLevel.Error, $"Новая попытка запроса данных из источников ({id})");
-
             var dataRequest = _requestsCache.Get(id);
-            if (dataRequest.RepeatCount >= dataRequest.DataSource.MaxRepeatCount || selectNextSource)
+            if (dataRequest.RepeatCount >= dataRequest.DataSource.MaxRepeatCount)
             {
                 var dataSource = _dataSources.Where(x => x.DataType.Equals(dataRequest.DataSource.DataType))
                                              .FirstOrDefault(x => x.Order.Equals(dataRequest.DataSource.Order + 1));
 
                 if (dataSource is null)
                 {
+                    _logger.WriteToLog(LogLevel.Error, $"Все источники данных опрошены. Данные не найдены.");
                     ReturnData(id, null, null, null, false);
                 }
                 else
                 {
+                    _logger.WriteToLog(LogLevel.Error, $"Повторный запрос ({dataRequest.RepeatCount + 1}-й) данных из источников. Идентификатор ({id})");
                     _requestsCache.UpdateDataSource(id, dataSource);
                     RequestData(id, dataRequest.InputData, dataSource);
                 }
@@ -108,7 +108,10 @@ namespace CheckAutoBot.Controllers
         {
             try
             {
-                _logger.WriteToLog(LogLevel.Debug, $"Запрос каптч. Идентификатор запроса {id}");
+                _logger.WriteToLog(LogLevel.Debug, $"Запрос каптч для выполнения запроса. " +
+                                                   $"Идентификатор запроса: {id}." +
+                                                   $"Тип: {dataSource.DataType}. " +
+                                                   $"Источник данных: {dataSource.Name}");
                 var captchas = dataSource.RequestCaptcha();
                 _captchasCacheController.Add(id, captchas);
                 return;
@@ -135,7 +138,10 @@ namespace CheckAutoBot.Controllers
         {
             try
             {
-                _logger.WriteToLog(LogLevel.Debug, $"Запрос данных из источника. Идентификатор запроса {id}");
+                _logger.WriteToLog(LogLevel.Debug, $"Запрос данных из источника. " +
+                                                   $"Идентификатор запроса: {id}." +
+                                                   $"Тип: {dataSource.DataType}. " +
+                                                   $"Источник данных: {dataSource.Name}");
                 var dataSourceResult = dataSource.GetData(inputData, captchas);
                 ReturnData(id, dataSourceResult, dataSource.DataType, dataSource.Name, true);
                 return;

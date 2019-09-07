@@ -112,7 +112,7 @@ namespace CheckAutoBot.Controllers
             }
         }
 
-        private async Task<Auto> SaveAutoWithVinToDB(int userId, int messageId, string vin, DateTime date)
+        private Auto SaveAutoWithVinToDB(int userId, int messageId, string vin, DateTime date)
         {
             var auto = new Auto
             {
@@ -126,7 +126,7 @@ namespace CheckAutoBot.Controllers
             return auto;
         }
 
-        private async Task<Auto> SaveAutoWithLPToDB(int userId, int messageId, string licensePlate, DateTime date)
+        private Auto SaveAutoWithLPToDB(int userId, int messageId, string licensePlate, DateTime date)
         {
             var auto = new Auto
             {

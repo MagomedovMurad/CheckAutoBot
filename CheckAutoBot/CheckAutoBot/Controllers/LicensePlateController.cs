@@ -73,7 +73,6 @@ namespace CheckAutoBot.Controllers
                 else
                 {
                     _licensePlateControllerCache.Remove(requestObjectId);
-                    //var diagnosticCard = dcs.DiagnosticCards.OrderBy(x => x.DateFrom).First();
 
                     if (!string.IsNullOrWhiteSpace(vid.Vin))
                     {

@@ -47,35 +47,43 @@ namespace CheckAutoBot.Controllers
         private async Task Callback(DataRequestResult result)
         {
             var requestObject = await _queryExecutor.GetUserRequestObject(result.Id);
-            var generalInfo = result.DataSourceResult.Data as GeneralInfo;
-            SaveRelatedData(result.Id, result.DataSourceResult.RelatedData);
-
             var auto = requestObject as Auto;
-            var identifier = auto.LicensePlate ?? auto.Vin;
+
+            if (!result.IsSuccessfull)
+            {
+                await _messagesSenderController.SendMessage(auto.UserId, StaticResources.RequestFailedError);
+                return;
+            }
+
+            var generalInfo = result.DataSourceResult?.Data as GeneralInfo;
             string data;
+            var identifier = auto.LicensePlate ?? auto.Vin;
 
             if (generalInfo is null)
             {
-                data = auto.LicensePlate is null ? $"гос. номеру" : $"VIN коду";
+                data = auto.LicensePlate is null ? $"VIN коду" : $"гос. номеру";
                 data = $"😕 К сожалению не удалось найти информацию по {data} {identifier}";
                 await _messagesSenderController.SendMessage(auto.UserId, data);
                 return;
             }
 
+            if (result.DataSourceResult?.RelatedData != null)
+                SaveRelatedData(result.Id, result.DataSourceResult.RelatedData);
+
             var keyboard = _keyboardBuilder.CreateKeyboard(typeof(Auto));
-            data = auto.LicensePlate is null ? $"Гос. номер:" : $"VIN код:";
+            data = auto.LicensePlate is null ? $"VIN код:" : $"Гос. номер:";
             data = $"✏ {data} {identifier}{Environment.NewLine}" +
                    $"🚗 {generalInfo.Model}, {generalInfo.Year}г.{Environment.NewLine}" +
                    $"⬇ Выберите доступное действие.";
 
-            _messagesSenderController.SendMessage(auto.Id, data, keyboard: keyboard);
+            _messagesSenderController.SendMessage(auto.UserId, data, keyboard: keyboard);
         }
 
         private void SaveRelatedData(int id, IEnumerable<RelatedData> relatedData)
         {
             foreach (var data in relatedData)
             {
-                var json = JsonConvert.SerializeObject(data);
+                var json = JsonConvert.SerializeObject(data.Data);
                 _queryExecutor.AddRequestObjectCacheItem(id, data.DataType, json);
             }
         }

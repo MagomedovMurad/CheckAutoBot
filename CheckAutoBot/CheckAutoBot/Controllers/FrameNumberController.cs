@@ -27,7 +27,7 @@ namespace CheckAutoBot.Controllers
         {
             var requestObject = await _queryExecutor.GetUserRequestObject(requestObjectId);
 
-            var error = $"😕 К сожалению, поиск информации по праворульным автомобилям не выполняется.{Environment.NewLine}" +
+            var error = $"😕 К сожалению, поиск информации по автомобилям без VIN кода не выполняется.{Environment.NewLine}" +
                         $"💡 Данная функция находится в разработке.";
 
             await _messagesSenderController.SendMessage(requestObject.UserId, error);

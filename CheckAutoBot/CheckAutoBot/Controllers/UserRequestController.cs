@@ -10,6 +10,7 @@ using NLog;
 using System.Linq;
 using CheckAutoBot.Infrastructure.Enums;
 using CheckAutoBot.Infrastructure.Contracts;
+using CheckAutoBot.Vk.Api.MessagesModels;
 
 namespace CheckAutoBot.Controllers
 {
@@ -43,7 +44,7 @@ namespace CheckAutoBot.Controllers
                                      IMessagesSenderController messagesSenderController,
                                      //KeyboardBuilder keyboardBuilder,
                                      ICustomLogger customLogger,
-                                     IEnumerable<IDataConverter> dataConverters)
+                                     IDataConverter[] dataConverters)
         {
             _dataRequestController = dataRequestController;
             _queryExecutor = queryExecutor;
@@ -63,8 +64,6 @@ namespace CheckAutoBot.Controllers
             return _requestTypeToDataType.Single(x => x.Value == dataType).Key;
         }
 
-
-
         public async Task HandleUserRequest(int messageId, int userId, RequestType requestType, DateTime date)
         {
             var lastRequestObject = await _queryExecutor.GetLastUserRequestObject(userId);
@@ -80,43 +79,50 @@ namespace CheckAutoBot.Controllers
 
             if (lastRequestObject is Auto auto)
             {
-                _dataRequestController.StartDataSearch(requestId.Value, dataType, auto.Vin, Callback);
+                _dataRequestController.StartDataSearch(requestId.Value, dataType, auto, Callback);
             }
         }
 
         private async Task Callback(DataRequestResult dataRequestResult)
         {
             var request = await _queryExecutor.GetUserRequest(dataRequestResult.Id);
-            var requestTypes = await _queryExecutor.GetExecutedRequestTypes(request.RequestObject.Id).ConfigureAwait(false);
-            var keyboard = _keyboardBuilder.CreateKeyboard(typeof(Auto), requestTypes);
-            bool requestStatus;
+            
+            //bool requestStatus;
 
             if (dataRequestResult.IsSuccessfull)
             {
                 if (dataRequestResult.DataSourceResult is null)
                 {
+                    var keyboard = await CreateKeyboard(request.RequestObjectId);
                     _messagesSenderController.SendMessage(request.RequestObject.UserId, StaticResources.UnexpectedError, keyboard: keyboard);
                     _customLogger.WriteToLog(LogLevel.Error, $"Источник данных типа {request.Type} вернул NULL", true);
-                    requestStatus = false;
+                    await _queryExecutor.ChangeRequestStatus(request.Id, false);
                 }
                 else
                 {
                     var converter = _dataConverters.Single(x => x.SupportedDataType.Equals(dataRequestResult.DataType));
                     var bags = converter.Convert(dataRequestResult.DataSourceResult.Data);
+                    await _queryExecutor.ChangeRequestStatus(request.Id, true);
+                    var keyboard = await CreateKeyboard(request.RequestObjectId);
 
                     foreach (var bag in bags)
                         _messagesSenderController.SendMessage(request.RequestObject.UserId, bag.Message, photo: bag.Picture, keyboard: keyboard);
-
-                    requestStatus = true;
                 }
             }
             else
             {
+                var keyboard = await CreateKeyboard(request.RequestObjectId);
                 _messagesSenderController.SendMessage(request.RequestObject.UserId, StaticResources.RequestFailedError, keyboard: keyboard);
-                requestStatus = false;
+                await _queryExecutor.ChangeRequestStatus(request.Id, false);
             }
 
-            await _queryExecutor.ChangeRequestStatus(request.Id, requestStatus);
+            //await _queryExecutor.ChangeRequestStatus(request.Id, requestStatus);
+        }
+
+        private async Task<Keyboard> CreateKeyboard(int requestObjectId)
+        {
+            var requestTypes = await _queryExecutor.GetExecutedRequestTypes(requestObjectId).ConfigureAwait(false);
+            return _keyboardBuilder.CreateKeyboard(typeof(Auto), requestTypes);
         }
     }
 }

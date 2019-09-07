@@ -7,6 +7,8 @@ using System.Text;
 using System.Timers;
 using NLog;
 using System.Linq;
+using EasyNetQ;
+using CheckAutoBot.Infrastructure.Messages;
 
 namespace CheckAutoBot.Controllers
 {
@@ -22,20 +24,30 @@ namespace CheckAutoBot.Controllers
         private List<CaptchaRequestDataEnvelop> _requestedCaptchas;
         private RucaptchaManager _rucaptchaManager;
         private readonly ICustomLogger _logger;
+        private readonly IBus _bus;
+
 
         public event EventHandler<CaptchaRequestDataEnvelop> CaptchasSolved;
 
         private Timer _timer;
 
-        public RequestedCaptchasCacheController(ICustomLogger logger)
+        public RequestedCaptchasCacheController(ICustomLogger logger, IBus bus)
         {
             _requestedCaptchas = new List<CaptchaRequestDataEnvelop>();
             _rucaptchaManager = new RucaptchaManager();
             _logger = logger;
+            _bus = bus;
+
+            _bus.Subscribe<CaptchaSolvedEventMessage>("2D815518-0628-4AE7-83DF-4C80E40528BF", CaptchaSolvedEventHandler);
 
             _timer = new Timer(5000);
             _timer.Elapsed += TimerElapsed;
             _timer.Start();
+        }
+
+        private void CaptchaSolvedEventHandler(CaptchaSolvedEventMessage message)
+        {
+            Report(message.CaptchaId, message.Answer);
         }
 
         public void Add(int id, IEnumerable<CaptchaRequestData> captchas)
@@ -43,7 +55,8 @@ namespace CheckAutoBot.Controllers
             var envelop = new CaptchaRequestDataEnvelop()
             {
                 Id = id,
-                CaptchaRequestDataList = captchas
+                CaptchaRequestDataList = captchas,
+                DateTime = DateTime.Now
             };
             _requestedCaptchas.Add(envelop);
         }
@@ -62,6 +75,7 @@ namespace CheckAutoBot.Controllers
 
             var captchaRequestData = envelop.CaptchaRequestDataList.Single(x => x.CaptchaId.Equals(captchaId));
             captchaRequestData.Value = answer;
+
             bool notCompleted = envelop.CaptchaRequestDataList.Any(x => string.IsNullOrWhiteSpace(x.Value));
 
             if (notCompleted)
@@ -70,12 +84,15 @@ namespace CheckAutoBot.Controllers
                 _logger.WriteToLog(LogLevel.Debug, debugMsg, false);
                 return;
             }
+
+            CaptchasSolved?.Invoke(this, envelop);
+            _requestedCaptchas.Remove(envelop);
         }
 
         private void TimerElapsed(object sender, ElapsedEventArgs e)
         {
             var captchasWithoutAnswer = _requestedCaptchas.Where(x => (DateTime.Now - x.DateTime).TotalSeconds > 180)
-                                                          .SelectMany(y => y.CaptchaRequestDataList);
+                                                          .SelectMany(y => y.CaptchaRequestDataList).ToList();
 
             foreach (var captcha in captchasWithoutAnswer)
             {

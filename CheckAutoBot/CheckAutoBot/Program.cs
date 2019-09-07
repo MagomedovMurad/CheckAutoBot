@@ -2,6 +2,8 @@
 using CheckAutoBot.Controllers;
 using CheckAutoBot.DataSources;
 using CheckAutoBot.DataSources.Contracts;
+using CheckAutoBot.Infrastructure.Contracts;
+using CheckAutoBot.Infrastructure.Converters;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Storage;
 using CheckAutoBot.Svg;
@@ -63,6 +65,15 @@ namespace CheckAutoBot
             builder.RegisterType<GibddManager>().AsSelf();
             builder.RegisterType<RsaManager>().AsSelf();
             builder.RegisterType<RucaptchaManager>().AsSelf();
+            #endregion
+
+            #region IDataConverters
+            builder.RegisterType<VechiclePassportDataConverter>().As<IDataConverter>();
+            builder.RegisterType<DtpDataConverter>().As<IDataConverter>();
+            builder.RegisterType<OwnershipPeriodsConverter>().As<IDataConverter>();
+            builder.RegisterType<PledgeConverter>().As<IDataConverter>();
+            builder.RegisterType<RestrictedDataConverter>().As<IDataConverter>();
+            builder.RegisterType<WantedConverter>().As<IDataConverter>();
             #endregion
 
             builder.RegisterType<SvgBuilder>().AsSelf();

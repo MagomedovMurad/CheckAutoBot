@@ -49,38 +49,49 @@ namespace CheckAutoBot
 
             while (true)
             {
-                HttpListenerContext context = await _httpListener.GetContextAsync();
-                HttpListenerRequest request = context.Request;
+                try
+                {
+                    HttpListenerContext context = await _httpListener.GetContextAsync();
+                    HttpListenerRequest request = context.Request;
 
-                var requestData = GetStreamData(request.InputStream, request.ContentEncoding);
-                HttpStatusCode statusCode = HttpStatusCode.Unauthorized;
-                byte[] response = null;
+                    var requestData = GetStreamData(request.InputStream, request.ContentEncoding);
+                    HttpStatusCode statusCode = HttpStatusCode.Unauthorized;
+                    byte[] response = null;
 
-                if (request.HttpMethod == "POST" && request.RawUrl == "/bot/captcha")
-                {
-                    statusCode = await RucaptchaResponseHandler(requestData);
-                }
-                else if (request.HttpMethod == "POST" && request.RawUrl == "/bot/vk")
-                {
-                    response = Encoding.UTF8.GetBytes("ok");
-                    statusCode = await VkEventsHandler(requestData);
-                }
-                else if (request.HttpMethod == "POST" && request.RawUrl == "/bot/yandexmoney")
-                {
-                    statusCode = await YandexMoneyEventsHandler(requestData);
-                }
-                else if (request.HttpMethod == "GET" && request.RawUrl == "/test")
-                {
-                    response = Encoding.UTF8.GetBytes("Hello. I working!");
-                    statusCode = HttpStatusCode.OK;
-                }
-                else
-                {
-                    statusCode = await DefaultRequestHandler(requestData, request);
-                }
+                    if (request.HttpMethod == "POST" && request.RawUrl == "/bot/captcha")
+                    {
+                        statusCode = await RucaptchaResponseHandler(requestData);
+                    }
+                    else if (request.HttpMethod == "POST" && request.RawUrl == "/bot/vk")
+                    {
+                        response = Encoding.UTF8.GetBytes("ok");
+                        statusCode = await VkEventsHandler(requestData);
+                    }
+                    else if (request.HttpMethod == "POST" && request.RawUrl == "/bot/yandexmoney")
+                    {
+                        statusCode = await YandexMoneyEventsHandler(requestData);
+                    }
+                    else if (request.HttpMethod == "GET" && request.RawUrl == "/test")
+                    {
+                        response = Encoding.UTF8.GetBytes("Hello. I working!");
+                        statusCode = HttpStatusCode.OK;
+                    }
+                    else
+                    {
+                        statusCode = await DefaultRequestHandler(requestData, request);
+                    }
 
-                context.Response.StatusCode = (int)statusCode; 
-                context.Response.Close(response, false);
+                    context.Response.StatusCode = (int)statusCode;
+
+                    if (response is null)
+                        context.Response.Close();
+                    else
+                        context.Response.Close(response, false);
+                }
+                catch (Exception ex)
+                {
+
+                }
             }
         }
 
@@ -102,8 +113,8 @@ namespace CheckAutoBot
 
         private async Task<HttpStatusCode> VkEventsHandler(string data)
         {
-            _groupEventsController.HandleGroupEvent(data);
             _logger.WriteToLog(LogLevel.Debug, $"Новое событие БОТа: {data}");
+            _groupEventsController.HandleGroupEvent(data);
             return HttpStatusCode.OK;
         }
 

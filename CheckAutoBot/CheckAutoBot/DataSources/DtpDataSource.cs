@@ -45,7 +45,7 @@ namespace CheckAutoBot.DataSources
         {
             var auto = inputData as Auto;
             var captchaRequestData = captchaRequestItems.Single();
-            var dtpResult = _gibddManager.GetDtp(auto.Vin, captchaRequestData.CaptchaId, captchaRequestData.SessionId);
+            var dtpResult = _gibddManager.GetDtp(auto.Vin, captchaRequestData.Value, captchaRequestData.SessionId);
 
             if (dtpResult is null)
                 return new DataSourceResult(new DtpData());

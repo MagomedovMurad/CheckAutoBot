@@ -36,7 +36,7 @@ namespace CheckAutoBot.Controllers
             {
                 var auto = requestObject as Auto;
                 var data = auto.LicensePlate == null ? $"по VIN коду {auto.Vin}" : $"по гос. номеру {auto.LicensePlate}";
-                var text = $"Запрос {data} оплачен. Вы можете выполнить следующий запрос.";
+                var text = $"✅ Запрос {data} оплачен. Вы можете выполнить следующий запрос.";
                 _messagesSenderController.SendMessage(requestObject.UserId, text);
 
                 var textForAdmin = $"Оплачен запрос ({requestObject.Id}) пользователем с ID *id{requestObject.UserId}";

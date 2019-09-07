@@ -17,13 +17,20 @@ namespace CheckAutoBot.DataSources
         private RucaptchaManager _rucaptchaManager;
         private RsaManager _rsaManager;
 
+        public RsaDataSource(RucaptchaManager rucaptchaManager,
+                             RsaManager rsaManager)
+        {
+            _rucaptchaManager = rucaptchaManager;
+            _rsaManager = rsaManager;
+        }
+
         public string Name => "RSA_VECHICLE_IDENTIFIERS";
 
         public DataType DataType => DataType.VechicleIdentifiersRSA;
 
         public int MaxRepeatCount => 3;
 
-        public int Order => 2;
+        public int Order => 1;
 
         public DataSourceResult GetData(object inputData, IEnumerable<CaptchaRequestData> captchaRequestItems)
         {

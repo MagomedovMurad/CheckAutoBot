@@ -38,7 +38,7 @@ namespace CheckAutoBot.DataSources
             var wantedResult = _gibddManager.GetWanted(auto.Vin, captchaRequestData.Value, captchaRequestData.SessionId);
 
             if (wantedResult is null)
-                return new DataSourceResult(new WantedData());
+                return new DataSourceResult(new WantedData() { Accidents = new List<WantedAccident>()});
 
             var wantedAccidents = wantedResult.Wanteds.Select(x => new WantedAccident()
             {

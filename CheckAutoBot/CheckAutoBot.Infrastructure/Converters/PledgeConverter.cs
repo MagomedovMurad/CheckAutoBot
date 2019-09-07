@@ -17,7 +17,7 @@ namespace CheckAutoBot.Infrastructure.Converters
         {
             var data = sourceData as PledgeData;
             var bags = new List<ConvertedDataBag>();
-            if (data.Accidents.Count() is 0)
+            if (data.Accidents is null || data.Accidents.Count() is 0)
             {
                 var message = "✅ В базе ФНП не найдены сведения о нахождении транспортного средства в залоге";
                 var bag = new ConvertedDataBag(message);

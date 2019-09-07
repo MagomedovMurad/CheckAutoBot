@@ -45,7 +45,7 @@ namespace CheckAutoBot.DataSources
                 DateFrom = x.DateFrom,
                 DateTo = x.DateTo,
                 EaistoNumber = x.EaistoNumber,
-                FrameNumber = x.EaistoNumber,
+                FrameNumber = x.FrameNumber,
                 LicensePlate = x.LicensePlate,
                 Model = x.Model,
                 Operator = x.Model,
@@ -54,7 +54,7 @@ namespace CheckAutoBot.DataSources
 
             var lastDc = dcs.FirstOrDefault();
 
-            var vechicleIdentifiers = new VechicleIdentifiersData() { FrameNumber = lastDc.FrameNumber, Vin = lastDc.FrameNumber, LicensePlate = lastDc.LicensePlate };
+            var vechicleIdentifiers = new VechicleIdentifiersData() { FrameNumber = lastDc.FrameNumber, Vin = lastDc.Vin, LicensePlate = lastDc.LicensePlate };
             var relatedData = new RelatedData(new DiagnosticCardsData() { DiagnosticCards = dcs }, DataType.DiagnosticCards);
             return new DataSourceResult(vechicleIdentifiers, new[] { relatedData });
         }

@@ -18,9 +18,11 @@ namespace CheckAutoBot.DataSources
         private FnpManager _fnpManager;
         private RucaptchaManager _rucaptchaManager;
 
-        public PledgeDataSource()
+        public PledgeDataSource(FnpManager fnpManager,
+                                RucaptchaManager rucaptchaManager)
         {
-
+            _fnpManager = fnpManager;
+            _rucaptchaManager = rucaptchaManager;
         }
 
         public string Name => "FNP_PLEDGES";

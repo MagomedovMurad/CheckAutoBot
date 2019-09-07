@@ -76,15 +76,21 @@ namespace CheckAutoBot.Controllers
                     //var diagnosticCard = dcs.DiagnosticCards.OrderBy(x => x.DateFrom).First();
 
                     if (!string.IsNullOrWhiteSpace(vid.Vin))
+                    {
+                        await _queryExecutor.UpdateVinCode(requestObjectId, vid.Vin);
                         await _vinCodeController.StartGeneralInfoSearch(vid.Vin, requestObjectId);
+                    }
                     else //if(!string.IsNullOrWhiteSpace(dc.FrameNumber))
+                    {
+                        //await _queryExecutor.UpdateFrameNumber(requestObjectId, vid.Vin);
                         await _frameNumberController.StartGeneralInfoSearch(vid.FrameNumber, requestObjectId);
+                    }
                 }
             }
             else
             {
                 _licensePlateControllerCache.Update(requestObjectId, DataType.Osago, false);
-                await _dataRequestController.StartDataSearch(requestObjectId, DataType.Osago, licencePlate, Callback);
+                await _dataRequestController.StartDataSearch(requestObjectId, DataType.VechicleIdentifiersRSA, licencePlate, Callback);
             }
         }
 
@@ -107,9 +113,15 @@ namespace CheckAutoBot.Controllers
                 else
                 {
                     if (!string.IsNullOrWhiteSpace(vid.Vin))
+                    {
+                        await _queryExecutor.UpdateVinCode(requestObjectId, vid.Vin);
                         await _vinCodeController.StartGeneralInfoSearch(vid.Vin, requestObjectId);
+                    }
                     else //if(!string.IsNullOrWhiteSpace(policy.FrameNumber))
+                    {
+                        //await _queryExecutor.UpdateFrameNumber(requestObjectId, vid.Vin);
                         await _frameNumberController.StartGeneralInfoSearch(vid.FrameNumber, requestObjectId);
+                    }
                 }
             }
             else
@@ -129,7 +141,7 @@ namespace CheckAutoBot.Controllers
             {
                 await EaistoDataHandler(result.Id, vid, result.IsSuccessfull, data.LicensePlate);
             }
-            else if (data.RequestedDataType == DataType.Osago)
+            else if (data.RequestedDataType == DataType.VechicleIdentifiersRSA)
             {
                 await RsaDataHandler(result.Id, vid, result.IsSuccessfull, data.LicensePlate, data.DCSourcesNotAvailable);
             }

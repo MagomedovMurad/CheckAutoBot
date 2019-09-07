@@ -29,6 +29,7 @@ namespace CheckAutoBot.Infrastructure.Converters
                 {
                     var message = RestrictedToMessageText(data.Accidents.ElementAt(i), i + 1);
                     var bag = new ConvertedDataBag(message);
+                    bags.Add(bag);
                 }
             }
             return bags;

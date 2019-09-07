@@ -1,5 +1,4 @@
 ﻿using CheckAutoBot.DataSources.Contracts;
-using CheckAutoBot.Enums;
 using CheckAutoBot.Utils;
 using System;
 using System.Collections.Generic;
@@ -40,10 +39,17 @@ namespace CheckAutoBot.Controllers
 
         public async Task StartDataSearch(int id, DataType dataType, object inputData, Func<DataRequestResult, Task> callBack)
         {
-            var dataSource = _dataSources.Where(x => x.DataType.Equals(dataType)).FirstOrDefault(x => x.Order.Equals(1));
-            _requestsCache.Add(id, dataSource, inputData, callBack);
+            try
+            {
+                var dataSource = _dataSources.Where(x => x.DataType.Equals(dataType)).FirstOrDefault(x => x.Order.Equals(1));
+                _requestsCache.Add(id, dataSource, inputData, callBack);
 
-            RequestData(id, inputData, dataSource);
+                RequestData(id, inputData, dataSource);
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
         private void SolvedCaptchasHandler(object sender, CaptchaRequestDataEnvelop envelop)
         {
@@ -95,6 +101,7 @@ namespace CheckAutoBot.Controllers
             {
                 var captchas = dataSource.RequestCaptcha();
                 _captchasCacheController.Add(id, captchas);
+                return;
             }
             catch (InvalidOperationException ex)
             {
@@ -170,6 +177,7 @@ namespace CheckAutoBot.Controllers
                 DataSourceName = dataSourceName
             };
 
+            _requestsCache.Remove(id);
             dataRequest.CallBack(result);
         }
     }

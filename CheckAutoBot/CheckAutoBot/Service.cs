@@ -4,6 +4,7 @@ using EasyNetQ;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace CheckAutoBot
 {
@@ -30,9 +31,12 @@ namespace CheckAutoBot
 
         public void Start()
         {
-            //_server = new Server(_customLogger, _bus, );
-            _server = _lifetimeScope.Resolve<IServer>();
-            _server.Start();
+            Task.Run(() =>
+            {
+                //_server = new Server(_customLogger, _bus, );
+                _server = _lifetimeScope.Resolve<IServer>();
+                _server.Start();
+            });
         }
 
         public void Stop()

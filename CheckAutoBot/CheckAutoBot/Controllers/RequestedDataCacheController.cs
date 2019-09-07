@@ -14,6 +14,7 @@ namespace CheckAutoBot.Controllers
         DataRequest Get(int id);
         void UpRepeatCount(int id);
         void UpdateDataSource(int id, IDataSource dataSource);
+        void Remove(int id);
     }
 
     public class RequestedDataCacheController: IRequestedDataCacheController
@@ -55,6 +56,11 @@ namespace CheckAutoBot.Controllers
             var dataRequest = _dataRequest.Single(x => x.Id.Equals(id));
             dataRequest.RepeatCount = 1;
             dataRequest.DataSource = dataSource;
+        }
+
+        public void Remove(int id)
+        {
+            _dataRequest.RemoveAll(x => x.Id == id);
         }
     }
 }

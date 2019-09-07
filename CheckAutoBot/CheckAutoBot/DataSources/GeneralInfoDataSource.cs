@@ -20,6 +20,13 @@ namespace CheckAutoBot.DataSources
         protected GibddManager _gibddManager;
         protected RucaptchaManager _rucaptchaManager;
 
+        public GeneralInfoDataSource(GibddManager gibddManager,
+                                     RucaptchaManager rucaptchaManager)
+        {
+            _gibddManager = gibddManager;
+            _rucaptchaManager = rucaptchaManager;
+        }
+
         public string Name => "GIBDD_GENERAL_INFO";
 
         public DataType DataType => DataType.GeneralInfo;

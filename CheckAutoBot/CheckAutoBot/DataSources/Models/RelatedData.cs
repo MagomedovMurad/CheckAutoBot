@@ -11,7 +11,7 @@ namespace CheckAutoBot.DataSources.Models
         public RelatedData(object data, DataType dataType)
         {
             Data = data;
-            DataType = DataType;
+            DataType = dataType;
         }
         public object Data { get; set; }
 

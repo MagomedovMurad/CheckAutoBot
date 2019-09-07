@@ -25,13 +25,13 @@ namespace CheckAutoBot.Storage
         /// </summary>
         /// <param name="requestId">Идентификатор пользователя</param>
         /// <returns></returns>
-        public async Task<Request> GetUserRequest(int requestId)
+        public Request GetUserRequest(int requestId)
         {
             try
             {
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
-                    return await rep.GetUserRequest(requestId).ConfigureAwait(false);
+                    return rep.GetUserRequest(requestId);
                 }
             }
             catch (Exception ex)
@@ -54,7 +54,7 @@ namespace CheckAutoBot.Storage
             {
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
-                    await rep.UpdateVinCode(requestObjectId, vin).ConfigureAwait(false);
+                    rep.UpdateVinCode(requestObjectId, vin);
                 }
             }
             catch (Exception ex)
@@ -69,13 +69,13 @@ namespace CheckAutoBot.Storage
         /// </summary>
         /// <param name="userId">Идентификатор пользователя</param>
         /// <returns></returns>
-        public async Task<RequestObject> GetLastUserRequestObject(int userId)
+        public RequestObject GetLastUserRequestObject(int userId)
         {
             try
             {
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
-                    return await rep.GetLastUserRequestObject(userId).ConfigureAwait(false);
+                    return rep.GetLastUserRequestObject(userId);
                 }
             }
             catch (Exception ex)
@@ -86,13 +86,13 @@ namespace CheckAutoBot.Storage
             }
         }
 
-        public async Task<RequestObject> GetUserRequestObject(int id)
+        public RequestObject GetUserRequestObject(int id)
         {
             try
             {
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
-                    return await rep.GetUserRequestObject(id).ConfigureAwait(false);
+                    return rep.GetUserRequestObject(id);
                 }
             }
             catch (Exception ex)
@@ -108,13 +108,13 @@ namespace CheckAutoBot.Storage
         /// </summary>
         /// <param name="requestObject">Объект запроса</param>
         /// <returns></returns>
-        public async Task<bool> AddRequestObject(RequestObject requestObject)
+        public bool AddRequestObject(RequestObject requestObject)
         {
             try
             {
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
-                    await rep.AddRequestObject(requestObject).ConfigureAwait(false);
+                    rep.AddRequestObject(requestObject);
                 }
                 return true;
             }
@@ -131,13 +131,13 @@ namespace CheckAutoBot.Storage
         /// </summary>
         /// <param name="userRequest">Запрос пользователя</param>
         /// <returns></returns>
-        public async Task<int?> SaveUserRequest(Request userRequest)
+        public int? SaveUserRequest(Request userRequest)
         {
             try
             {
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
-                    return await rep.AddUserRequest(userRequest);
+                    return rep.AddUserRequest(userRequest);
                 }
             }
             catch (Exception ex)
@@ -149,13 +149,13 @@ namespace CheckAutoBot.Storage
         }
 
 
-        public async Task ChangeRequestStatus(int requestId, bool? state)
+        public void ChangeRequestStatus(int requestId, bool? state)
         {
             try
             {
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
-                    await rep.ChangeRequestStatus(requestId, state).ConfigureAwait(false);
+                    rep.ChangeRequestStatus(requestId, state);
                 }
             }
             catch (Exception ex)
@@ -170,13 +170,13 @@ namespace CheckAutoBot.Storage
         /// </summary>
         /// <param name="requestObjectId"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<RequestType>> GetExecutedRequestTypes(int requestObjectId)
+        public IEnumerable<RequestType> GetExecutedRequestTypes(int requestObjectId)
         {
             try
             {
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
-                    return await rep.GetExecutedRequestTypes(requestObjectId).ConfigureAwait(false);
+                    return rep.GetExecutedRequestTypes(requestObjectId);
                 }
             }
             catch (Exception ex)
@@ -192,13 +192,13 @@ namespace CheckAutoBot.Storage
         /// </summary>
         /// <param name="requestObjectId"></param>
         /// <returns></returns>
-        public async Task<bool> ExistRequestsInProcess(int requestObjectId)
+        public bool ExistRequestsInProcess(int requestObjectId)
         {
             try
             {
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
-                    return await rep.ExistRequestsInProcess(requestObjectId).ConfigureAwait(false);
+                    return rep.ExistRequestsInProcess(requestObjectId);
                 }
             }
             catch (Exception ex)
@@ -215,7 +215,7 @@ namespace CheckAutoBot.Storage
             {
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
-                    return await rep.MarkAsPaid(requestObjectId).ConfigureAwait(false);
+                    return rep.MarkAsPaid(requestObjectId);
                 }
             }
             catch (Exception ex)
@@ -237,7 +237,7 @@ namespace CheckAutoBot.Storage
             {
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
-                    return await rep.ExistRequestsInProcess(requestObjectId).ConfigureAwait(false);
+                    return rep.ExistRequestsInProcess(requestObjectId);
                 }
             }
             catch (Exception ex)
@@ -248,7 +248,7 @@ namespace CheckAutoBot.Storage
             }
         }
 
-        public async Task AddRequestObjectCacheItem(int requestObjectId, DataType dataType, string data)
+        public void AddRequestObjectCacheItem(int requestObjectId, DataType dataType, string data)
         {
             try
             {
@@ -261,7 +261,7 @@ namespace CheckAutoBot.Storage
                 };
                 using (var rep = _repositoryFactory.CreateBotRepository())
                 {
-                    await rep.AddRequestObjectCacheItem(item);
+                    rep.AddRequestObjectCacheItem(item);
                 }
             }
             catch (Exception ex)

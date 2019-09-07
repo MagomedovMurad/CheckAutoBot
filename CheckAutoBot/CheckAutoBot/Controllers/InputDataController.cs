@@ -13,7 +13,7 @@ namespace CheckAutoBot.Controllers
 {
     public interface IInputDataController
     {
-        Task HandleInputData(InputData inputData, int userId, int messageId, DateTime date);
+        void HandleInputData(InputData inputData, int userId, int messageId, DateTime date);
     }
 
     public class InputDataController: IInputDataController
@@ -40,7 +40,7 @@ namespace CheckAutoBot.Controllers
             _messagesSenderController = messagesSenderController;
         }
 
-        public async Task HandleInputData(InputData inputData, int userId, int messageId, DateTime date)
+        public void HandleInputData(InputData inputData, int userId, int messageId, DateTime date)
         {
             try
             {
@@ -53,7 +53,7 @@ namespace CheckAutoBot.Controllers
                 //    return true;
                 //}
 
-                if (!await CheckUser(userId, inputData))
+                if (!CheckUser(userId, inputData))
                     return;
 
                 switch (inputData.Type)
@@ -61,7 +61,7 @@ namespace CheckAutoBot.Controllers
                     #region VIN
                     case InputDataType.Vin:
                         {
-                            var auto = await SaveAutoWithVinToDB(userId, messageId, inputData.Value, date);
+                            var auto = SaveAutoWithVinToDB(userId, messageId, inputData.Value, date);
 
                             _vinCodeController.StartGeneralInfoSearch(inputData.Value, auto.Id);
                             var message = GetMessageForUser(inputData);
@@ -73,7 +73,7 @@ namespace CheckAutoBot.Controllers
                     #region LicensePlate
                     case InputDataType.LicensePlate:
                         {
-                            var auto = await SaveAutoWithLPToDB(userId, messageId, inputData.Value, date);
+                            var auto = SaveAutoWithLPToDB(userId, messageId, inputData.Value, date);
 
                             _licensePlateController.StartVinSearch(inputData.Value, auto.Id);
                             var message = GetMessageForUser(inputData);
@@ -123,7 +123,7 @@ namespace CheckAutoBot.Controllers
                 MessageId = messageId
             };
 
-            await _queryExecutor.AddRequestObject(auto);
+            _queryExecutor.AddRequestObject(auto);
             return auto;
         }
 
@@ -136,7 +136,7 @@ namespace CheckAutoBot.Controllers
                 UserId = userId,
                 MessageId = messageId
             };
-            await _queryExecutor.AddRequestObject(auto);
+            _queryExecutor.AddRequestObject(auto);
             return auto;
         }
 
@@ -161,13 +161,13 @@ namespace CheckAutoBot.Controllers
             }
         }
 
-        private async Task<bool> CheckUser(int userId, InputData inputdata)
+        private bool CheckUser(int userId, InputData inputdata)
         {
-            var lastRequestObject = await _queryExecutor.GetLastUserRequestObject(userId);
+            var lastRequestObject = _queryExecutor.GetLastUserRequestObject(userId);
             if (lastRequestObject is null)
                 return true;
 
-            var existRequestsInProcess = await _queryExecutor.ExistRequestsInProcess(lastRequestObject.Id);
+            var existRequestsInProcess = _queryExecutor.ExistRequestsInProcess(lastRequestObject.Id);
             if (existRequestsInProcess)
             {
                 var message = "⛔ Дождитесь завершения выполнения запроса";
@@ -175,7 +175,7 @@ namespace CheckAutoBot.Controllers
                 return false;
             }
 
-            var requestTypes = await _queryExecutor.GetExecutedRequestTypes(lastRequestObject.Id);
+            var requestTypes = _queryExecutor.GetExecutedRequestTypes(lastRequestObject.Id);
 
             if (requestTypes.Any() && !lastRequestObject.IsPaid)
             {

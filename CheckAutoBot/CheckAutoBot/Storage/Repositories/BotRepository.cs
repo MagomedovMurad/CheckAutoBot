@@ -23,86 +23,86 @@ namespace CheckAutoBot.Storage
             _dbContext.Dispose();
         }
 
-        public async Task<RequestObject> GetLastUserRequestObject(int userId)
+        public RequestObject GetLastUserRequestObject(int userId)
         {
-            return await _dbContext.RequestObjects
+            return _dbContext.RequestObjects
                                    .Where(x => x.UserId == userId)
                                    .OrderByDescending(x => x.Date)
-                                   .FirstOrDefaultAsync();
+                                   .FirstOrDefault();
         }
 
-        public async Task<RequestObject> GetUserRequestObject(int id)
+        public RequestObject GetUserRequestObject(int id)
         {
-            return await _dbContext.RequestObjects
-                                   .FirstOrDefaultAsync(x => x.Id == id);
+            return _dbContext.RequestObjects
+                                   .FirstOrDefault(x => x.Id == id);
         }
 
-        public async Task<Request> GetUserRequest(int requestId)
+        public Request GetUserRequest(int requestId)
         {
-            return await _dbContext.Requests
+            return _dbContext.Requests
                                    .Include(x => x.RequestObject)
-                                   .FirstOrDefaultAsync(x => x.Id == requestId);
+                                   .FirstOrDefault(x => x.Id == requestId);
         }
 
-        public async Task AddRequestObject(RequestObject requestObject)
+        public void AddRequestObject(RequestObject requestObject)
         {
-            await _dbContext.AddAsync(requestObject);
-            await _dbContext.SaveChangesAsync();
+            _dbContext.Add(requestObject);
+            _dbContext.SaveChanges();
         }
 
-        public async Task<int> AddUserRequest(Request request)
+        public int AddUserRequest(Request request)
         {
-            var addedRequest = await _dbContext.AddAsync(request);
-            await _dbContext.SaveChangesAsync();
+            var addedRequest = _dbContext.Add(request);
+            _dbContext.SaveChanges();
 
             return addedRequest.Entity.Id;
         }
 
-        public async Task<IEnumerable<RequestType>> GetExecutedRequestTypes(int requestObjectId)
+        public IEnumerable<RequestType> GetExecutedRequestTypes(int requestObjectId)
         {
-            return await _dbContext.Requests
+            return  _dbContext.Requests
                                    .Where(x => x.RequestObjectId == requestObjectId && x.IsCompleted == true)
-                                   .Select(x => x.Type).ToListAsync();
+                                   .Select(x => x.Type).ToList();
         }
 
-        public async Task UpdateVinCode(int requestObjectId, string vin)
+        public void UpdateVinCode(int requestObjectId, string vin)
         {
             var auto = _dbContext.RequestObjects.Where(x => x.Id == requestObjectId).OfType<Auto>().First();
             auto.Vin = vin;
-            await _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
         }
 
-        public async Task AddRequestObjectCacheItem(RequestObjectCache item)
+        public void AddRequestObjectCacheItem(RequestObjectCache item)
         {
-            await _dbContext.AddAsync(item);
-            await _dbContext.SaveChangesAsync();
+            _dbContext.Add(item);
+            _dbContext.SaveChanges();
         }
         public RequestObjectCache GetRequestObjectCacheItem(int requestObjectId, DataType dataType)
         {
             return _dbContext.RequestObjectCache.SingleOrDefault(x => x.RequestObjectId == requestObjectId && x.DataType == dataType);
         }
 
-        public async Task ChangeRequestStatus(int requestId, bool? state)
+        public void ChangeRequestStatus(int requestId, bool? state)
         {
             var request = _dbContext.Requests.FirstOrDefault(x => x.Id == requestId);
             request.IsCompleted = state;
-            await _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
         }
 
-        public async Task<bool> ExistRequestsInProcess(int requestObjectId)
+        public bool ExistRequestsInProcess(int requestObjectId)
         {
-            return await _dbContext.Requests
-                       .AnyAsync(x => x.RequestObjectId == requestObjectId && x.IsCompleted == null);
+            return _dbContext.Requests
+                       .Any(x => x.RequestObjectId == requestObjectId && x.IsCompleted == null);
         }
 
-        public async Task<bool> MarkAsPaid(int requestObjectId)
+        public bool MarkAsPaid(int requestObjectId)
         {
             var requestObject = _dbContext.RequestObjects.SingleOrDefault( x=> x.Id == requestObjectId);
             if (requestObject == null)
                 return false;
 
             requestObject.IsPaid = true;
-            await _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
             return true;
         }
     }

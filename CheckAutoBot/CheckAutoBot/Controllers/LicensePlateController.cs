@@ -100,7 +100,7 @@ namespace CheckAutoBot.Controllers
             {
                 if (vid is null)
                 {
-                    var requestObject = await _queryExecutor.GetUserRequestObject(requestObjectId);
+                    var requestObject = _queryExecutor.GetUserRequestObject(requestObjectId);
                     string error;
 
                     if (eaistoAvailable)
@@ -126,7 +126,7 @@ namespace CheckAutoBot.Controllers
             }
             else
             {
-                var requestObject = await _queryExecutor.GetUserRequestObject(requestObjectId);
+                var requestObject = _queryExecutor.GetUserRequestObject(requestObjectId);
                 await _messagesSenderController.SendMessage(requestObject.UserId, StaticResources.RequestFailedError);
             }
             _licensePlateControllerCache.Remove(requestObjectId);

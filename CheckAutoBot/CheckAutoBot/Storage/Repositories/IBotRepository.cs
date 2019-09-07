@@ -9,27 +9,27 @@ namespace CheckAutoBot.Storage
 {
     public interface IBotRepository: IDisposable
     {
-        Task<RequestObject> GetLastUserRequestObject(int userId);
+        RequestObject GetLastUserRequestObject(int userId);
 
-        Task<RequestObject> GetUserRequestObject(int id);
+        RequestObject GetUserRequestObject(int id);
 
-        Task AddRequestObject(RequestObject requestObject);
+        void AddRequestObject(RequestObject requestObject);
 
-        Task<int> AddUserRequest(Request request);
+        int AddUserRequest(Request request);
 
-        Task<Request> GetUserRequest(int requestId);
+        Request GetUserRequest(int requestId);
 
-        Task<IEnumerable<RequestType>> GetExecutedRequestTypes(int requestObjectId);
+        IEnumerable<RequestType> GetExecutedRequestTypes(int requestObjectId);
 
-        Task UpdateVinCode(int requestObjectId, string vin);
+        void UpdateVinCode(int requestObjectId, string vin);
 
-        Task ChangeRequestStatus(int requestId, bool? state);
+        void ChangeRequestStatus(int requestId, bool? state);
 
-        Task<bool> ExistRequestsInProcess(int requestObjectId);
+        bool ExistRequestsInProcess(int requestObjectId);
 
-        Task<bool> MarkAsPaid(int requestObjectId);
+        bool MarkAsPaid(int requestObjectId);
 
-        Task AddRequestObjectCacheItem(RequestObjectCache item);
+        void AddRequestObjectCacheItem(RequestObjectCache item);
 
         RequestObjectCache GetRequestObjectCacheItem(int requestObjectId, DataType dataType);
     }

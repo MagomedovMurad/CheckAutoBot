@@ -46,7 +46,7 @@ namespace CheckAutoBot.Controllers
 
         private async Task Callback(DataRequestResult result)
         {
-            var requestObject = await _queryExecutor.GetUserRequestObject(result.Id);
+            var requestObject = _queryExecutor.GetUserRequestObject(result.Id);
             var auto = requestObject as Auto;
 
             if (!result.IsSuccessfull)

@@ -45,7 +45,7 @@ namespace CheckAutoBot
             _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/vk/");
             _httpListener.Prefixes.Add("http://192.168.0.103:26565/test/");
             _httpListener.Start();
-            _logger.WriteToLog(LogLevel.Debug, "Server succesful started");
+            _logger.WriteToLog(LogLevel.Debug, "Server successful started");
 
             while (true)
             {
@@ -65,7 +65,7 @@ namespace CheckAutoBot
                     else if (request.HttpMethod == "POST" && request.RawUrl == "/bot/vk")
                     {
                         response = Encoding.UTF8.GetBytes("ok");
-                        statusCode = await VkEventsHandler(requestData);
+                        statusCode = VkEventsHandler(requestData);
                     }
                     else if (request.HttpMethod == "POST" && request.RawUrl == "/bot/yandexmoney")
                     {
@@ -90,7 +90,7 @@ namespace CheckAutoBot
                 }
                 catch (Exception ex)
                 {
-
+                    _logger.WriteToLog(LogLevel.Error, ex.ToString(), true);
                 }
             }
         }
@@ -111,7 +111,7 @@ namespace CheckAutoBot
             return HttpStatusCode.OK;
         }
 
-        private async Task<HttpStatusCode> VkEventsHandler(string data)
+        private HttpStatusCode VkEventsHandler(string data)
         {
             _logger.WriteToLog(LogLevel.Debug, $"Новое событие БОТа: {data}");
             _groupEventsController.HandleGroupEvent(data);

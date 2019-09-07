@@ -84,11 +84,11 @@ namespace CheckAutoBot.Controllers
             if (inputData is null)
             {
                 //Если сообщение не распознано (не содержит vin, гос.номер, ФИО)
-                SendHelpMessage(message.FromId);
+                _messagesSenderController.SendMessage(message.FromId, StaticResources.HelpMessage);
                 return;
             }
 
-            var dateTime = (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(message.Date);
+            var dateTime = ConvertFromUnix(message.Date);
             _inputDataController.HandleInputData(inputData, message.FromId, message.Id, dateTime);
         }
 
@@ -99,9 +99,14 @@ namespace CheckAutoBot.Controllers
 
             if (payload is RequestPayload requestPayload)
             {
-                var dateTime = (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(message.Date);
+                var dateTime = ConvertFromUnix(message.Date);
                 _userRequestController.HandleUserRequest(message.Id, message.FromId, requestPayload.RequestType, dateTime);
             }
+        }
+
+        private DateTime ConvertFromUnix(int unixTime)
+        {
+            return (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(unixTime);
         }
 
         private InputData TryPullInputDataFromMessage(string inputStr)
@@ -158,11 +163,6 @@ namespace CheckAutoBot.Controllers
             }
 
             return upperCaseText;
-        }
-
-        private void SendHelpMessage(int userId)
-        {
-            _messagesSenderController.SendMessage(userId, StaticResources.HelpMessage);
         }
     }
 

@@ -25,7 +25,7 @@ namespace CheckAutoBot.Controllers
 
         public async Task StartGeneralInfoSearch(string frameNumber, int requestObjectId)
         {
-            var requestObject = await _queryExecutor.GetUserRequestObject(requestObjectId);
+            var requestObject = _queryExecutor.GetUserRequestObject(requestObjectId);
 
             var error = $"😕 К сожалению, поиск информации по автомобилям без VIN кода не выполняется.{Environment.NewLine}" +
                         $"💡 Данная функция находится в разработке.";

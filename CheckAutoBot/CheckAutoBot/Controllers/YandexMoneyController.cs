@@ -30,7 +30,7 @@ namespace CheckAutoBot.Controllers
         public async Task HandlePayment(Payment payment, bool isValid)
         {
             var requestObjectId = int.Parse(payment.Label);
-            var requestObject = await _queryExecutor.GetUserRequestObject(requestObjectId);
+            var requestObject = _queryExecutor.GetUserRequestObject(requestObjectId);
 
             if (isValid)
             {

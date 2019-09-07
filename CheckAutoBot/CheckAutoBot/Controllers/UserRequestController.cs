@@ -66,7 +66,7 @@ namespace CheckAutoBot.Controllers
 
         public async Task HandleUserRequest(int messageId, int userId, RequestType requestType, DateTime date)
         {
-            var lastRequestObject = await _queryExecutor.GetLastUserRequestObject(userId);
+            var lastRequestObject = _queryExecutor.GetLastUserRequestObject(userId);
 
             var userRequest = new Request()
             {
@@ -74,7 +74,7 @@ namespace CheckAutoBot.Controllers
                 Type = requestType
             };
 
-            var requestId = await _queryExecutor.SaveUserRequest(userRequest);
+            var requestId = _queryExecutor.SaveUserRequest(userRequest);
             var dataType = GetDataType(requestType);
 
             if (lastRequestObject is Auto auto)
@@ -85,7 +85,7 @@ namespace CheckAutoBot.Controllers
 
         private async Task Callback(DataRequestResult dataRequestResult)
         {
-            var request = await _queryExecutor.GetUserRequest(dataRequestResult.Id);
+            var request = _queryExecutor.GetUserRequest(dataRequestResult.Id);
             
             //bool requestStatus;
 
@@ -96,13 +96,13 @@ namespace CheckAutoBot.Controllers
                     var keyboard = await CreateKeyboard(request.RequestObjectId);
                     _messagesSenderController.SendMessage(request.RequestObject.UserId, StaticResources.UnexpectedError, keyboard: keyboard);
                     _customLogger.WriteToLog(LogLevel.Error, $"Источник данных типа {request.Type} вернул NULL", true);
-                    await _queryExecutor.ChangeRequestStatus(request.Id, false);
+                    _queryExecutor.ChangeRequestStatus(request.Id, false);
                 }
                 else
                 {
                     var converter = _dataConverters.Single(x => x.SupportedDataType.Equals(dataRequestResult.DataType));
                     var bags = converter.Convert(dataRequestResult.DataSourceResult.Data);
-                    await _queryExecutor.ChangeRequestStatus(request.Id, true);
+                    _queryExecutor.ChangeRequestStatus(request.Id, true);
                     var keyboard = await CreateKeyboard(request.RequestObjectId);
 
                     foreach (var bag in bags)
@@ -113,7 +113,7 @@ namespace CheckAutoBot.Controllers
             {
                 var keyboard = await CreateKeyboard(request.RequestObjectId);
                 _messagesSenderController.SendMessage(request.RequestObject.UserId, StaticResources.RequestFailedError, keyboard: keyboard);
-                await _queryExecutor.ChangeRequestStatus(request.Id, false);
+                _queryExecutor.ChangeRequestStatus(request.Id, false);
             }
 
             //await _queryExecutor.ChangeRequestStatus(request.Id, requestStatus);
@@ -121,7 +121,7 @@ namespace CheckAutoBot.Controllers
 
         private async Task<Keyboard> CreateKeyboard(int requestObjectId)
         {
-            var requestTypes = await _queryExecutor.GetExecutedRequestTypes(requestObjectId).ConfigureAwait(false);
+            var requestTypes = _queryExecutor.GetExecutedRequestTypes(requestObjectId);
             return _keyboardBuilder.CreateKeyboard(typeof(Auto), requestTypes);
         }
     }

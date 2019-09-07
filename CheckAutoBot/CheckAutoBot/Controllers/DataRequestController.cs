@@ -41,26 +41,35 @@ namespace CheckAutoBot.Controllers
         {
             try
             {
-                var dataSource = _dataSources.Where(x => x.DataType.Equals(dataType)).FirstOrDefault(x => x.Order.Equals(1));
+                var dataSource = _dataSources.Where(x => x.DataType.Equals(dataType)).Single(x => x.Order.Equals(1));
                 _requestsCache.Add(id, dataSource, inputData, callBack);
 
                 RequestData(id, inputData, dataSource);
             }
             catch (Exception ex)
             {
-
+                _logger.WriteToLog(LogLevel.Error, $"Ошибка при запуске поиска данных: {ex}", true);
             }
         }
         private void SolvedCaptchasHandler(object sender, CaptchaRequestDataEnvelop envelop)
         {
-            var dataRequest = _requestsCache.Get(envelop.Id);
-            GetDataFromSource(envelop.Id, dataRequest.DataSource, dataRequest.InputData, envelop.CaptchaRequestDataList);
+            try
+            {
+                _logger.WriteToLog(LogLevel.Debug, $"Запуск обработки события решения каптчи (идентификатор запроса: {envelop.Id})");
+                var dataRequest = _requestsCache.Get(envelop.Id);
+                GetDataFromSource(envelop.Id, dataRequest.DataSource, dataRequest.InputData, envelop.CaptchaRequestDataList);
+            }
+            catch (Exception ex)
+            {
+                _logger.WriteToLog(LogLevel.Error, $"Ошибка обработки события решения каптчи (идентификатор запроса: {envelop.Id}):{ex}");
+            }
         }
 
         private void RepeatRequest(int id, bool selectNextSource = false)
         {
-            var dataRequest = _requestsCache.Get(id);
+            _logger.WriteToLog(LogLevel.Error, $"Новая попытка запроса данных из источников ({id})");
 
+            var dataRequest = _requestsCache.Get(id);
             if (dataRequest.RepeatCount >= dataRequest.DataSource.MaxRepeatCount || selectNextSource)
             {
                 var dataSource = _dataSources.Where(x => x.DataType.Equals(dataRequest.DataSource.DataType))
@@ -95,10 +104,11 @@ namespace CheckAutoBot.Controllers
             }
         }
 
-        private async Task RequestCaptcha(int id, IDataSourceWithCaptcha dataSource)
+        private void RequestCaptcha(int id, IDataSourceWithCaptcha dataSource)
         {
             try
             {
+                _logger.WriteToLog(LogLevel.Debug, $"Запрос каптч. Идентификатор запроса {id}");
                 var captchas = dataSource.RequestCaptcha();
                 _captchasCacheController.Add(id, captchas);
                 return;
@@ -121,10 +131,11 @@ namespace CheckAutoBot.Controllers
 
             RepeatRequest(id);
         }
-        private async Task GetDataFromSource(int id, IDataSource dataSource, object inputData, IEnumerable<CaptchaRequestData> captchas)
+        private void GetDataFromSource(int id, IDataSource dataSource, object inputData, IEnumerable<CaptchaRequestData> captchas)
         {
             try
             {
+                _logger.WriteToLog(LogLevel.Debug, $"Запрос данных из источника. Идентификатор запроса {id}");
                 var dataSourceResult = dataSource.GetData(inputData, captchas);
                 ReturnData(id, dataSourceResult, dataSource.DataType, dataSource.Name, true);
                 return;
@@ -139,13 +150,6 @@ namespace CheckAutoBot.Controllers
                                $"Ошибка: {ex.Message}. {ex.InnerException?.Message}";
                     _logger.WriteToLog(LogLevel.Warn, warn, true);
                 }
-                //else if (ex is DataNotFoundException nfEx)
-                //{
-                //    var warn = $"В источнике данных типа {dataSource.DataType} не найдены данные. {Environment.NewLine}";
-                //    _logger.WriteToLog(LogLevel.Warn, warn, false);
-                //    RepeatRequest(id, true);
-                //    return;
-                //}
                 else
                 {
                     var error = $"Идентификатор запроса: {id}.{Environment.NewLine}" +
@@ -166,6 +170,8 @@ namespace CheckAutoBot.Controllers
         }
         private void ReturnData(int id, DataSourceResult dataSourceResult, DataType? dataType, string dataSourceName, bool isSuccessfull)
         {
+            _logger.WriteToLog(LogLevel.Debug, $"Возврат найденных данных с идентификатором {id}");
+
             var dataRequest = _requestsCache.Get(id);
 
             var result = new DataRequestResult()

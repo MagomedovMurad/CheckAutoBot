@@ -46,37 +46,45 @@ namespace CheckAutoBot.Controllers
 
         private async Task Callback(DataRequestResult result)
         {
-            var requestObject = _queryExecutor.GetUserRequestObject(result.Id);
-            var auto = requestObject as Auto;
-
-            if (!result.IsSuccessfull)
+            try
             {
-                await _messagesSenderController.SendMessage(auto.UserId, StaticResources.RequestFailedError);
-                return;
+                var requestObject = _queryExecutor.GetUserRequestObject(result.Id);
+                var auto = requestObject as Auto;
+
+                if (!result.IsSuccessfull)
+                {
+                    await _messagesSenderController.SendMessage(auto.UserId, StaticResources.RequestFailedError);
+                    return;
+                }
+
+                var generalInfo = result.DataSourceResult?.Data as GeneralInfo;
+                string data;
+                var identifier = auto.LicensePlate ?? auto.Vin;
+
+                if (generalInfo is null)
+                {
+                    data = auto.LicensePlate is null ? $"VIN коду" : $"гос. номеру";
+                    data = $"😕 К сожалению не удалось найти информацию по {data} {identifier}";
+                    await _messagesSenderController.SendMessage(auto.UserId, data);
+                    return;
+                }
+
+                if (result.DataSourceResult?.RelatedData != null)
+                    SaveRelatedData(result.Id, result.DataSourceResult.RelatedData);
+
+                var keyboard = _keyboardBuilder.CreateKeyboard(typeof(Auto));
+                data = auto.LicensePlate is null ? $"VIN код:" : $"Гос. номер:";
+                data = $"✏ {data} {identifier}{Environment.NewLine}" +
+                       $"🚗 {generalInfo.Model}, {generalInfo.Year}г.{Environment.NewLine}" +
+                       $"⬇ Выберите доступное действие.";
+
+                await _messagesSenderController.SendMessage(auto.UserId, data, keyboard: keyboard);
             }
-
-            var generalInfo = result.DataSourceResult?.Data as GeneralInfo;
-            string data;
-            var identifier = auto.LicensePlate ?? auto.Vin;
-
-            if (generalInfo is null)
+            catch (Exception ex)
             {
-                data = auto.LicensePlate is null ? $"VIN коду" : $"гос. номеру";
-                data = $"😕 К сожалению не удалось найти информацию по {data} {identifier}";
-                await _messagesSenderController.SendMessage(auto.UserId, data);
-                return;
+                var message = "Произошла ошибка при обработке полученных данных от источников (VinCodeController): " + ex;
+                _logger.WriteToLog(LogLevel.Error, message, true);
             }
-
-            if (result.DataSourceResult?.RelatedData != null)
-                SaveRelatedData(result.Id, result.DataSourceResult.RelatedData);
-
-            var keyboard = _keyboardBuilder.CreateKeyboard(typeof(Auto));
-            data = auto.LicensePlate is null ? $"VIN код:" : $"Гос. номер:";
-            data = $"✏ {data} {identifier}{Environment.NewLine}" +
-                   $"🚗 {generalInfo.Model}, {generalInfo.Year}г.{Environment.NewLine}" +
-                   $"⬇ Выберите доступное действие.";
-
-            _messagesSenderController.SendMessage(auto.UserId, data, keyboard: keyboard);
         }
 
         private void SaveRelatedData(int id, IEnumerable<RelatedData> relatedData)

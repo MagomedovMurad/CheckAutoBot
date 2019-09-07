@@ -134,16 +134,24 @@ namespace CheckAutoBot.Controllers
 
         private async Task Callback(DataRequestResult result)
         {
-            var data = _licensePlateControllerCache.Get(result.Id);
-            var vid = result.DataSourceResult?.Data as VechicleIdentifiersData;
+            try
+            {
+                var data = _licensePlateControllerCache.Get(result.Id);
+                var vid = result.DataSourceResult?.Data as VechicleIdentifiersData;
 
-            if (data.RequestedDataType == DataType.VechicleIdentifiersEAISTO)
-            {
-                await EaistoDataHandler(result.Id, vid, result.IsSuccessfull, data.LicensePlate);
+                if (data.RequestedDataType == DataType.VechicleIdentifiersEAISTO)
+                {
+                    await EaistoDataHandler(result.Id, vid, result.IsSuccessfull, data.LicensePlate);
+                }
+                else if (data.RequestedDataType == DataType.VechicleIdentifiersRSA)
+                {
+                    await RsaDataHandler(result.Id, vid, result.IsSuccessfull, data.LicensePlate, data.DCSourcesNotAvailable);
+                }
             }
-            else if (data.RequestedDataType == DataType.VechicleIdentifiersRSA)
+            catch (Exception ex)
             {
-                await RsaDataHandler(result.Id, vid, result.IsSuccessfull, data.LicensePlate, data.DCSourcesNotAvailable);
+                var message = "Произошла ошибка при обработке полученных данных от источников (LicensePlateController): " + ex;
+                _logger.WriteToLog(LogLevel.Error, message, true);
             }
         }
 

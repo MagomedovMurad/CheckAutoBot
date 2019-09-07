@@ -16,7 +16,7 @@ namespace CheckAutoBot.Controllers
 {
     public interface IUserRequestController
     {
-        Task HandleUserRequest(int messageId, int userId, RequestType requestType, DateTime date);
+        void HandleUserRequest(int messageId, int userId, RequestType requestType, DateTime date);
     }
 
     public class UserRequestController: IUserRequestController
@@ -64,7 +64,7 @@ namespace CheckAutoBot.Controllers
             return _requestTypeToDataType.Single(x => x.Value == dataType).Key;
         }
 
-        public async Task HandleUserRequest(int messageId, int userId, RequestType requestType, DateTime date)
+        public void HandleUserRequest(int messageId, int userId, RequestType requestType, DateTime date)
         {
             var lastRequestObject = _queryExecutor.GetLastUserRequestObject(userId);
 
@@ -85,41 +85,57 @@ namespace CheckAutoBot.Controllers
 
         private async Task Callback(DataRequestResult dataRequestResult)
         {
-            var request = _queryExecutor.GetUserRequest(dataRequestResult.Id);
-            
-            //bool requestStatus;
-
-            if (dataRequestResult.IsSuccessfull)
+            try
             {
-                if (dataRequestResult.DataSourceResult is null)
+                var request = _queryExecutor.GetUserRequest(dataRequestResult.Id);
+
+                bool requestState;
+                Keyboard keyboard = null;
+                Action sendAction = null;
+
+                if (dataRequestResult.IsSuccessfull)
                 {
-                    var keyboard = await CreateKeyboard(request.RequestObjectId);
-                    _messagesSenderController.SendMessage(request.RequestObject.UserId, StaticResources.UnexpectedError, keyboard: keyboard);
-                    _customLogger.WriteToLog(LogLevel.Error, $"Источник данных типа {request.Type} вернул NULL", true);
-                    _queryExecutor.ChangeRequestStatus(request.Id, false);
+                    if (dataRequestResult.DataSourceResult is null)
+                    {
+                        sendAction = new Action(() => SendMessageToUser(request.RequestObject.UserId, StaticResources.UnexpectedError, keyboard: keyboard));
+                        requestState = false;
+                        _customLogger.WriteToLog(LogLevel.Error, $"Источник данных типа {request.Type} вернул NULL", true);
+                    }
+                    else
+                    {
+                        var converter = _dataConverters.Single(x => x.SupportedDataType.Equals(dataRequestResult.DataType));
+                        var bags = converter.Convert(dataRequestResult.DataSourceResult.Data);
+                        requestState = true;
+                        sendAction = new Action(() =>
+                        {
+                            foreach (var bag in bags)
+                                SendMessageToUser(request.RequestObject.UserId, bag.Message, picture: bag.Picture, keyboard: keyboard);
+                        });
+                    }
                 }
                 else
                 {
-                    var converter = _dataConverters.Single(x => x.SupportedDataType.Equals(dataRequestResult.DataType));
-                    var bags = converter.Convert(dataRequestResult.DataSourceResult.Data);
-                    _queryExecutor.ChangeRequestStatus(request.Id, true);
-                    var keyboard = await CreateKeyboard(request.RequestObjectId);
-
-                    foreach (var bag in bags)
-                        _messagesSenderController.SendMessage(request.RequestObject.UserId, bag.Message, photo: bag.Picture, keyboard: keyboard);
+                    sendAction = new Action(() => SendMessageToUser(request.RequestObject.UserId, StaticResources.RequestFailedError, keyboard: keyboard));
+                    requestState = false;
                 }
-            }
-            else
-            {
-                var keyboard = await CreateKeyboard(request.RequestObjectId);
-                _messagesSenderController.SendMessage(request.RequestObject.UserId, StaticResources.RequestFailedError, keyboard: keyboard);
-                _queryExecutor.ChangeRequestStatus(request.Id, false);
-            }
 
-            //await _queryExecutor.ChangeRequestStatus(request.Id, requestStatus);
+                _queryExecutor.ChangeRequestStatus(request.Id, requestState);
+                keyboard = CreateKeyboard(request.RequestObjectId);
+                sendAction();
+            }
+            catch (Exception ex)
+            {
+                var message = "Произошла ошибка при обработке полученных данных от источников (UserRequestController): " + ex;
+                _customLogger.WriteToLog(LogLevel.Error, message, true);
+            }
         }
 
-        private async Task<Keyboard> CreateKeyboard(int requestObjectId)
+        private void SendMessageToUser(int userId, string message, byte[] picture = null, Keyboard keyboard = null)
+        {
+            _messagesSenderController.SendMessage(userId, message, picture, keyboard);
+        }
+
+        private Keyboard CreateKeyboard(int requestObjectId)
         {
             var requestTypes = _queryExecutor.GetExecutedRequestTypes(requestObjectId);
             return _keyboardBuilder.CreateKeyboard(typeof(Auto), requestTypes);

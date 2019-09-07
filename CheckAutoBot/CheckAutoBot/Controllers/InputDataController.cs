@@ -62,7 +62,6 @@ namespace CheckAutoBot.Controllers
                     case InputDataType.Vin:
                         {
                             var auto = SaveAutoWithVinToDB(userId, messageId, inputData.Value, date);
-
                             _vinCodeController.StartGeneralInfoSearch(inputData.Value, auto.Id);
                             var message = GetMessageForUser(inputData);
                             _messagesSenderController.SendMessage(userId, message);

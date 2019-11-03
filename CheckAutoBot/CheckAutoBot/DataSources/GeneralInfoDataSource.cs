@@ -52,6 +52,9 @@ namespace CheckAutoBot.DataSources
 
         private DataSourceResult ConvertData(HistoryResult history)
         {
+            if (history is null)
+                return null;
+
             var generalInfo = new GeneralInfo()
             {
                 Model = history.Vehicle.Model,

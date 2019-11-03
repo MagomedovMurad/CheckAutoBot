@@ -21,7 +21,7 @@ namespace CheckAutoBot.Managers
             _eaisto = new Eaisto();
         }
 
-        public IEnumerable<DiagnosticCard> GetDiagnosticCards(string captcha,
+        public EaistoResult GetDiagnosticCards(string captcha,
                                       string phoneNumber,
                                       string sessionId,
                                       string vin = null,
@@ -44,7 +44,7 @@ namespace CheckAutoBot.Managers
             }
             else
             {
-                return eaistoResult.DiagnosticCards;
+                return eaistoResult;
             }
         }
 

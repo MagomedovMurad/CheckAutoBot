@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using NLog;
 
 namespace CheckAutoBot.Controllers
 {
@@ -24,6 +25,7 @@ namespace CheckAutoBot.Controllers
 
         public async Task SendMessage(int userId, string text, byte[] photo = null, Keyboard keyboard = null)
         {
+            _logger.WriteToLog(LogLevel.Debug, $"Отправка сообщения: {text}");
             var attachments = PhotoToAttachment(userId, photo);
             await _vkApi.SendMessage(userId, text, attachments, keyboard);
         }

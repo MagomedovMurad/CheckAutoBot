@@ -58,8 +58,8 @@ namespace CheckAutoBot.Controllers
 
         private async Task PrivateMessageHandler(PrivateMessage privateMessage)
         {
-            _privateMessagesController.HandleMessage(privateMessage);
             _logger.WriteToLog(LogLevel.Debug, $"Новое сообщение ВКонтакте: {privateMessage.Text}");
+            _privateMessagesController.HandleMessage(privateMessage);
         }
 
         private async Task MessageAllowEventHandler(MessagesAllowedEvent messagesAllowedEvent)

@@ -8,6 +8,8 @@ namespace CheckAutoBot.EaistoModels
     {
         public string ErrorMessage { get; set; }
 
-        public IEnumerable<DiagnosticCard> DiagnosticCards { get; set; }
+        public DiagnosticCard CurrentDiagnosticCard { get; set; }
+
+        public IEnumerable<DiagnosticCard> DiagnosticCardsHistory { get; set; }
     }
 }

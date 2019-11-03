@@ -16,7 +16,8 @@ namespace CheckAutoBot.Controllers
     {
         event EventHandler<CaptchaRequestDataEnvelop> CaptchasSolved;
         void Add(int id, IEnumerable<CaptchaRequestData> captchas);
-        void Report(string captchaId, string answer);
+        //void SendReport(string answer, bool isGood);
+        //void Remove(int id); 
     }
 
     public class RequestedCaptchasCacheController: IRequestedCaptchasCacheController
@@ -26,15 +27,14 @@ namespace CheckAutoBot.Controllers
         private readonly ICustomLogger _logger;
         private readonly IBus _bus;
 
-
         public event EventHandler<CaptchaRequestDataEnvelop> CaptchasSolved;
 
         private Timer _timer;
 
-        public RequestedCaptchasCacheController(ICustomLogger logger, IBus bus)
+        public RequestedCaptchasCacheController(ICustomLogger logger, IBus bus, RucaptchaManager rucaptchaManager)
         {
             _requestedCaptchas = new List<CaptchaRequestDataEnvelop>();
-            _rucaptchaManager = new RucaptchaManager();
+            _rucaptchaManager = rucaptchaManager;
             _logger = logger;
             _bus = bus;
 
@@ -61,7 +61,7 @@ namespace CheckAutoBot.Controllers
             _requestedCaptchas.Add(envelop);
         }
 
-        public void Report(string captchaId, string answer)
+        private void Report(string captchaId, string answer)
         {
             _logger.WriteToLog(LogLevel.Debug, $"Получена каптча с идентификатором: {captchaId}");
 
@@ -89,6 +89,20 @@ namespace CheckAutoBot.Controllers
             _requestedCaptchas.Remove(envelop);
         }
 
+        //private void Remove(int id)
+        //{
+        //    var data = _requestedCaptchas.Single(x => x.Id == id);
+        //    _requestedCaptchas.Remove(data);
+        //}
+
+        //public void SendReport(string answer, bool isGood)
+        //{
+        //    var data = _requestedCaptchas.SelectMany(x => x.CaptchaRequestDataList).Single(x => x.Value.Equals(answer));
+        //    _logger.WriteToLog(LogLevel.Debug, $"Отправка отчета по решенной каптче: решена {(isGood ? "ВЕРНО" : "НЕВЕРНО")}");
+        //    _rucaptchaManager.SendReport(data.CaptchaId, isGood);
+        //}
+
+
         private void TimerElapsed(object sender, ElapsedEventArgs e)
         {
             var captchasWithoutAnswer = _requestedCaptchas.Where(x => (DateTime.Now - x.DateTime).TotalSeconds > 180)
@@ -97,6 +111,11 @@ namespace CheckAutoBot.Controllers
             foreach (var captcha in captchasWithoutAnswer)
             {
                 var captchaWord = _rucaptchaManager.GetCaptchaResult(captcha.CaptchaId);
+
+                if (captchaWord == "CAPCHA_NOT_READY")
+                    continue;
+
+
                 Report(captcha.CaptchaId, captchaWord);
             }
         }

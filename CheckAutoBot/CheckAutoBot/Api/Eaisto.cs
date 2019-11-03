@@ -185,48 +185,29 @@ namespace CheckAutoBot.Managers
                 if (!string.IsNullOrWhiteSpace(errorNode?.InnerText))
                     errorMessage = errorNode.InnerText;
 
-                HtmlNodeCollection dcTables = doc.DocumentNode.SelectNodes(".//div[@class='col-xs-12 col-md-6 right_part']/div/table/tbody");
+                HtmlNodeCollection dcTables = doc.DocumentNode.SelectNodes(".//div[@class='col-xs-12 col-md-6 right_part']" +
+                                                                           "/div[@class='table-responsive col-xs-12']" +
+                                                                           "/table[@class='table table-condensed']");
 
                 if (dcTables == null)
                     return new EaistoResult() { ErrorMessage = errorMessage };
 
-                var diagnosticCards = new List<DiagnosticCard>();
-                foreach (var dcTable in dcTables)
-                {
-                    var lines = (dcTable.ChildNodes as IEnumerable<HtmlNode>).Where(x => x.Name == "tr").ToList();
 
-                    var dictionary = lines.Select(l =>
-                    {
-                        var keyAndValue = l.ChildNodes.Where(chn => chn.Name == "td").ToList();
-                        var key = keyAndValue[0].InnerText;
-                        var value = keyAndValue[1].InnerText;
+                var currentCardNode = dcTables.FirstOrDefault(x => x.SelectNodes(".//th[@class='info']")
+                                              .FirstOrDefault(y => y.InnerText == "Результаты поиска") != null);
 
-                        return new KeyValuePair<string, string>(key, value);
-                    }).ToDictionary(k => k.Key, v => v.Value);
 
-                    dictionary.TryGetValue("Марка:", out string brand);
-                    dictionary.TryGetValue("Модель:", out string model);
-                    dictionary.TryGetValue("Дата с:", out string dateFrom);
-                    dictionary.TryGetValue("Дата до:", out string dateTo);
-                    dictionary.TryGetValue("VIN:", out string vin);
-                    dictionary.TryGetValue("Регистрационный номер:", out string licensePlate);
-                    dictionary.TryGetValue("Номер ЕАИСТО:", out string eaistoNumber);
+                var historyNode = dcTables.FirstOrDefault(x => x.SelectNodes(".//th[@class='info']")
+                                          .FirstOrDefault(y => y.InnerText == "История прохождения ТО") != null);
 
-                    diagnosticCards.Add(new DiagnosticCard()
-                    {
-                        Brand = brand,
-                        Model = model,
-                        Vin = vin,
-                        LicensePlate = licensePlate,
-                        EaistoNumber = eaistoNumber,
-                        DateFrom = dateFrom,
-                        DateTo = dateTo
-                    });
-                }
+                var currentDC = TableToCurrentDc(currentCardNode);
+                var DCHistory = TablesToDCHistory(historyNode);
+
 
                 return new EaistoResult()
                 {
-                    DiagnosticCards = diagnosticCards,
+                    CurrentDiagnosticCard = currentDC,
+                    DiagnosticCardsHistory = DCHistory,
                     ErrorMessage = errorMessage
                 };
             }
@@ -234,6 +215,83 @@ namespace CheckAutoBot.Managers
             {
                 throw new Exception("Eaisto HTML parsing exception", ex);
             }
+        }// /tbody/tr/td/table/thead
+
+        private List<DiagnosticCard> TablesToDCHistory(HtmlNode node)
+        {
+            var dcTables = node.SelectNodes(".//tbody/tr/td/table");
+            var diagnosticCards = new List<DiagnosticCard>();
+            foreach (var dcTable in dcTables)
+            {
+                var fromToDateNode = dcTable.SelectNodes(".//thead").FirstOrDefault();
+                string[] fromToDate = fromToDateNode.InnerText.Split('-');
+                var dateFrom = fromToDate[0];
+                var dateTo = fromToDate[1];
+
+                var lines = dcTable.SelectNodes(".//tbody/tr");
+
+                var dictionary = lines.Select(l =>
+                {
+                    var keyAndValue = l.SelectNodes(".//td");  //ChildNodes.Where(chn => chn.Name == "td").ToList();
+                    var key = keyAndValue[0].InnerText;
+                    var value = keyAndValue[1].InnerText;
+
+                    return new KeyValuePair<string, string>(key, value);
+                }).ToDictionary(k => k.Key, v => v.Value);
+
+                dictionary.TryGetValue("Марка:", out string brand);
+                dictionary.TryGetValue("Модель:", out string model);
+                //dictionary.TryGetValue("Дата с:", out string dateFrom);
+                //dictionary.TryGetValue("Дата до:", out string dateTo);
+                dictionary.TryGetValue("VIN:", out string vin);
+                dictionary.TryGetValue("Регистрационный номер:", out string licensePlate);
+                dictionary.TryGetValue("Номер ЕАИСТО:", out string eaistoNumber);
+
+                diagnosticCards.Add(new DiagnosticCard()
+                {
+                    Brand = brand,
+                    Model = model,
+                    Vin = vin,
+                    LicensePlate = licensePlate,
+                    EaistoNumber = eaistoNumber,
+                    DateFrom = dateFrom,
+                    DateTo = dateTo
+                });
+            }
+            return diagnosticCards;
+        }
+
+        private DiagnosticCard TableToCurrentDc(HtmlNode node)
+        {
+            var lines = node.SelectNodes(".//tbody/tr");
+
+            var dictionary = lines.Select(l =>
+            {
+                var keyAndValue = l.ChildNodes.Where(chn => chn.Name == "td").ToList();
+                var key = keyAndValue[0].InnerText;
+                var value = keyAndValue[1].InnerText;
+
+                return new KeyValuePair<string, string>(key, value);
+            }).ToDictionary(k => k.Key, v => v.Value);
+
+            dictionary.TryGetValue("Марка:", out string brand);
+            dictionary.TryGetValue("Модель:", out string model);
+            dictionary.TryGetValue("Дата с:", out string dateFrom);
+            dictionary.TryGetValue("Дата до:", out string dateTo);
+            dictionary.TryGetValue("VIN:", out string vin);
+            dictionary.TryGetValue("Регистрационный номер:", out string licensePlate);
+            dictionary.TryGetValue("Номер ЕАИСТО:", out string eaistoNumber);
+
+            return new DiagnosticCard()
+            {
+                Brand = brand,
+                Model = model,
+                Vin = vin,
+                LicensePlate = licensePlate,
+                EaistoNumber = eaistoNumber,
+                DateFrom = dateFrom,
+                DateTo = dateTo
+            };
         }
     }
 }

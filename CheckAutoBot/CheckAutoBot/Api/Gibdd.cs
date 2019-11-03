@@ -74,8 +74,8 @@ namespace CheckAutoBot.Managers
             headers.Add(HttpRequestHeader.Connection, "keep-alive");
             headers.Add(HttpRequestHeader.Accept, "application/json, text/javascript, */*; q=0.01");
             headers.Add("Origin", "https://xn--90adear.xn--p1ai");
-            headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36");
-            headers.Add(HttpRequestHeader.Referer, "https://xn--90adear.xn--p1ai/check/auto/");
+            headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36");
+            headers.Add(HttpRequestHeader.Referer, "https://xn--90adear.xn--p1ai/check/auto");
             headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br");
             headers.Add(HttpRequestHeader.AcceptLanguage, "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7");
             headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded; charset=UTF-8");
@@ -85,17 +85,17 @@ namespace CheckAutoBot.Managers
             #endregion
 
             #region Cookie
-            CookieContainer cookieContainer = new CookieContainer();
-            Cookie cookie = new Cookie();
-            cookie.Name = "JSESSIONID";
-            cookie.Value = jsessionId;
-            cookieContainer.Add(new Uri(url), cookie);
+            //CookieContainer cookieContainer = new CookieContainer();
+            //Cookie cookie = new Cookie();
+            //cookie.Name = "JSESSIONID";
+            //cookie.Value = jsessionId;
+            //cookieContainer.Add(new Uri(url), cookie);
             #endregion
 
             HttpWebRequest request = WebRequest.CreateHttp(url);
             request.Method = "POST";
             request.Headers = headers;
-            request.CookieContainer = cookieContainer;
+            //request.CookieContainer = cookieContainer;
 
             request.AddContent(data);
 

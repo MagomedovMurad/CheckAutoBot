@@ -81,6 +81,13 @@ namespace CheckAutoBot.Managers
             return captchaRequest;
         }
 
+        public void SendReport(string id, bool isGood)
+        {
+            if (isGood)
+                _rucaptcha.SendReportGood(id);
+            else
+                _rucaptcha.SendReportBad(id);
+        }
         /// <summary>
         /// Выбрасывает исключение, если value это текст ошибки
         /// </summary>

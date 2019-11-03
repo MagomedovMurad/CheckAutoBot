@@ -88,7 +88,7 @@ namespace CheckAutoBot.Controllers
             }
             else
             {
-                _licensePlateControllerCache.Update(requestObjectId, DataType.Osago, false);
+                _licensePlateControllerCache.Update(requestObjectId, DataType.VechicleIdentifiersRSA, false);
                 await _dataRequestController.StartDataSearch(requestObjectId, DataType.VechicleIdentifiersRSA, licencePlate, Callback);
             }
         }
@@ -145,6 +145,10 @@ namespace CheckAutoBot.Controllers
                 else if (data.RequestedDataType == DataType.VechicleIdentifiersRSA)
                 {
                     await RsaDataHandler(result.Id, vid, result.IsSuccessfull, data.LicensePlate, data.DCSourcesNotAvailable);
+                }
+                else
+                {
+                    throw new InvalidOperationException($"LicensePlateController не поддерживает обработку данных типа {data.RequestedDataType}");
                 }
             }
             catch (Exception ex)

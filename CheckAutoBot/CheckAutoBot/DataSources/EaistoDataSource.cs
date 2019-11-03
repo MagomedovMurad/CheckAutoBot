@@ -5,6 +5,7 @@ using CheckAutoBot.Infrastructure.Enums;
 using CheckAutoBot.Infrastructure.Models.DataSource;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Models.Captcha;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,7 +26,7 @@ namespace CheckAutoBot.DataSources
 
         public DataType DataType => DataType.VechicleIdentifiersEAISTO;
 
-        public int MaxRepeatCount => 2;
+        public int MaxRepeatCount => 2; //2;
 
         public int Order => 1;
 
@@ -34,12 +35,11 @@ namespace CheckAutoBot.DataSources
             var licensePlate = inputData as string;
             var captcha = captchaRequestItems.First();
 
-            var diagnosticCards = _eaistoManager.GetDiagnosticCards(captcha.Value, null, captcha.SessionId, licensePlate: licensePlate);
-            if (diagnosticCards == null)
+            var eaistoResult = _eaistoManager.GetDiagnosticCards(captcha.Value, null, captcha.SessionId, licensePlate: licensePlate);
+            if (eaistoResult == null)
                 return new DataSourceResult(null);
-            //throw new DataNotFoundException();
 
-            var dcs = diagnosticCards.Select(x => new DiagnosticCard()
+            var historyDCs = eaistoResult.DiagnosticCardsHistory.Select(x => new DiagnosticCard()
             {
                 Brand = x.Brand,
                 DateFrom = x.DateFrom,
@@ -51,11 +51,25 @@ namespace CheckAutoBot.DataSources
                 Operator = x.Model,
                 Vin = x.Vin
             });
+            var currentDC = new DiagnosticCard()
+            {
+                Brand = eaistoResult.CurrentDiagnosticCard.Brand,
+                Model = eaistoResult.CurrentDiagnosticCard.Model,
+                DateFrom = eaistoResult.CurrentDiagnosticCard.DateFrom,
+                DateTo = eaistoResult.CurrentDiagnosticCard.DateTo,
+                EaistoNumber = eaistoResult.CurrentDiagnosticCard.EaistoNumber,
+                FrameNumber = eaistoResult.CurrentDiagnosticCard.FrameNumber,
+                LicensePlate = eaistoResult.CurrentDiagnosticCard.LicensePlate,
+                Operator = eaistoResult.CurrentDiagnosticCard.Operator,
+                Vin = eaistoResult.CurrentDiagnosticCard.Vin
+            };
 
-            var lastDc = dcs.FirstOrDefault();
+            var vechicleIdentifiers = new VechicleIdentifiersData() { FrameNumber = currentDC.FrameNumber, Vin = currentDC.Vin, LicensePlate = currentDC.LicensePlate };
+            var allDCs = new List<DiagnosticCard>();
+            allDCs.Add(currentDC);
+            allDCs.AddRange(historyDCs);
 
-            var vechicleIdentifiers = new VechicleIdentifiersData() { FrameNumber = lastDc.FrameNumber, Vin = lastDc.Vin, LicensePlate = lastDc.LicensePlate };
-            var relatedData = new RelatedData(new DiagnosticCardsData() { DiagnosticCards = dcs }, DataType.DiagnosticCards);
+            var relatedData = new RelatedData(new DiagnosticCardsHistory(allDCs), DataType.CurrentDiagnosticCard);
             return new DataSourceResult(vechicleIdentifiers, new[] { relatedData });
         }
 

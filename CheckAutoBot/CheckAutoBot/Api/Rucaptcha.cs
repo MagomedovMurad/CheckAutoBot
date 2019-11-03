@@ -47,7 +47,7 @@ namespace CheckAutoBot
                                         $"&pingback={pingback}" +
                                         $"&version=v{version}" +
                                         $"&action={action}" +
-                                        $"&min_score=0.7" +
+                                        $"&min_score=0.3" +
                                         $"&json=1";
 
             var json = ExecuteRequest(url, "POST");
@@ -81,6 +81,21 @@ namespace CheckAutoBot
 
             var result = JsonConvert.DeserializeObject<CaptchaAnswer>(json);
             return result;
+        }
+
+        public void SendReportGood(string id)
+        {
+            var url = $"https://rucaptcha.com/res.php?" +
+                      $"key={apiKey}&action=reportgood&id={id}&json=1";
+
+            ExecuteRequest(url, "POST");
+        }
+
+        public void SendReportBad(string id)
+        {
+            var url = $"https://rucaptcha.com/res.php?" +
+                      $"key={apiKey}&action=reportbad&id={id}&json=1";
+            ExecuteRequest(url, "POST");
         }
 
         private string ExecuteRequest(string url, string requestMethod)

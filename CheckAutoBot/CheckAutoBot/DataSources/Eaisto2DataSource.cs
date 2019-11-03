@@ -21,7 +21,7 @@ namespace CheckAutoBot.DataSources
         }
         public string Name => "EAISTO_DIAGNOSTIC_CARDS2";
 
-        public DataType DataType => DataType.DiagnosticCards;
+        public DataType DataType => DataType.CurrentDiagnosticCard;
 
         public int MaxRepeatCount => 2;
 

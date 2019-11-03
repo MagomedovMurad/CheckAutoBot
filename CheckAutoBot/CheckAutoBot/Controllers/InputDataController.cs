@@ -179,7 +179,7 @@ namespace CheckAutoBot.Controllers
             if (requestTypes.Any() && !lastRequestObject.IsPaid)
             {
                 if (lastRequestObject is Auto auto)
-                    AutoRequestsPayHandler(auto, inputdata, requestTypes);
+                    AutoRequestsPayHandler(auto, requestTypes);
 
                 return false;
             }
@@ -187,18 +187,20 @@ namespace CheckAutoBot.Controllers
             return true;
         }
 
-        private void AutoRequestsPayHandler(Auto auto, InputData inputData, IEnumerable <RequestType> requestTypes)
+        private void AutoRequestsPayHandler(Auto auto, /*InputData inputData,*/ IEnumerable <RequestType> requestTypes)
         {
-            var dataType = GetStringInputDataType(inputData.Type);
+            var dataType = auto.LicensePlate is null ? "гос. номеру" : "VIN коду";
+            var inputData = auto.LicensePlate ?? auto.Vin;
+          //  var dataType = GetStringInputDataType(inputData.Type);
 
-            var paylink = YandexMoney.GenerateQuickpayUrl(inputData.Value, auto.Id.ToString());
+            var paylink = YandexMoney.GenerateQuickpayUrl(inputData, auto.Id.ToString());
 
-            var message = $"💵 Оплатите предыдущий запрос по {dataType}: {inputData.Value} (3&#8419;8&#8419; руб.). {Environment.NewLine}" +
-                          $"Для оплаты перейдите по ссылке:{Environment.NewLine}" +
+            var message = $"💵 Оплатите предыдущий запрос по {dataType}: {inputData} (3&#8419;8&#8419; руб.). {Environment.NewLine}" +
+                          $"Для оплаты банковской картой или Я.Деньгами перейдите по ссылке:{Environment.NewLine}" +
                           $"{paylink}{Environment.NewLine}";
 
             if (requestTypes.Count() < 6)
-                message = message + $"Или выберите доступное действие для {inputData.Value}.";
+                message = message + $"Или выберите доступное действие для {inputData}.";
             var keyboard = _keyboardBuilder.CreateKeyboard(typeof(Auto), requestTypes);
 
             _messagesSenderController.SendMessage(auto.UserId, message, keyboard: keyboard);

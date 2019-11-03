@@ -10,6 +10,7 @@ using CheckAutoBot.Models.RequestedDataCache;
 using CheckAutoBot.Exceptions;
 using CheckAutoBot.DataSources.Models;
 using CheckAutoBot.Infrastructure.Enums;
+using CheckAutoBot.Managers;
 
 namespace CheckAutoBot.Controllers
 {
@@ -24,15 +25,18 @@ namespace CheckAutoBot.Controllers
         private IRequestedDataCacheController _requestsCache;
         private IRequestedCaptchasCacheController _captchasCacheController;
         private readonly ICustomLogger _logger;
+        private RucaptchaManager _rucaptchaManager;
 
         public DataRequestController(IDataSource[] dataSources,
                                      IRequestedCaptchasCacheController captchasCacheController,
                                      IRequestedDataCacheController requestsCache,
+                                     RucaptchaManager rucaptchaManager,
                                      ICustomLogger logger)
         {
             _dataSources = dataSources;
             _logger = logger;
             _requestsCache = requestsCache;
+            _rucaptchaManager = rucaptchaManager;
             _captchasCacheController = captchasCacheController;
             _captchasCacheController.CaptchasSolved += SolvedCaptchasHandler;
         }
@@ -134,16 +138,21 @@ namespace CheckAutoBot.Controllers
 
             RepeatRequest(id);
         }
+
         private void GetDataFromSource(int id, IDataSource dataSource, object inputData, IEnumerable<CaptchaRequestData> captchas)
         {
             try
             {
+                CheckCaptchas(captchas);
                 _logger.WriteToLog(LogLevel.Debug, $"Запрос данных из источника. " +
                                                    $"Идентификатор запроса: {id}." +
                                                    $"Тип: {dataSource.DataType}. " +
                                                    $"Источник данных: {dataSource.Name}");
                 var dataSourceResult = dataSource.GetData(inputData, captchas);
                 ReturnData(id, dataSourceResult, dataSource.DataType, dataSource.Name, true);
+
+                if (captchas != null)
+                    SendCaptchaReports(captchas, true);
                 return;
             }
             catch (InvalidOperationException ex)
@@ -152,16 +161,18 @@ namespace CheckAutoBot.Controllers
                 {
                     var warn = $"Неверно решена каптча. {Environment.NewLine}" +
                                $"Ответ: {icEx.CaptchaWord}. " +
-                               $"Тип данных: { dataSource.DataType}." +
-                               $"Ошибка: {ex.Message}. {ex.InnerException?.Message}";
+                               $"Тип данных: { dataSource.DataType}";
                     _logger.WriteToLog(LogLevel.Warn, warn, true);
+
+                    var crd = captchas.Single(x => x.Value.Equals(icEx.CaptchaWord));
+                    SendCaptchaReports(new[] { crd }, false);
                 }
                 else
                 {
                     var error = $"Идентификатор запроса: {id}.{Environment.NewLine}" +
                                 $"Тип данных: {dataSource.DataType}." +
                                 $"Ошибка: {ex.Message}. {ex.InnerException?.Message}";
-                    _logger.WriteToLog(LogLevel.Error, error);
+                    _logger.WriteToLog(LogLevel.Error, error, true);
                 }
             }
             catch (Exception ex)
@@ -170,10 +181,30 @@ namespace CheckAutoBot.Controllers
                             $"Идентификатор запроса: {id}.{Environment.NewLine}" +
                             $"Тип данных: {dataSource.DataType}.{Environment.NewLine}" +
                             $"Ошибка: {ex.Message}. {ex}";
-                _logger.WriteToLog(LogLevel.Error, error);
+                _logger.WriteToLog(LogLevel.Error, error, true);
             }
             RepeatRequest(id);
         }
+
+        private void SendCaptchaReports(IEnumerable<CaptchaRequestData> captchas, bool isGood)
+        {
+            foreach (var captcha in captchas)
+            {
+                _logger.WriteToLog(isGood? LogLevel.Debug : LogLevel.Warn, $"Отправка отчета по решенной каптче с идентификатором {captcha.CaptchaId}: " +
+                                                   $"решена {(isGood ? "ВЕРНО" : "НЕВЕРНО")}");
+                _rucaptchaManager.SendReport(captcha.CaptchaId, false);
+            }
+        }
+
+        private void CheckCaptchas(IEnumerable<CaptchaRequestData> captchas)
+        {
+            if (captchas is null)
+                return;
+
+            foreach (var captcha in captchas)
+                RucaptchaManager.CheckCaptchaWord(captcha.Value);
+        }
+
         private void ReturnData(int id, DataSourceResult dataSourceResult, DataType? dataType, string dataSourceName, bool isSuccessfull)
         {
             _logger.WriteToLog(LogLevel.Debug, $"Возврат найденных данных с идентификатором {id}");
@@ -194,10 +225,10 @@ namespace CheckAutoBot.Controllers
         }
     }
 
-   
 
-    
 
-    
+
+
+
 
 }

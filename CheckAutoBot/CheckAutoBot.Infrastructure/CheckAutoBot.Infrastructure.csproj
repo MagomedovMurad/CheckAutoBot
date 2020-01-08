@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <Folder Include="Bus\" />
-    <Folder Include="Messages\" />
   </ItemGroup>
 
 </Project>

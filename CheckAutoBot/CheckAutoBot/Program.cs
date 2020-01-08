@@ -47,6 +47,7 @@ namespace CheckAutoBot
             #region IDataSource
             builder.RegisterType<VechiclePassportDataSource>().As<IDataSource>().SingleInstance();
             builder.RegisterType<OwnershipPeriodsDataSource>().As<IDataSource>().SingleInstance();
+            builder.RegisterType<Eaisto2DataSource>().As<IDataSource>().SingleInstance();
             #endregion
 
             #region IDataSourceWithCaptcha

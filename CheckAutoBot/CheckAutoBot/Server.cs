@@ -44,6 +44,7 @@ namespace CheckAutoBot
             _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/captcha/");
             _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/vk/");
             _httpListener.Prefixes.Add("http://192.168.0.103:26565/test/");
+            _httpListener.Prefixes.Add("http://192.168.0.103:26565/test1/");
             _httpListener.Start();
             _logger.WriteToLog(LogLevel.Debug, "Server successful started");
 
@@ -73,6 +74,7 @@ namespace CheckAutoBot
                     }
                     else if (request.HttpMethod == "GET" && request.RawUrl == "/test")
                     {
+                        //response = File.ReadAllBytes(@"C:\Users\Мурад\Documents\Test page.html");
                         response = Encoding.UTF8.GetBytes("Hello. I working!");
                         statusCode = HttpStatusCode.OK;
                     }

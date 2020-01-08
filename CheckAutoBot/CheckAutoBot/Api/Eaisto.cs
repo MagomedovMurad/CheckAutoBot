@@ -14,8 +14,10 @@ namespace CheckAutoBot.Managers
 {
     public class Eaisto
     {
-        private const string url = "https://eaisto.info/";
+        public const string url = "https://eaisto.info/";
         private const string captchaUrl = "https://eaisto.info/securimage_show.php ";
+        private const string url2 = "https://eaisto.info/osago/getdata.php";
+        public const string dataSiteKey = "6LemMrYUAAAAAEgj7AVh1Cy-av2zYJahbgqBYISZ";
 
 
         public EaistoResult GetDiagnosticCards(string captcha,
@@ -47,11 +49,11 @@ namespace CheckAutoBot.Managers
             headers.Add(HttpRequestHeader.Connection, "keep-alive");
             headers.Add(HttpRequestHeader.ContentLength, data.Length.ToString());
             headers.Add(HttpRequestHeader.Accept, "*/*");
+            headers.Add("Origin", "https://eaisto.info");
             headers.Add("X-Requested-With", "XMLHttpRequest");
-            headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36");
+            headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36");
             headers.Add("Sec-Fetch-Mode", "cors");
             headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded; charset=UTF-8");
-            headers.Add("Origin", "https://eaisto.info");
             headers.Add("Sec-Fetch-Site", "same-origin");
             headers.Add(HttpRequestHeader.Referer, "https://eaisto.info/osago/");
             headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br");
@@ -66,7 +68,7 @@ namespace CheckAutoBot.Managers
             cookieContainer.Add(new Uri(url), cookie);
             #endregion
 
-            HttpWebRequest request = WebRequest.CreateHttp(url);
+            HttpWebRequest request = WebRequest.CreateHttp(url2);
             request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
             request.Method = "POST";
             request.Headers = headers;

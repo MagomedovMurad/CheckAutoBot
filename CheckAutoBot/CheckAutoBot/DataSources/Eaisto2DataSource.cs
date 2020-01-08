@@ -2,6 +2,7 @@
 using CheckAutoBot.DataSources.Models;
 using CheckAutoBot.Enums;
 using CheckAutoBot.Infrastructure.Enums;
+using CheckAutoBot.Infrastructure.Models.DataSource;
 using CheckAutoBot.Managers;
 using CheckAutoBot.Models.Captcha;
 using System;
@@ -21,15 +22,24 @@ namespace CheckAutoBot.DataSources
         }
         public string Name => "EAISTO_DIAGNOSTIC_CARDS2";
 
-        public DataType DataType => DataType.CurrentDiagnosticCard;
+        public DataType DataType => DataType.VechicleIdentifiersEAISTO;
 
-        public int MaxRepeatCount => 2;
+        public int MaxRepeatCount => 3;
 
         public int Order => 1;
 
         public DataSourceResult GetData(object inputData, IEnumerable<CaptchaRequestData> captchaRequestItems)
         {
-            throw new NotImplementedException();
+            var licensePlate = inputData as string;
+            var dc = _eaistoManager.GetLastDiagnosticCard(licensePlate);
+
+            var vechicleIdentifiers = new VechicleIdentifiersData()
+            {
+                FrameNumber = dc.FrameNumber,
+                Vin = dc.Vin,
+                LicensePlate = dc.LicensePlate
+            };
+            return new DataSourceResult(vechicleIdentifiers);
         }
     }
 }

@@ -22,7 +22,7 @@ namespace CheckAutoBot.SVG
             string inkscapeArgs = $@"{svgFilePath} --export-png={pngFilePath} --export-area-drawing";
             var inkscapeProcessInfo = new ProcessStartInfo(@"C:\Program Files\Inkscape\Inkscape.exe", inkscapeArgs);
             Process inkscape = Process.Start(inkscapeProcessInfo);
-            inkscape.WaitForExit(5000);
+            inkscape.WaitForExit(10000);
 
             if (!File.Exists(pngFilePath))
                 return null;

@@ -46,7 +46,7 @@ namespace CheckAutoBot.DataSources
 
         public IEnumerable<CaptchaRequestData> RequestCaptcha()
         {
-            var captchaRequest = _rucaptchaManager.SendReCaptcha3(Gibdd.dataSiteKey, Gibdd.url, Rucaptcha.VinPingbackUrl, 3, "check_auto_history");
+            var captchaRequest = _rucaptchaManager.SendReCaptcha3(Gibdd.dataSiteKey, Gibdd.pageUrl, Rucaptcha.VinPingbackUrl, 3, "check_auto_history");
             return new[] { new CaptchaRequestData(captchaRequest.Id, null, null) };
         }
 

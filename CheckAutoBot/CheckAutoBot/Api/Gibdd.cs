@@ -17,6 +17,7 @@ namespace CheckAutoBot.Managers
     public class Gibdd
     {
         public const string url = "https://xn--b1afk4ade.xn--90adear.xn--p1ai/proxy/check/auto/history";
+        public const string pageUrl = "https://xn--90adear.xn--p1ai/check/auto";
         public const string dataSiteKey = "6Lc66nwUAAAAANZvAnT-OK4f4D_xkdzw5MLtAYFL";
 
         public GibddResponse<HistoryResult> GetHistory(string vin, string captcha, string jsessionId)

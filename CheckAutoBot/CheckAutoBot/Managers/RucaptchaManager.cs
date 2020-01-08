@@ -1,4 +1,5 @@
-﻿using CheckAutoBot.Captcha;
+﻿using CheckAutoBot.Api;
+using CheckAutoBot.Captcha;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -68,17 +69,19 @@ namespace CheckAutoBot.Managers
 
         public CaptchaRequest SendReCaptcha3(string dataSiteKey, string pageUrl, string pingback, int version, string action)
         {
-            var captchaRequest = _rucaptcha.SendReCaptcha3(dataSiteKey, pageUrl, pingback, version, action);
+            var solver = new CaptchaSolver();
+            return solver.SendRecaptcha(pageUrl.Substring(8, 20), action, dataSiteKey, pingback);
+            //var captchaRequest = _rucaptcha.SendReCaptcha3(dataSiteKey, pageUrl, pingback, version, action);
 
-            if (!captchaRequest.State)
-            {
-                if (_inWarnings.Contains(captchaRequest.Id))
-                    throw new InvalidOperationException(captchaRequest.Id);
-                else
-                    throw new Exception(captchaRequest.Id);
-            }
+            //if (!captchaRequest.State)
+            //{
+            //    if (_inWarnings.Contains(captchaRequest.Id))
+            //        throw new InvalidOperationException(captchaRequest.Id);
+            //    else
+            //        throw new Exception(captchaRequest.Id);
+            //}
 
-            return captchaRequest;
+            //return captchaRequest;
         }
 
         public void SendReport(string id, bool isGood)

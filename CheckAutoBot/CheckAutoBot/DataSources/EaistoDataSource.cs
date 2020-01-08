@@ -26,9 +26,9 @@ namespace CheckAutoBot.DataSources
 
         public DataType DataType => DataType.VechicleIdentifiersEAISTO;
 
-        public int MaxRepeatCount => 2; //2;
+        public int MaxRepeatCount => 1; //2;
 
-        public int Order => 1;
+        public int Order => 2;
 
         public DataSourceResult GetData(object inputData, IEnumerable<CaptchaRequestData> captchaRequestItems)
         {
@@ -75,10 +75,11 @@ namespace CheckAutoBot.DataSources
 
         public IEnumerable<CaptchaRequestData> RequestCaptcha()
         {
-            var captchaResult = _eaistoManager.GetCaptcha();
-            var captchaRequest = _rucaptchaManager.SendImageCaptcha(captchaResult.ImageBase64, Rucaptcha.LpPingbackUrl);
+            //var captchaResult = _eaistoManager.GetCaptcha();
+            //var captchaRequest = _rucaptchaManager.SendImageCaptcha(captchaResult.ImageBase64, Rucaptcha.LpPingbackUrl);
+            var captchaRequest = _rucaptchaManager.SendReCaptcha3(Eaisto.dataSiteKey, Eaisto.url, Rucaptcha.LpPingbackUrl, 3, "show_captcha");
 
-            return new[] { new CaptchaRequestData(captchaRequest.Id, captchaResult.SessionId, null) };
+            return new[] { new CaptchaRequestData(captchaRequest.Id, null, null) };
         }
     }
 }

@@ -21,6 +21,8 @@ namespace CheckAutoBot.Managers
             _eaisto = new Eaisto();
         }
 
+
+
         public EaistoResult GetDiagnosticCards(string captcha,
                                       string phoneNumber,
                                       string sessionId,
@@ -46,6 +48,18 @@ namespace CheckAutoBot.Managers
             {
                 return eaistoResult;
             }
+        }
+
+        public DiagnosticCard GetLastDiagnosticCard(string licensePlate)
+        {
+            var lastDk = _eaisto.GetLastDiagnosticCard(licensePlate);
+            if(lastDk is null)
+                throw new InvalidOperationException("Не удалось получить ДК из Eaisto2DataSource");
+            
+            if(string.IsNullOrWhiteSpace(lastDk.DateFrom))
+                throw new InvalidOperationException("Не удалось получить ДК из Eaisto2DataSource");
+
+            return lastDk;
         }
 
         public CaptchaResult GetCaptcha()

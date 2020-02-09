@@ -65,7 +65,7 @@ namespace CheckAutoBot.Managers
             Cookie cookie = new Cookie();
             cookie.Name = "PHPSESSID";
             cookie.Value = sessionId;
-            cookieContainer.Add(new Uri(url), cookie);
+            cookieContainer.Add(new Uri(url2), cookie);
             #endregion
 
             HttpWebRequest request = WebRequest.CreateHttp(url2);

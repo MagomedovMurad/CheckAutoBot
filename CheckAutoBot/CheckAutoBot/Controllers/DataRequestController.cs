@@ -190,8 +190,9 @@ namespace CheckAutoBot.Controllers
         {
             foreach (var captcha in captchas)
             {
-                _logger.WriteToLog(isGood? LogLevel.Debug : LogLevel.Warn, $"Отправка отчета по решенной каптче с идентификатором {captcha.CaptchaId}: " +
-                                                   $"решена {(isGood ? "ВЕРНО" : "НЕВЕРНО")}");
+                var message = $"Отправка отчета по решенной каптче с идентификатором {captcha.CaptchaId}: " +
+                                                   $"решена {(isGood ? "ВЕРНО" : "НЕВЕРНО")}";
+                _logger.WriteToLog(isGood ? LogLevel.Debug : LogLevel.Warn, message);
                 _rucaptchaManager.SendReport(captcha.CaptchaId, false);
             }
         }

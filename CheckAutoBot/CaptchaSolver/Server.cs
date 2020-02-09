@@ -48,13 +48,13 @@ namespace CaptchaSolver
 
                     if (request.UserHostAddress == LocalUserHostAddress)
                     {
-                        if (request.HttpMethod == "GET" && request.RawUrl.StartsWith("/captchasolver/page"))
-                        {
-                            var id = request.QueryString["id"];
-                            response = await CaptchaSolverGetPageHandler(id);
-                            statusCode = HttpStatusCode.OK;
-                        }
-                        else if (request.HttpMethod == "POST" && request.RawUrl.StartsWith("/captchasolver/answer"))
+                        //if (request.HttpMethod == "GET" && request.RawUrl.StartsWith("/captchasolver/page"))
+                        //{
+                        //    var id = request.QueryString["id"];
+                        //    response = await CaptchaSolverGetPageHandler(id);
+                        //    statusCode = HttpStatusCode.OK;
+                        //}
+                        if (request.HttpMethod == "POST" && request.RawUrl.StartsWith("/captchasolver/answer"))
                         {
                             statusCode = await CaptchaSolverAnswerHandler(requestData);
                         }
@@ -69,12 +69,12 @@ namespace CaptchaSolver
                     {
                         if (request.HttpMethod == "GET" && request.RawUrl.StartsWith("/captchasolver/start"))
                         {
-                            var host = request.QueryString["pageurl"];
+                            var pageurl = request.QueryString["pageurl"];
                             var action = request.QueryString["action"];
                             var datasitekey = request.QueryString["datasitekey"];
                             var pingback = request.QueryString["pingback"];
 
-                            var captchaId = _solver.StartCaptchaSolved(host, action, datasitekey, pingback);
+                            var captchaId = _solver.StartCaptchaSolved(pageurl, action, datasitekey, pingback);
                             response = Encoding.UTF8.GetBytes(captchaId);
                             statusCode = HttpStatusCode.OK;
                         }

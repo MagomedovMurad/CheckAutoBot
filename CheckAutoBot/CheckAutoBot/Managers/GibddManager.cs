@@ -26,7 +26,7 @@ namespace CheckAutoBot.Managers
             if(response == null)
                 throw new InvalidOperationException("History response is null");
 
-            if (response.Status == (int)HttpStatusCode.OK)
+            if (response.Status == (int)HttpStatusCode.OK || response.Status == 0)
                 return response.RequestResult;
 
             else if (response?.Status == (int)HttpStatusCode.NotFound)

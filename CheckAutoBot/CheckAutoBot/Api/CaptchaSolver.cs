@@ -12,10 +12,10 @@ namespace CheckAutoBot.Api
     {
         public const string url = "http://95.31.241.19/captchasolver/start";
 
-        public CaptchaRequest SendRecaptcha(string host, string action, string dataSitekey, string pingback)
+        public CaptchaRequest SendRecaptcha(string pageUrl, string action, string dataSitekey, string pingback)
         {
             var url = $"http://95.31.241.19/captchasolver/start?" +
-                                    $"host={host}" +
+                                    $"pageurl={pageUrl}" +
                                     $"&action={action}" +
                                     $"&datasitekey={dataSitekey}" +
                                     $"&pingback={pingback}";

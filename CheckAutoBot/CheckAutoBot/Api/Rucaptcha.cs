@@ -47,7 +47,7 @@ namespace CheckAutoBot
                                         $"&pingback={pingback}" +
                                         $"&version=v{version}" +
                                         $"&action={action}" +
-                                        $"&min_score=0.7" +
+                                        $"&min_score=0.9" +
                                         $"&json=1";
 
             var json = ExecuteRequest(url, "POST");

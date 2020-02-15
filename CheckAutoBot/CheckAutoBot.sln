@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2042
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckAutoBot", "CheckAutoBot\CheckAutoBot.csproj", "{84EACA14-07E2-44B3-AA18-0E873D7BC1FE}"
 EndProject
@@ -9,7 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckAutoBot.Infrastructure
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckAutoBot.Vk.Api", "CheckAutoBot.Vk.Api\CheckAutoBot.Vk.Api.csproj", "{CB39359C-BE6E-4A9A-A691-3C5408FD81DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaptchaSolver", "CaptchaSolver\CaptchaSolver.csproj", "{162B9E89-093F-425B-8F8A-A98EF195DCF5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CaptchaSolver", "CaptchaSolver\CaptchaSolver.csproj", "{162B9E89-093F-425B-8F8A-A98EF195DCF5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaptchaSolver.Client", "CaptchaSolver.Client\CaptchaSolver.Client.csproj", "{6854CA92-0AC1-4A71-A848-B00618781AF8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaptchaSolver.Server", "CaptchaSolver.Server\CaptchaSolver.Server.csproj", "{0D036EA5-DB28-4D4B-80C2-ECFE71A7F776}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{162B9E89-093F-425B-8F8A-A98EF195DCF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{162B9E89-093F-425B-8F8A-A98EF195DCF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{162B9E89-093F-425B-8F8A-A98EF195DCF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6854CA92-0AC1-4A71-A848-B00618781AF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6854CA92-0AC1-4A71-A848-B00618781AF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6854CA92-0AC1-4A71-A848-B00618781AF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6854CA92-0AC1-4A71-A848-B00618781AF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D036EA5-DB28-4D4B-80C2-ECFE71A7F776}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D036EA5-DB28-4D4B-80C2-ECFE71A7F776}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D036EA5-DB28-4D4B-80C2-ECFE71A7F776}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D036EA5-DB28-4D4B-80C2-ECFE71A7F776}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

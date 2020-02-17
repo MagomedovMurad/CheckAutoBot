@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CaptchaSolver.Server.Middlewares;
+using CaptchaSolver.Server.Utils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -26,6 +28,8 @@ namespace CaptchaSolver.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddTransient<ICaptchaTasksCache, CaptchaTasksCache>();
+           // services.AddTransient<ISolver, Solver>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -37,9 +41,8 @@ namespace CaptchaSolver.Server
             }
 
             // app.UseHttpsRedirection();
-
+            app.UseMiddleware<LocalRequestMiddleware>();
             app.UseRouting();
-
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

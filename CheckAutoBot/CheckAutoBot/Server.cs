@@ -39,14 +39,21 @@ namespace CheckAutoBot
 
         public async Task Start()
         {
-            _httpListener = new HttpListener();
-            _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/yandexmoney/");
-            _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/captcha/");
-            _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/vk/");
-            _httpListener.Prefixes.Add("http://192.168.0.103:26565/test/");
-            _httpListener.Prefixes.Add("http://192.168.0.103:26565/test1/");
-            _httpListener.Start();
-            _logger.WriteToLog(LogLevel.Debug, "Server successful started");
+            try
+            {
+                _httpListener = new HttpListener();
+                _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/yandexmoney/");
+                _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/captcha/");
+                _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/vk/");
+                _httpListener.Prefixes.Add("http://192.168.0.103:26565/test/");
+                _httpListener.Prefixes.Add("http://192.168.0.103:26565/test1/");
+                _httpListener.Start();
+                _logger.WriteToLog(LogLevel.Debug, "Server successful started");
+            }
+            catch (Exception ex)
+            { 
+            
+            }
 
             while (true)
             {

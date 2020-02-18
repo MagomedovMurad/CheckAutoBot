@@ -10,17 +10,17 @@ namespace CheckAutoBot.Api
 {
     public class CaptchaSolver
     {
-        public const string url = "http://95.31.241.19/captchasolver/start";
+        public const string url = "http://95.31.241.19:5000/captchasolver/start";
 
-        public CaptchaRequest SendRecaptcha(string pageUrl, string action, string dataSitekey, string pingback)
+        public CaptchaRequest SendRecaptcha(string pageUrl, string action, string googlekey, string pingback)
         {
-            var url = $"http://95.31.241.19/captchasolver/start?" +
+            var url = $"http://95.31.241.19:5000/captchasolver/start?" +
                                     $"pageurl={pageUrl}" +
                                     $"&action={action}" +
-                                    $"&datasitekey={dataSitekey}" +
+                                    $"&googlekey={googlekey}" +
                                     $"&pingback={pingback}";
 
-            var json = ExecuteRequest(url, "GET");
+            var json = ExecuteRequest(url, "POST");
             return new CaptchaRequest() { Id = json, State = true };
         }
 

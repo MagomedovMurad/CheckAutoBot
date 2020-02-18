@@ -28,7 +28,7 @@ namespace CaptchaSolver.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddTransient<ICaptchaTasksCache, CaptchaTasksCache>();
+            services.AddSingleton<ICaptchaTasksCache, CaptchaTasksCache>();
            // services.AddTransient<ISolver, Solver>();
         }
 

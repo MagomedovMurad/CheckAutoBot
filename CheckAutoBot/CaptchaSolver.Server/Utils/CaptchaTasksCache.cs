@@ -74,6 +74,10 @@ namespace CaptchaSolver.Server.Utils
         public CaptchaTask GetNextTask()
         {
             var item = _tasks.OrderBy(x => x.DateTime).FirstOrDefault();
+
+            if (item == null)
+                return null;
+
             item.TaskState = Enums.CaptchaTaskState.InProcess;
             return new CaptchaTask(item.Id, item.CaptchaType, item.InputData);
         }

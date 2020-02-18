@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>
+		Recaptcha v3 solver page
+	</title>
+</head>
+<body>
+	<H1>
+		Тестовая страница
+	</H1>
+
+	<!-- Data-SiteKey -->
+	<P>
+		<b>
+			Action:
+		</b>
+	</P>
+	<P>
+		#action
+	</P>
+
+	<!-- Data-SiteKey -->
+	<P>
+		<b>
+			Data-SiteKey:
+		</b>
+	</P>
+	<P>
+		#datasitekey
+	</P>
+
+	<!-- Token -->
+	<P>
+		<b>
+			Token:
+			</bt
+	</P>
+	<P id="token">
+		Null
+	</P>
+
+	<form>
+		<p>
+			<input id="clickMe" type="button" value="Reload" />
+		</p>
+	</form>
+
+	<script src="https://www.google.com/recaptcha/api.js?render=#datasitekey"></script>
+	<script>
+		var sendToken = function (token, id) {
+			var json = new String('{"Id":"' + id + '" ,"Token":"' + token + '"}');
+			sendData(json, '/captchasolver/answer');
+        };
+
+        var sendPageReady = function () {
+            sendData('{}', '/captchasolver/page_ready')
+        };
+
+		var sendData = function (json, address) {
+			const http = new XMLHttpRequest();
+			http.open('POST', address);
+			http.setRequestHeader('Content-type', 'application/json');
+			http.send(json);
+		};
+
+		var captchaExecute = function () {
+			grecaptcha.execute('#datasitekey', { action: '#action' }).then(function (token) {
+				document.getElementById("token").innerHTML = token;
+				sendToken(token, '#captchaid');
+			});
+        }
+
+        document.getElementById("clickMe").onclick = captchaExecute;
+		grecaptcha.ready(sendPageReady);
+	</script>
+</body>
+</html>

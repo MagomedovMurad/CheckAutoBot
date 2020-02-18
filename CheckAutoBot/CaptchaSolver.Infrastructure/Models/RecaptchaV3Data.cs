@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CaptchaSolver.Server.Models
+namespace CaptchaSolver.Infrastructure.Models
 {
     public class RecaptchaV3Data
     {

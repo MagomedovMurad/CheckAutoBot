@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaptchaSolver.Client", "Cap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaptchaSolver.Server", "CaptchaSolver.Server\CaptchaSolver.Server.csproj", "{0D036EA5-DB28-4D4B-80C2-ECFE71A7F776}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaptchaSolver.Infrastructure", "CaptchaSolver.Infrastructure\CaptchaSolver.Infrastructure.csproj", "{9838DBFB-D556-4FA8-B405-519BDC282DAC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{0D036EA5-DB28-4D4B-80C2-ECFE71A7F776}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D036EA5-DB28-4D4B-80C2-ECFE71A7F776}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0D036EA5-DB28-4D4B-80C2-ECFE71A7F776}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9838DBFB-D556-4FA8-B405-519BDC282DAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9838DBFB-D556-4FA8-B405-519BDC282DAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9838DBFB-D556-4FA8-B405-519BDC282DAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9838DBFB-D556-4FA8-B405-519BDC282DAC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

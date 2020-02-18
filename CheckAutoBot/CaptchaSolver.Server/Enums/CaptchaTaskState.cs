@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CaptchaSolver.Server.Services
+namespace CaptchaSolver.Server.Enums
 {
-    public class PageGeneratorService
+    public enum CaptchaTaskState
     {
+        New,
+        InProcess,
+        Ready
     }
 }

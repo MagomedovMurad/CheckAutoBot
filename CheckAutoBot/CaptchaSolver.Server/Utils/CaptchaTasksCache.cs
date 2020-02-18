@@ -1,6 +1,7 @@
 ﻿using CaptchaSolver.Infrastructure.Enums;
 using CaptchaSolver.Infrastructure.Models;
 using CaptchaSolver.Server.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -32,11 +33,12 @@ namespace CaptchaSolver.Server.Utils
 
         public string Add(string pingback, object captchaData, CaptchaType captchaType)
         {
-            var id = Guid.NewGuid().ToString(); 
+            var id = Guid.NewGuid().ToString();
+            var serializedCaptchaData = JsonConvert.SerializeObject(captchaData);
             var request = new CaptchaTasksCacheItem()
             {
                 Id = id,
-                InputData = captchaData,
+                SerializedInputData = serializedCaptchaData,
                 Pingback = pingback,
                 TaskState = Enums.CaptchaTaskState.New,
                 DateTime = DateTime.Now,
@@ -79,7 +81,7 @@ namespace CaptchaSolver.Server.Utils
                 return null;
 
             item.TaskState = Enums.CaptchaTaskState.InProcess;
-            return new CaptchaTask(item.Id, item.CaptchaType, item.InputData);
+            return new CaptchaTask(item.Id, item.CaptchaType, item.SerializedInputData);
         }
 
        

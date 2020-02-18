@@ -49,7 +49,7 @@ namespace CaptchaSolver.Client
                 return;
 
             _isBusy = true;
-            var url = "http://95.31.241.19/captchasolver/next_task";
+            var url = "http://95.31.241.19:5000/captchasolver/next_task";
 
             try
             {
@@ -61,11 +61,14 @@ namespace CaptchaSolver.Client
                 response.Close();
 
                 if (json == null)
+                {
+                    _isBusy = false;
                     return;
+                }
 
                 var captchaTask = JsonConvert.DeserializeObject<CaptchaTask>(json);
-                var data = captchaTask.InputData as RecaptchaV3Data;
-
+                var strInputData = captchaTask.InputData as string;
+                var data = JsonConvert.DeserializeObject<RecaptchaV3Data>(strInputData);
                 _recaptchaV3Solver.StartCaptchaSolved(captchaTask.Id, data.PageUrl, data.Action, data.GoogleKey);
             }
             catch (Exception ex)

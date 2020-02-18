@@ -8,17 +8,17 @@ namespace CaptchaSolver.Infrastructure.Models
 {
     public class CaptchaTask
     {
-        public CaptchaTask(string id, CaptchaType type, object inputData)
+        public CaptchaTask(string id, CaptchaType type, string serializedInputData)
         {
             Id = id;
             CaptchaType = type;
-            InputData = inputData;
+            InputData = serializedInputData;
         }
 
         public string Id { get; set; }
 
         public CaptchaType CaptchaType { get; set; }
 
-        public object InputData { get; set; }
+        public string InputData { get; set; }
     }
 }

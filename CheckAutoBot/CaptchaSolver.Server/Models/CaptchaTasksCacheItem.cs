@@ -14,7 +14,7 @@ namespace CaptchaSolver.Server.Models
         
         public string Pingback { get; set; }
 
-        public object InputData { get; set; }
+        public string SerializedInputData { get; set; }
 
         public DateTime DateTime { get; set; }
 

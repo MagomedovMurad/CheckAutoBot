@@ -23,9 +23,16 @@ namespace CaptchaSolver.Client
 
         public async Task Start()
         {
-            _httpListener = new HttpListener();
-            _httpListener.Prefixes.Add($"http://{LocalUserHostAddress}/");
-            _httpListener.Start();
+            try
+            {
+                _httpListener = new HttpListener();
+                _httpListener.Prefixes.Add($"http://{LocalUserHostAddress}/");
+                _httpListener.Start();
+            }
+            catch (Exception ex)
+            { 
+            
+            }
 
             while (true)
             {

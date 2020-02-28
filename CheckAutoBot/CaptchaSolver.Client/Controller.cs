@@ -79,11 +79,14 @@ namespace CaptchaSolver.Client
 
         private void SendTaskResult(byte[] data)
         {
-            var url = "http://95.31.241.19/captchasolver/task_result";
+            var url = "http://95.31.241.19:5000/captchasolver/task_result";
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "POST";
             request.KeepAlive = false;
+            request.MediaType = "application/json";
+            request.ContentType = "application/json";
+            request.AutomaticDecompression = DecompressionMethods.GZip;
             request.AddContent(data);
             var response = request.GetResponse();
             response.Close();

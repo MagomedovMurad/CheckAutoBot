@@ -51,7 +51,7 @@
 	<script src="https://www.google.com/recaptcha/api.js?render=#datasitekey"></script>
 	<script>
 		var sendToken = function (token, id) {
-			var json = new String('{"Id":"' + id + '" ,"Token":"' + token + '"}');
+			var json = new String('{"Id":"' + id + '" ,"Result":"' + token + '"}');
 			sendData(json, '/captchasolver/answer');
         };
 

@@ -27,7 +27,7 @@ namespace CaptchaSolver.Client
 
         public void Start()
         {
-            _subscription = Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(1))
+            _subscription = Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(10))
                          .Subscribe(x => RequestNextTask());
         }
 

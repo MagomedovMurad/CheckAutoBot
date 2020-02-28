@@ -27,9 +27,9 @@ namespace CaptchaSolver.Server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers().AddJsonOptions(configure => configure.JsonSerializerOptions.PropertyNamingPolicy = null);
             services.AddSingleton<ICaptchaTasksCache, CaptchaTasksCache>();
-           // services.AddTransient<ISolver, Solver>();
+            // services.AddTransient<ISolver, Solver>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

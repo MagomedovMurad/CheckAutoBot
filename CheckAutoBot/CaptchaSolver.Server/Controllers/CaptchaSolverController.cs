@@ -64,8 +64,8 @@ namespace CaptchaSolver.Server.Controllers
             Task.Run(() =>
             {
                 var pingback = _tasksCache.GetPingback(taskResult.Id);
-                var requestJson = JsonConvert.SerializeObject(taskResult); 
-
+                //var requestJson = JsonConvert.SerializeObject(taskResult);
+                var requestJson = $"id={taskResult.Id}&code={taskResult.Result}";
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(pingback);
                 request.Method = "POST";

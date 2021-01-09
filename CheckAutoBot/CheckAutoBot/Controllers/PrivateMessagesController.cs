@@ -69,6 +69,15 @@ namespace CheckAutoBot.Controllers
 
         public void HandleMessage(PrivateMessage message)
         {
+            //var keyboard = new KeyboardBuilder().CreateKeyboard(typeof(Auto));
+            //var data = "Е340РХ126" is null ? $"VIN код:" : $"Гос. номер:";
+            //data = $"✏ {data} {"Е340РХ126"}{Environment.NewLine}" +
+            //       $"🚗 {"ХЕНДЭ ЭЛАНТРА"}, {"2013"}г.{Environment.NewLine}" +
+            //       $"⬇ Выберите доступное действие.";
+
+            //_messagesSenderController.SendMessage(192287910, data, keyboard: keyboard);
+            //return;
+
             //Если сообщение НЕ содержит Payload. (Значит это данные об объекте(vin, гос.номер, ФИО))
             if (message.Payload == null)
                 UserRequestObjectHandler(message);

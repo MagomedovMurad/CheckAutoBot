@@ -53,8 +53,8 @@ namespace CheckAutoBot.Controllers
                 //    return true;
                 //}
 
-                if (!CheckUser(userId, inputData))
-                    return;
+                //if (!CheckUser(userId, inputData))
+                //    return;
 
                 switch (inputData.Type)
                 {

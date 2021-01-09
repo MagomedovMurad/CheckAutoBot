@@ -12,6 +12,12 @@ namespace CheckAutoBot.Vk.Api.MessagesModels
         /// Текст
         /// </summary>
         [EnumMember(Value = "text")]
-        Text
+        Text,
+
+        /// <summary>
+        /// Текст
+        /// </summary>
+        [EnumMember(Value = "callback")]
+        Callback
     }
 }

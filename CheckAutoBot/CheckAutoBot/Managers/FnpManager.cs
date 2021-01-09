@@ -35,9 +35,9 @@ namespace CheckAutoBot.Managers
             return response;
         }
 
-        public CaptchaResult GetCaptcha()
-        {
-            return _fnp.GetCaptcha();
-        }
+        //public CaptchaResult GetCaptcha()
+        //{
+        //    return _fnp.GetCaptcha();
+        //}
     }
 }

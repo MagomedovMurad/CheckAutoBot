@@ -25,9 +25,16 @@ namespace CheckAutoBot.Controllers
 
         public async Task SendMessage(int userId, string text, byte[] photo = null, Keyboard keyboard = null)
         {
-            _logger.WriteToLog(LogLevel.Debug, $"Отправка сообщения: {text}");
-            var attachments = PhotoToAttachment(userId, photo);
-            await _vkApi.SendMessage(userId, text, attachments, keyboard);
+            try
+            {
+                _logger.WriteToLog(LogLevel.Debug, $"Отправка сообщения: {text}");
+                var attachments = PhotoToAttachment(userId, photo);
+                await _vkApi.SendMessage(userId, text, attachments, keyboard);
+            }
+            catch (Exception ex)
+            { 
+                
+            }
         }
 
         private string PhotoToAttachment(int userId, byte[] binPhoto)

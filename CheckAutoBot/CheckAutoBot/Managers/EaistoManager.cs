@@ -23,24 +23,25 @@ namespace CheckAutoBot.Managers
 
 
 
-        public EaistoResult GetDiagnosticCards(string captcha,
-                                      string phoneNumber,
-                                      string sessionId,
-                                      string vin = null,
-                                      string licensePlate = null,
-                                      string bodyNumber = null,
-                                      string chassis = null,
-                                      string eaisto = null)
+        public EaistoResult GetDiagnosticCards(string captchaV3, 
+                                               string captchaV2,
+                                               string phoneNumber,
+                                               string sessionId,
+                                               string vin = null,
+                                               string licensePlate = null,
+                                               string bodyNumber = null,
+                                               string chassis = null,
+                                               string eaisto = null)
         {
-            var eaistoResult = _eaisto.GetDiagnosticCards(captcha, sessionId, vin, licensePlate, bodyNumber, chassis, eaisto);
+            var eaistoResult = _eaisto.GetDiagnosticCards(captchaV2, captchaV3, vin, licensePlate, bodyNumber, chassis, eaisto);
 
             if (!string.IsNullOrWhiteSpace(eaistoResult.ErrorMessage))
             {
                 if (eaistoResult.ErrorMessage == _notFoundError)
                     return null;
 
-                if (eaistoResult.ErrorMessage == _invalidCaptchaError)
-                    throw new InvalidCaptchaException(captcha);
+                //if (eaistoResult.ErrorMessage == _invalidCaptchaError)
+                //    throw new InvalidCaptchaException(captcha);
 
                 throw new InvalidOperationException(eaistoResult.ErrorMessage);
             }
@@ -61,11 +62,5 @@ namespace CheckAutoBot.Managers
 
             return lastDk;
         }
-
-        public CaptchaResult GetCaptcha()
-        {
-            return _eaisto.GetCaptcha();
-        }
-
     }
 }

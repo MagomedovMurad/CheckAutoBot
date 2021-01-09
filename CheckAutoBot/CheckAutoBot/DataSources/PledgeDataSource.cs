@@ -64,9 +64,10 @@ namespace CheckAutoBot.DataSources
 
         public IEnumerable<CaptchaRequestData> RequestCaptcha()
         {
-            var captchaResult = _fnpManager.GetCaptcha();
-            var captchaRequest = _rucaptchaManager.SendImageCaptcha(captchaResult.ImageBase64, Rucaptcha.RequestPingbackUrl);
-            return new[] { new CaptchaRequestData(captchaRequest.Id, captchaResult.SessionId, string.Empty) };
+            //var captchaResult = _fnpManager.GetCaptcha();
+            //var captchaRequest = _rucaptchaManager.SendImageCaptcha(captchaResult.ImageBase64, Rucaptcha.RequestPingbackUrl);
+            var captchaRequest = _rucaptchaManager.SendReCaptcha3(Fnp.googleKey, Fnp.url, Rucaptcha.RequestPingbackUrl, 3, "search_notary");
+            return new[] { new CaptchaRequestData(captchaRequest.Id, null, string.Empty) };
         }
 
         private KeyValuePair<SubjectType, string> PledgorToText(FnpModels.Pledgor pledgor)

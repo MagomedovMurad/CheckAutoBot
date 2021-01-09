@@ -70,7 +70,8 @@ namespace CheckAutoBot.Utils
             return new Keyboard()
             {
                 Buttons = buttonsArray,
-                OneTime = true
+                OneTime = true,
+                Inline = false
             };
         }
 

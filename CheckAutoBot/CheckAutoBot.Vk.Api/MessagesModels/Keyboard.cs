@@ -10,6 +10,9 @@ namespace CheckAutoBot.Vk.Api.MessagesModels
         [JsonProperty("one_time")]
         public bool OneTime { get; set; }
 
+        [JsonProperty("inline")]
+        public bool Inline { get; set; }
+
         [JsonProperty("buttons")]
         public Button[][] Buttons { get; set; }
 

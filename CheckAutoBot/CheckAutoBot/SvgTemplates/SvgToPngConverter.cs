@@ -10,7 +10,7 @@ namespace CheckAutoBot.SVG
     {
         public static byte[] Convert(string svg)
         {
-            var command = @"inkscape.exe C:\Users\Мурад\Desktop\Test.svg --export-png=C:\Users\Мурад\Desktop\Test.png --export-area-drawing";
+            var command = @"inkscape.exe C:\Users\Мурад\Desktop\Test.svg --export-filename=C:\Users\Мурад\Desktop\Test.png --export-area-drawing";
             var fileName = Guid.NewGuid();
             var svgFilePath = @"SvgCache\" + fileName + ".svg";
             var pngFilePath = @"PngCache\" + fileName + ".png";
@@ -19,8 +19,8 @@ namespace CheckAutoBot.SVG
                 writer.Write(svg);
             }
 
-            string inkscapeArgs = $@"{svgFilePath} --export-png={pngFilePath} --export-area-drawing";
-            var inkscapeProcessInfo = new ProcessStartInfo(@"C:\Program Files\Inkscape\Inkscape.exe", inkscapeArgs);
+            string inkscapeArgs = $@"{svgFilePath} --export-filename={pngFilePath} --export-area-drawing";
+            var inkscapeProcessInfo = new ProcessStartInfo(@"C:\Program Files\Inkscape\bin\Inkscape.exe", inkscapeArgs);
             Process inkscape = Process.Start(inkscapeProcessInfo);
             inkscape.WaitForExit(10000);
 

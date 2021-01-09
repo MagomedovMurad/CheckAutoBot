@@ -42,11 +42,11 @@ namespace CheckAutoBot
             try
             {
                 _httpListener = new HttpListener();
-                _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/yandexmoney/");
-                _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/captcha/");
-                _httpListener.Prefixes.Add("http://192.168.0.103:26565/bot/vk/");
-                _httpListener.Prefixes.Add("http://192.168.0.103:26565/test/");
-                _httpListener.Prefixes.Add("http://192.168.0.103:26565/test1/");
+                _httpListener.Prefixes.Add("http://192.168.0.107:26565/bot/yandexmoney/");
+                _httpListener.Prefixes.Add("http://192.168.0.107:26565/bot/captcha/");
+                _httpListener.Prefixes.Add("http://192.168.0.107:26565/bot/vk/");
+                _httpListener.Prefixes.Add("http://192.168.0.107:26565/test/");
+                _httpListener.Prefixes.Add("http://192.168.0.107:26565/test1/");
                 _httpListener.Start();
                 _logger.WriteToLog(LogLevel.Debug, "Server successful started");
             }
@@ -72,6 +72,8 @@ namespace CheckAutoBot
                     }
                     else if (request.HttpMethod == "POST" && request.RawUrl == "/bot/vk")
                     {
+                        //response = Encoding.UTF8.GetBytes("6e245eac");
+                        //statusCode = HttpStatusCode.OK;
                         response = Encoding.UTF8.GetBytes("ok");
                         statusCode = VkEventsHandler(requestData);
                     }
@@ -100,6 +102,7 @@ namespace CheckAutoBot
                 catch (Exception ex)
                 {
                     _logger.WriteToLog(LogLevel.Error, ex.ToString(), true);
+                    await Task.Delay(1000);
                 }
             }
         }

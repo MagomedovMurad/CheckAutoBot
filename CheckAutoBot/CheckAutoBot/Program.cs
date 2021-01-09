@@ -25,7 +25,7 @@ namespace CheckAutoBot
         {
             var builder = new ContainerBuilder();
             var bus = RabbitHutch.CreateBus("host=localhost");
-            var vkApiManager = new VkApiManager("374c755afe8164f66df13dc6105cf3091ecd42dfe98932cd4a606104dc23840882d45e8b56f0db59e1ec2");
+            var vkApiManager = new VkApiManager("bd154263d825d417b810515815d8eef5647d7902470c6a7a0cf9b91d368aec96fe8813f20e8114122eacf");
             var logger = new CustomLogger(vkApiManager);
 
 
@@ -47,12 +47,12 @@ namespace CheckAutoBot
             #region IDataSource
             builder.RegisterType<VechiclePassportDataSource>().As<IDataSource>().SingleInstance();
             builder.RegisterType<OwnershipPeriodsDataSource>().As<IDataSource>().SingleInstance();
-            builder.RegisterType<Eaisto2DataSource>().As<IDataSource>().SingleInstance();
+            //builder.RegisterType<Eaisto2DataSource>().As<IDataSource>().SingleInstance();
             #endregion
 
             #region IDataSourceWithCaptcha
             builder.RegisterType<EaistoDataSource>().As<IDataSourceWithCaptcha>().As<IDataSource>().SingleInstance();
-            builder.RegisterType<RsaDataSource>().As<IDataSourceWithCaptcha>().As<IDataSource>().SingleInstance();
+            //builder.RegisterType<RsaDataSource>().As<IDataSourceWithCaptcha>().As<IDataSource>().SingleInstance();
             builder.RegisterType<GeneralInfoDataSource>().As<IDataSourceWithCaptcha>().As<IDataSource>().SingleInstance();
             builder.RegisterType<DtpDataSource>().As<IDataSourceWithCaptcha>().As<IDataSource>().SingleInstance();
             builder.RegisterType<RestrictedDataSource>().As<IDataSourceWithCaptcha>().As<IDataSource>().SingleInstance();

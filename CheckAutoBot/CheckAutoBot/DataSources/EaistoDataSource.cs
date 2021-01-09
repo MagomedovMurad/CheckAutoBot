@@ -28,14 +28,16 @@ namespace CheckAutoBot.DataSources
 
         public int MaxRepeatCount => 1; //2;
 
-        public int Order => 2;
+        public int Order => 1;
 
         public DataSourceResult GetData(object inputData, IEnumerable<CaptchaRequestData> captchaRequestItems)
         {
             var licensePlate = inputData as string;
-            var captcha = captchaRequestItems.First();
 
-            var eaistoResult = _eaistoManager.GetDiagnosticCards(captcha.Value, null, captcha.SessionId, licensePlate: licensePlate);
+            var captchaV3 = captchaRequestItems.Single(x => x.Key == "eaistoV3");
+            var captchaV2 = captchaRequestItems.Single(x => x.Key == "eaistoV2");
+
+            var eaistoResult = _eaistoManager.GetDiagnosticCards(captchaV3.Value, captchaV2.Value, null, null, licensePlate: licensePlate);
             if (eaistoResult == null)
                 return new DataSourceResult(null);
 
@@ -75,11 +77,14 @@ namespace CheckAutoBot.DataSources
 
         public IEnumerable<CaptchaRequestData> RequestCaptcha()
         {
-            //var captchaResult = _eaistoManager.GetCaptcha();
-            //var captchaRequest = _rucaptchaManager.SendImageCaptcha(captchaResult.ImageBase64, Rucaptcha.LpPingbackUrl);
-            var captchaRequest = _rucaptchaManager.SendReCaptcha3(Eaisto.dataSiteKey, Eaisto.url, Rucaptcha.LpPingbackUrl, 3, "show_captcha");
+            var captchaRequestV3 = _rucaptchaManager.SendReCaptcha3(Eaisto.dataSiteKeyV3, Eaisto.url, Rucaptcha.LpPingbackUrl, 3, "checkNum");
+            var captchaRequestV2 = _rucaptchaManager.SendReCaptcha2(Eaisto.dataSiteKeyV2, Eaisto.url, Rucaptcha.LpPingbackUrl);
 
-            return new[] { new CaptchaRequestData(captchaRequest.Id, null, null) };
+            return new[] 
+            {
+                new CaptchaRequestData(captchaRequestV3.Id, null, "eaistoV3"),
+                new CaptchaRequestData(captchaRequestV2.Id, null, "eaistoV2")
+            };
         }
     }
 }

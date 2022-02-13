@@ -24,7 +24,7 @@ namespace CheckAutoBot.DataSources
 
         public DataType DataType => DataType.VechicleIdentifiersEAISTO;
 
-        public int MaxRepeatCount => 3;
+        public int MaxRepeatCount => 1;
 
         public int Order => 1;
 

@@ -52,7 +52,7 @@ namespace CheckAutoBot
 
             #region IDataSourceWithCaptcha
             builder.RegisterType<EaistoDataSource>().As<IDataSourceWithCaptcha>().As<IDataSource>().SingleInstance();
-            //builder.RegisterType<RsaDataSource>().As<IDataSourceWithCaptcha>().As<IDataSource>().SingleInstance();
+            builder.RegisterType<RsaDataSource>().As<IDataSourceWithCaptcha>().As<IDataSource>().SingleInstance();
             builder.RegisterType<GeneralInfoDataSource>().As<IDataSourceWithCaptcha>().As<IDataSource>().SingleInstance();
             builder.RegisterType<DtpDataSource>().As<IDataSourceWithCaptcha>().As<IDataSource>().SingleInstance();
             builder.RegisterType<RestrictedDataSource>().As<IDataSourceWithCaptcha>().As<IDataSource>().SingleInstance();

@@ -21,7 +21,7 @@ namespace CheckAutoBot.Vk.Api
                                 $"&peer_id={args.PeerId.ToString().UrlEncode()}" +
                                 $"&attachment={args.Attachments.UrlEncode()}" +
                                 $"&access_token={args.AccessToken.UrlEncode()}" +
-                                $"&v=5.80";
+                                $"&v=5.81";
 
             if (args.Keyboard != null)
                 stringData += $"&keyboard={args.Keyboard.ToString().UrlEncode()}";
